@@ -1,0 +1,155 @@
+% ============================================================
+%  Rapport PFE – Rhaiem Chayma
+%  main.tex — fichier principal (inclut les chapitres séparément)
+%  Compilé avec pdflatex (2 passes)
+% ============================================================
+
+\documentclass[12pt,a4paper]{report}
+
+% ---- Encodage et langue ----
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+% ---- Mise en page ----
+\usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+% ---- Polices et typographie ----
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ---- Graphiques et couleurs ----
+\usepackage{graphicx}
+\usepackage[table,xcdraw]{xcolor}
+\definecolor{primaryblue}{RGB}{31, 73, 125}
+\definecolor{lightgray}{RGB}{242, 242, 242}
+
+% ---- Couleurs SAP (chapitre 4) ----
+\definecolor{SAPBlue}{RGB}{0, 120, 215}
+\definecolor{SAPLightBlue}{RGB}{218, 237, 255}
+\definecolor{SAPGreen}{RGB}{50, 168, 82}
+\definecolor{SAPLightGreen}{RGB}{220, 245, 228}
+\definecolor{SAPOrange}{RGB}{232, 120, 0}
+\definecolor{SAPLightOrange}{RGB}{255, 237, 213}
+\definecolor{SAPGray}{RGB}{100, 100, 100}
+\definecolor{SAPLightGray}{RGB}{245, 245, 245}
+\definecolor{SAPRed}{RGB}{200, 50, 50}
+\definecolor{CodeBg}{RGB}{248, 248, 248}
+\definecolor{CodeBorder}{RGB}{200, 200, 200}
+
+% ---- TikZ (schémas et diagrammes) ----
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc,
+                shapes.geometric, fit, backgrounds,
+                shadows, decorations.pathreplacing, patterns}
+
+% ---- Tableaux ----
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{array}
+
+% ---- Listes ----
+\usepackage{enumitem}
+
+% ---- Boîtes colorées (tcolorbox) ----
+\usepackage[most,breakable]{tcolorbox}
+
+\newtcolorbox{definitionbox}[1]{
+  enhanced, breakable,
+  colback=SAPLightBlue, colframe=SAPBlue,
+  fonttitle=\bfseries\color{white},
+  title={#1},
+  attach boxed title to top left={yshift=-2mm, xshift=4mm},
+  boxed title style={colback=SAPBlue, rounded corners},
+  rounded corners, arc=3mm
+}
+
+\newtcolorbox{remarquebox}{
+  enhanced, breakable,
+  colback=SAPLightGreen, colframe=SAPGreen,
+  fonttitle=\bfseries\color{white},
+  title={Remarque},
+  attach boxed title to top left={yshift=-2mm, xshift=4mm},
+  boxed title style={colback=SAPGreen, rounded corners},
+  rounded corners, arc=3mm
+}
+
+\newtcolorbox{sourcebox}[1]{
+  enhanced, breakable,
+  colback=SAPLightOrange, colframe=SAPOrange,
+  fonttitle=\bfseries\color{white},
+  title={#1},
+  attach boxed title to top left={yshift=-2mm, xshift=4mm},
+  boxed title style={colback=SAPOrange, rounded corners},
+  rounded corners, arc=3mm
+}
+
+% ---- Listings (code) ----
+\usepackage{listings}
+\usepackage{caption}
+
+\lstdefinestyle{sapcode}{
+  backgroundcolor=\color{CodeBg},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  captionpos=b,
+  commentstyle=\color{SAPGray}\itshape,
+  frame=single,
+  framerule=0.5pt,
+  rulecolor=\color{CodeBorder},
+  keywordstyle=\color{SAPBlue}\bfseries,
+  stringstyle=\color{SAPGreen},
+  numbers=left,
+  numberstyle=\tiny\color{SAPGray},
+  numbersep=8pt,
+  showstringspaces=false,
+  tabsize=2,
+  xleftmargin=15pt,
+  xrightmargin=5pt,
+}
+\lstset{style=sapcode}
+
+% ---- En-têtes et pieds de page ----
+\usepackage{fancyhdr}
+\setlength{\headheight}{14.1pt}
+\addtolength{\topmargin}{-2.1pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{\leftmark}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ---- Hyperliens ----
+\usepackage[hidelinks]{hyperref}
+
+% ---- Titres personnalisés ----
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{primaryblue}}
+  {\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{primaryblue}}
+  {\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{SAPGray}}
+  {\thesubsection}{1em}{}
+
+% ============================================================
+\begin{document}
+
+% ---- Table des matières ----
+\tableofcontents
+\clearpage
+
+% ---- Chapitres ----
+\input{chapters/chapter1}
+\input{chapters/chapter2}
+\input{chapters/chapter3}
+\input{chapters/chapter4}
+
+\end{document}

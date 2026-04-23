@@ -1,0 +1,489 @@
+% ============================================================
+%  Chapitre 4 : Compréhension et Acquisition des Données
+% ============================================================
+
+\chapter{Compréhension et Acquisition des Données}
+
+\section{Introduction}
+
+Le chapitre d’acquisition et de compréhension des données est essentiel pour établir une base solide pour le système de détection d’anomalies développé pour les transactions SAP. Ce chapitre détaille la collecte, le traitement et l’analyse systématiques des données nécessaires pour comprendre le contexte métier, définir les conditions d’alerte et identifier les schémas de transactions anormales. Il met en évidence l’importance des documents de base de connaissances (KB), élaborés en fonction des besoins métier, qui guident les processus de surveillance et de génération d’alertes.
+Dans le cadre de ce projet, trois sources de données hétérogènes ont
+été identifiées et exploitées :
+
+\begin{itemize}
+    \item Le \textbf{portail SAP Help Portal} — documentation officielle
+    SAP accessible via scraping web
+    \item Les \textbf{livres techniques SAP} — 298 ouvrages de formation
+    au format PDF couvrant les modules BASIS, ABAP, Fiori et S/4HANA
+    \item Les \textbf{logs de transactions SAP} — données temps réel
+    extraites depuis les transactions SM37, ST22 et SP01
+\end{itemize}
+
+\section{Sources}
+% ============================================================
+\subsection{SAP Help Portal}
+% ============================================================
+
+\subsubsection{Description et structure}
+
+Le SAP Help Portal (\texttt{help.sap.com}) constitue la source de
+documentation officielle SAP. Il expose une structure hiérarchique
+profonde de pages HTML organisées par produit, version et module.
+Chaque page contient du contenu textuel structuré (procédures,
+paramètres, notes techniques) ainsi que des métadonnées de navigation
+(breadcrumbs, liens parent-enfant).
+
+\begin{sourcebox}{Caractéristiques du SAP Help Portal}
+\begin{itemize}
+    \item \textbf{Volume} : environ 50,000 pages indexées par le sitemap
+    \item \textbf{Structure} : hiérarchie à 4-6 niveaux de profondeur
+    \item \textbf{Langue} : principalement anglais, avec contenu
+    français et allemand
+    \item \textbf{Versions} : SAP NetWeaver 7.x, S/4HANA, Fiori
+    Launchpad
+    \item \textbf{Types de contenu} : procédures pas-à-pas, références
+    API, notes de configuration, paramètres de transactions
+\end{itemize}
+\end{sourcebox}
+
+\subsubsection{Architecture de scraping}
+
+La figure~\ref{fig:scraping_architecture} présente l'architecture
+complète du pipeline de web scraping développé pour extraire la
+documentation du SAP Help Portal.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1.2cm and 2cm,
+    box/.style={
+        rectangle, rounded corners=4pt,
+        minimum width=3cm, minimum height=0.9cm,
+        text centered, align=center, font=\small\bfseries,
+        drop shadow
+    },
+    sapblue/.style={box, fill=SAPLightBlue, draw=SAPBlue,
+                    text=SAPBlue},
+    sapgreen/.style={box, fill=SAPLightGreen, draw=SAPGreen,
+                     text=SAPGreen!60!black},
+    saporange/.style={box, fill=SAPLightOrange, draw=SAPOrange,
+                      text=SAPOrange!80!black},
+    sapgray/.style={box, fill=SAPLightGray, draw=SAPGray,
+                    text=SAPGray},
+    arrow/.style={-Stealth, thick, color=SAPBlue},
+    dasharrow/.style={-Stealth, thick, dashed, color=SAPGray},
+    label/.style={font=\tiny\itshape, text=SAPGray}
+]
+
+% ── Colonne 1 : Sources ──
+\node[sapblue] (sitemap)  {Sitemap XML};
+\node[sapblue, below=0.7cm of sitemap] (helpportal) {SAP Help Portal};
+\node[sapblue, below=0.7cm of helpportal] (robots) {robots.txt};
+
+% ── Colonne 2 : Scraper ──
+\node[saporange, right=2.5cm of helpportal] (scraper)
+    {\begin{tabular}{c}Scraper\\Engine\end{tabular}};
+
+% ── Colonne 3 : Traitement ──
+\node[sapgreen, right=2.2cm of scraper, yshift=1.5cm] (parser)
+    {HTML Parser};
+\node[sapgreen, right=2.2cm of scraper] (breadcrumb)
+    {Breadcrumb\\Tracker};
+\node[sapgreen, right=2.2cm of scraper, yshift=-1.5cm] (meta)
+    {Metadata\\Extractor};
+
+% ── Colonne 4 : Output ──
+\node[sapgray, right=2.2cm of breadcrumb] (json)
+    {JSON Output};
+
+% ── Boîte Rate Limiting ──
+\node[sapgray, below=0.5cm of scraper, minimum width=2.8cm,
+      font=\tiny, text=SAPGray] (rate)
+    {\textit{Rate limiting: 1 req/s}};
+
+% Flèches sources → scraper
+\draw[arrow] (sitemap) -- (scraper);
+\draw[arrow] (helpportal) -- (scraper);
+\draw[dasharrow] (robots) -- node[label, left]{vérifié} (scraper);
+
+% Flèches scraper → traitement
+\draw[arrow] (scraper) -- (parser);
+\draw[arrow] (scraper) -- (breadcrumb);
+\draw[arrow] (scraper) -- (meta);
+
+% Flèches traitement → output
+\draw[arrow] (parser) -- (json);
+\draw[arrow] (breadcrumb) -- (json);
+\draw[arrow] (meta) -- (json);
+
+% Annotations
+\node[label, above=0.1cm of sitemap] {Point d'entrée};
+\node[label, above=0.1cm of json] {sap\_help.json};
+
+% Légende
+\node[below=2.2cm of scraper, xshift=-1cm] (leg) {};
+\node[sapblue, right=0.3cm of leg, minimum width=1cm,
+      minimum height=0.5cm, font=\tiny] (l1) {Sources};
+\node[saporange, right=0.5cm of l1, minimum width=1cm,
+      minimum height=0.5cm, font=\tiny] (l2) {Moteur};
+\node[sapgreen, right=0.5cm of l2, minimum width=1cm,
+      minimum height=0.5cm, font=\tiny] (l3) {Traitement};
+\node[sapgray, right=0.5cm of l3, minimum width=1cm,
+      minimum height=0.5cm, font=\tiny] (l4) {Sortie};
+
+\end{tikzpicture}
+\caption{Architecture et flux du web scraping SAP Help Portal}
+\label{fig:scraping_architecture}
+\end{figure}
+
+\subsubsection{Gestion des structures imbriquées}
+
+Le SAP Help Portal présente des structures documentaires imbriquées
+à plusieurs niveaux. Notre framework de scraping adresse ce défi par
+quatre mécanismes complémentaires :
+
+\begin{enumerate}
+    \item \textbf{Breadcrumb Tracking} — maintien du chemin de
+    navigation complet pour préserver la localisation de chaque
+    document dans la hiérarchie globale. Exemple :
+    \texttt{["SAP Fiori Launchpad", "Configuring Roles",
+    "Tile Catalogs"]}
+
+    \item \textbf{Relations Parent-Enfant} — capture explicite des
+    liens \texttt{parent\_id} / \texttt{doc\_id} entre documents
+    principaux et sous-documents, permettant la reconstruction de
+    la hiérarchie complète
+
+    \item \textbf{Cross-Reference Mapping} — identification et
+    préservation des liens entre documents connexes dans différentes
+    sections (liens hypertexte inter-modules)
+
+    \item \textbf{Context Inheritance} — les documents imbriqués
+    héritent du contexte pertinent de leurs parents (version SAP,
+    module, composants mentionnés)
+\end{enumerate}
+
+% ============================================================
+\subsection{Livres Techniques SAP (PDFs)}
+% ============================================================
+
+\subsubsection{Description du corpus}
+
+Le corpus de livres techniques SAP comprend 298 ouvrages de formation
+officielle couvrant l'ensemble des modules SAP. Ces documents, au
+format PDF, présentent une structure pédagogique standardisée
+(unités, leçons, exercices, évaluations) et constituent une source
+de connaissance procédurale dense.
+
+\begin{sourcebox}{Caractéristiques du corpus PDF}
+\begin{itemize}
+    \item \textbf{Volume} : 298 ouvrages, environ 45,000 pages
+    \item \textbf{Format} : PDF avec structure hiérarchique
+    (chapitres, sections, sous-sections)
+    \item \textbf{Contenu} : procédures de configuration, schémas
+    d'architecture, tableaux de paramètres, exercices pratiques
+    \item \textbf{Modules couverts} : BASIS, ABAP, Fiori, S/4HANA,
+    MM, SD, FI, CO, HR, PM
+    \item \textbf{Défis techniques} : encodage CID dans certains
+    PDFs, espaces manquants dans les polices personnalisées,
+    tables des matières indexées comme contenu
+\end{itemize}
+\end{sourcebox}
+
+\subsubsection{Pipeline d'ingestion des données}
+
+La figure~\ref{fig:ingestion_pipeline} présente le pipeline complet
+d'ingestion des données depuis les sources brutes jusqu'à
+l'indexation dans pgvector.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm and 1.5cm,
+    stage/.style={
+        rectangle, rounded corners=5pt,
+        minimum width=2.8cm, minimum height=1cm,
+        text centered, align=center, font=\small\bfseries,
+        drop shadow
+    },
+    s1/.style={stage, fill=SAPLightBlue, draw=SAPBlue,
+               text=SAPBlue},
+    s2/.style={stage, fill=SAPLightOrange, draw=SAPOrange,
+               text=SAPOrange!80!black},
+    s3/.style={stage, fill=SAPLightGreen, draw=SAPGreen,
+               text=SAPGreen!60!black},
+    s4/.style={stage, fill=SAPLightGray, draw=SAPGray,
+               text=SAPGray},
+    arrow/.style={-Stealth, very thick, color=SAPBlue},
+    note/.style={font=\tiny, text=SAPGray, text width=2.5cm,
+                 text centered},
+    count/.style={font=\tiny\bfseries, text=SAPBlue}
+]
+
+% ── Ligne 1 : Sources ──
+\node[s1] (src1) {SAP Help\\Portal};
+\node[s1, right=1cm of src1] (src2) {PDFs\\(298 livres)};
+\node[s1, right=1cm of src2] (src3) {Transactions\\Real time data};
+
+% ── Étape 1 : Extraction ──
+\node[s2, below=1.2cm of src2] (extract)
+    {\begin{tabular}{c}Extraction\\Brute\end{tabular}};
+
+% ── Étape 2 : Normalisation ──
+\node[s3, below=1cm of extract] (normalize)
+    {\begin{tabular}{c}Normalisation\end{tabular}};
+
+% ── Étape 3 : Déduplication ──
+\node[s3, below=1cm of normalize] (dedup)
+    {\begin{tabular}{c}Déduplication\end{tabular}};
+
+% ── Étape 4 : Filtrage qualité ──
+\node[s3, below=1cm of dedup] (filter)
+    {\begin{tabular}{c}Filtrage Qualité\end{tabular}};
+
+% ── Étape 5 : Chunking ──
+\node[s2, below=1cm of filter] (chunk)
+    {\begin{tabular}{c}Chunking\\Sliding Window\end{tabular}};
+
+% ── Étape 6 : Embedding ──
+\node[s4, below=1cm of chunk] (embed)
+    {\begin{tabular}{c}Embedding\\bge-m3 (1024d)\end{tabular}};
+
+% ── Étape 7 : Indexation ──
+\node[s4, below=1cm of embed] (index)
+    {\begin{tabular}{c}Indexation\\pgvector HNSW\end{tabular}};
+
+% Flèches sources → extraction
+\draw[arrow] (src1.south) -- ++(0,-0.4) -| (extract.north);
+\draw[arrow] (src2) -- (extract);
+\draw[arrow] (src3.south) -- ++(0,-0.4) -| (extract.north);
+
+% Flèches pipeline vertical
+\draw[arrow] (extract) -- (normalize);
+\draw[arrow] (normalize) -- (dedup);
+\draw[arrow] (dedup) -- (filter);
+\draw[arrow] (filter) -- (chunk);
+\draw[arrow] (chunk) -- (embed);
+\draw[arrow] (embed) -- (index);
+
+% Annotations chiffres à droite
+\node[count, right=0.3cm of extract]   {155,721 chunks};
+\node[count, right=0.3cm of normalize] {148,143 chunks};
+\node[count, right=0.3cm of dedup]     {142,798 chunks};
+\node[count, right=0.3cm of filter]    {142,525 chunks};
+\node[count, right=0.3cm of chunk]     {105,331 chunks};
+\node[count, right=0.3cm of embed]     {105,331 × 1024};
+\node[count, right=0.3cm of index]     {HNSW cosine};
+
+% Annotations à gauche
+\node[note, left=0.3cm of normalize]   {CID fix\\T-codes\\Casing};
+\node[note, left=0.3cm of dedup]       {7,578\\supprimés};
+\node[note, left=0.3cm of filter]      {5,618 QCM\\273 TOC};
+\node[note, left=0.3cm of chunk]       {avg 175 tok\\max 600 tok};
+
+\end{tikzpicture}
+\caption{Pipeline complet d'ingestion des données SAP}
+\label{fig:ingestion_pipeline}
+\end{figure}
+
+\subsubsection{Défis techniques et solutions}
+
+Trois problèmes majeurs ont été identifiés et résolus durant la
+phase d'acquisition :
+
+\textbf{Encodage CID dans les PDFs.} Certains livres SAP utilisent
+des polices de type CIDFont sans table de correspondance Unicode.
+L'extracteur produit alors des séquences \texttt{(cid:127)}
+illisibles. La solution appliquée combine une détection par ratio
+de contamination (seuil 2\%) et une conversion des codes CID
+fréquents vers leurs équivalents Unicode (\texttt{(cid:127)} →
+\texttt{•}).
+
+\textbf{Doublons inter-sources.} Le portail SAP Help et les livres
+techniques partagent parfois les mêmes procédures de configuration.
+7,578 chunks dupliqués ont été identifiés par fingerprint MD5 sur
+les 300 premiers caractères normalisés et supprimés, en conservant
+le chunk avec les métadonnées les plus riches.
+
+\textbf{Pages QCM de formation.} Les livres techniques SAP incluent
+des pages d'évaluation (quiz XTrue/XFalse) sans valeur documentaire
+pour le RAG. 5,618 chunks de ce type ont été filtrés par détection
+de patterns (\texttt{XTrue}, \texttt{XFalse},
+\texttt{determine whether}).
+
+% ============================================================
+\subsection{Logs de Transactions SAP}
+% ============================================================
+
+\subsubsection{Transactions surveillées}
+
+Le système surveille en temps réel trois transactions SAP BASIS
+critiques pour la santé de l'environnement :
+
+\begin{sourcebox}{Transactions SAP Monitorées}
+\begin{itemize}
+    \item \textbf{SM37} — Moniteur de jobs batch : suivi des
+    travaux planifiés, détection des jobs en erreur ou bloqués
+    \item \textbf{ST22} — Analyseur de dumps ABAP : capture et
+    analyse des exceptions runtime du système ABAP
+    \item \textbf{SP01} — Gestionnaire de spool : surveillance
+    des impressions et des sorties système
+\end{itemize}
+\end{sourcebox}
+
+\subsubsection{Structure des données SM37}
+
+Le listing~\ref{lst:sm37} présente la structure de données extraite
+depuis la transaction SM37 pour l'alimentation du pipeline RAG en
+temps réel.
+
+\begin{figure}[H]
+\begin{lstlisting}[language=Python, caption={Structure de données de la transaction SM37}, label={lst:sm37}]
+# SM37 Transaction Data Structure
+# Extracted via RFC/BAPI call to SAP system
+
+sm37_record = {
+    # Identifiants
+    "job_name":      "RDDIMPDP",          # Nom du job batch
+    "job_id":        "14521234",           # ID unique SAP
+    "job_class":     "A",                  # Priorite (A/B/C)
+
+    # Planification
+    "start_date":    "2024-01-15",         # Date de depart
+    "start_time":    "02:00:00",           # Heure de depart
+    "end_date":      "2024-01-15",         # Date de fin
+    "end_time":      "02:04:32",           # Heure de fin
+    "duration_sec":  272,                  # Duree en secondes
+
+    # Statut
+    "status":        "ABORTED",            # FINISHED/ABORTED/ACTIVE
+    "return_code":   4,                    # 0=OK, 4=Warning, 8=Error
+
+    # Contexte systeme
+    "host":          "SAPAPP01",           # Serveur d'application
+    "client":        "100",                # Mandant SAP
+    "user":          "BATCHUSER",          # Utilisateur lanceur
+    "program":       "RDDIMPDP",           # Programme ABAP associe
+
+    # Correlation avec ST22
+    "dump_reference": "ST22-20240115-001", # Lien dump si ABORTED
+    "error_message":  "RAISE_EXCEPTION",   # Message d'erreur ABAP
+
+    # Metadonnees RAG
+    "source_type":   "transaction_log",
+    "transaction":   "SM37",
+    "extracted_at":  "2024-01-15T02:05:00Z",
+    "sap_version":   "S/4HANA 2023"
+}
+\end{lstlisting}
+\end{figure}
+
+\subsection{Pipeline d'extraction temps réel}
+
+L'extraction des données de transactions SAP repose sur deux
+mécanismes complémentaires :
+
+\begin{enumerate}
+    \item \textbf{Appels RFC/BAPI} — connexion directe au système
+    SAP via l'interface Remote Function Call. Les BAPIs standards
+    \texttt{BAPI\_XBP\_JOB\_SELECT} (SM37) et
+    \texttt{BAPI\_ABAP\_DOCU\_GET} (ST22) sont utilisés pour
+    extraire les données sans modifier l'état du système
+
+    \item \textbf{Polling périodique} — interrogation toutes les
+    5 minutes pour les jobs actifs, toutes les 15 minutes pour
+    l'historique des dernières 24 heures
+\end{enumerate}
+
+\begin{remarquebox}
+Les logs de transactions constituent la source de données
+\textbf{dynamique} du système, par opposition aux sources
+documentaires statiques (Help Portal et PDFs). Ils alimentent
+le contexte situationnel du RAG : lorsqu'un consultant interroge
+le système sur une erreur SM37, le contexte du job en erreur
+est automatiquement injecté dans le prompt de génération.
+\end{remarquebox}
+
+% ============================================================
+\section{Analyse Statistique du Corpus Final}
+% ============================================================
+
+Le tableau~\ref{tab:corpus_stats} présente une synthèse statistique
+complète du corpus après l'ensemble des étapes de nettoyage et de
+filtrage.
+
+\begin{table}[H]
+\centering
+\caption{Statistiques du corpus après normalisation et filtrage}
+\label{tab:corpus_stats}
+\begin{tabular}{lrrl}
+\toprule
+\textbf{Métrique} & \textbf{Valeur} & \textbf{Pourcentage} &
+\textbf{Remarque} \\
+\midrule
+\multicolumn{4}{l}{\textit{Volume brut}} \\
+Pages SAP Help Portal scrappées   & 50,000  & —     & Sitemap complet \\
+Livres PDF traités                & 298     & —     & Corpus complet \\
+Figures extraites                 & 47,219  & —     & Avant filtrage \\
+\midrule
+\multicolumn{4}{l}{\textit{Après extraction}} \\
+Chunks bruts totaux               & 155,721 & 100\% & Avant nettoyage \\
+\quad dont SAP Help               & 21,084  & 13.5\%& \\
+\quad dont livres techniques      & 87,418  & 56.1\%& \\
+\quad dont figures                & 47,219  & 30.3\%& \\
+\midrule
+\multicolumn{4}{l}{\textit{Après corrections}} \\
+Doublons supprimés                & 7,578   & 4.9\% & Fingerprint MD5 \\
+QCM/Learning Assessment supprimés & 5,618  & 3.6\% & Bruit sémantique \\
+Chunks CID corrompus filtrés      & 212     & 0.1\% & WSMFB (97\% CID) \\
+Chunks dupliqués internes corrigés & 3,808  & 2.4\% & Truncation \\
+\midrule
+\multicolumn{4}{l}{\textit{Corpus final}} \\
+\textbf{Total chunks normalisés}  & \textbf{142,798} & 91.7\% & \\
+\quad dont SAP Help               & 17,785  & 12.5\%& 0 CID, 0 TOC \\
+\quad dont livres techniques      & 83,990  & 58.8\%& CID nettoyés \\
+\quad dont figures                & 46,368  & 32.5\%& Caps. extraites \\
+\midrule
+\multicolumn{4}{l}{\textit{Après chunking (indexés)}} \\
+\textbf{Chunks indexés total}     & \textbf{105,331} & 73.8\% & \\
+\quad Figures avec légende        & 39,014  & 37.0\%& Indexables \\
+\quad SAP Help                    & 30,433  & 28.9\%& \\
+\quad Livres techniques           & 35,884  & 34.1\%& \\
+T-codes uniques extraits          & 2,794   & —     & Dont namespace \\
+Longueur moyenne des chunks       & 175 tokens & —  & Optimal bge-m3 \\
+Longueur maximale des chunks      & 600 tokens & —  & $\ll$ 8192 limite \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================
+\section{Bilan de la Phase d'Acquisition}
+% ============================================================
+
+La phase d'acquisition et de compréhension des données a permis de
+constituer un corpus de \textbf{105,331 chunks indexables} à partir
+de trois sources hétérogènes, après application de huit corrections
+qualité motivées par des diagnostics empiriques sur les données réelles.
+
+Les principaux enseignements de cette phase sont :
+
+\begin{itemize}
+    \item La \textbf{diversité des sources} (documentation officielle,
+    livres de formation, logs temps réel) est un avantage différenciateur
+    majeur : le système peut répondre à la fois à des questions
+    procédurales, conceptuelles et situationnelles
+
+    \item La \textbf{rigueur du nettoyage} (8.3\% de chunks supprimés
+    ou corrigés) garantit que le retrieval ne sera pas pollué par du
+    bruit sémantique (QCM, doublons, contenu illisible)
+
+    \item L'\textbf{extraction des 2,794 T-codes} avec support des
+    namespaces (\texttt{/UI2/NWBC\_CFG\_CUST}) constitue un avantage
+    clé pour la recherche hybride BM25 : les identifiants SAP exacts
+    sont préservés et indexés
+
+    \item La \textbf{structure hiérarchique préservée} (breadcrumbs,
+    parent\_id, position) permettra d'enrichir le contexte de retrieval
+    au Sprint 4 par injection du contexte parent
+\end{itemize}
+

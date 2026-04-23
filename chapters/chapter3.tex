@@ -1,0 +1,116 @@
+% ============================================================
+%  Chapitre 3 : Compréhension métier
+% ============================================================
+
+\chapter{Compréhension métier}
+\label{chap:business_understanding}
+
+% ============================================================
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+Ce chapitre présente le contexte métier et les objectifs du projet de détection
+d'anomalies dans le cadre de la méthodologie CRISP-DM. Il met en évidence l'importance
+d'aligner les efforts techniques sur les objectifs métier, afin que la solution développée
+réponde aux défis réels auxquels sont confrontées les équipes SAP.
+
+% ============================================================
+\section{État de l'art}
+\label{sec:etat_art}
+
+\subsection{Qu'est-ce qu'un ERP ?}
+
+Un système ERP (\textit{Enterprise Resource Planning}) est un logiciel qui intègre et
+gère les principaux processus métier d'une organisation : finances, ressources humaines,
+fabrication, chaîne d'approvisionnement, ventes et achats. Il fournit une source unique
+de vérité, élimine la duplication des données et améliore l'efficacité opérationnelle.
+Les solutions ERP permettent aux entreprises d'obtenir une visibilité en temps réel sur
+leurs opérations, d'automatiser les processus et de prendre des décisions basées sur
+les données.
+
+\textbf{SAP} (\textit{Systems, Applications and Products in Data Processing}) est l'un
+des principaux fournisseurs de logiciels ERP. Sa suite logicielle couvre de nombreux
+domaines fonctionnels. Parmi ses modules les plus utilisés :
+
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{SAP EWM (\textit{Extended Warehouse Management}) :} Module spécialisé
+        dans l'optimisation des entrepôts et la gestion des stocks. Il aide les entreprises
+        à gérer efficacement leurs opérations d'entreposage et à garantir la disponibilité
+        des produits au bon moment.
+  \item \textbf{SAP ECC (\textit{Enterprise Central Component}) :} Module central de
+        l'ERP SAP. Il intègre les finances, les ventes, les achats, la fabrication et
+        les ressources humaines au sein d'une plateforme unifiée.
+  \item \textbf{SAP Solution Manager (SOLMAN) :} Outil central de gestion et de
+        surveillance fourni par SAP. Il couvre la gestion du cycle de vie des applications,
+        la gestion de projets, la gestion des services IT et le suivi des processus métier.
+\end{itemize}
+
+\subsection{Le consultant SAP BASIS}
+
+Le consultant SAP BASIS est responsable de l'infrastructure technique de l'environnement
+SAP : installations, mises à jour et application des correctifs. Il assure la résolution
+des problèmes de connectivité, les ajustements de composants et l'assistance aux systèmes
+externes et aux bases de données. Ses principales responsabilités comprennent :
+
+\begin{enumerate}[leftmargin=*, label=\arabic*.]
+  \item Administration des systèmes
+  \item Surveillance et optimisation des performances
+  \item Administration de la sécurité
+  \item Administration des bases de données
+  \item Résolution des incidents techniques
+  \item Sauvegarde et récupération des données
+  \item Gestion des intégrations et des interfaces
+  \item Mises à jour et migrations des systèmes
+  \item Documentation et formation
+\end{enumerate}
+
+\subsection{Les codes de transaction SAP (T-codes)}
+
+Dans SAP, les codes de transaction (T-codes) sont des commandes alphanumériques courtes
+permettant d'accéder rapidement à des fonctions spécifiques, des rapports ou des
+diagnostics système. Ils servent de points d'entrée dans les modules fonctionnels de SAP,
+permettant aux utilisateurs de contourner les menus profonds et d'exécuter directement
+des tâches telles que la surveillance des jobs, la gestion des files d'attente ou
+l'analyse des performances.
+
+Chaque T-code correspond à une fonction ou un programme backend — généralement implémenté
+en ABAP — qui effectue un ensemble défini d'opérations. Lors de l'exécution d'un T-code,
+SAP vérifie les autorisations de l'utilisateur, exécute la logique associée et présente
+une interface interactive.
+
+Dans le cadre de ce projet, un ensemble de T-codes à haute criticité a été sélectionné
+pour assurer une couverture complète du comportement des systèmes SAP :
+
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \texttt{ST22} – Analyse des erreurs d'exécution ABAP (\textit{short dumps}).
+  \item \texttt{DB02} – Surveillance des statistiques de base de données (croissance,
+        espace table, index manquants).
+  \item \texttt{SM37} – Surveillance des jobs en arrière-plan.
+  \item \texttt{SP01} – Vérification des requêtes d'impression et de leurs statuts.
+  \item \texttt{SM66} – Vue globale des processus de travail actifs.
+  \item \texttt{SM58} – Analyse des erreurs RFC transactionnelles (traitement asynchrone).
+  \item \texttt{SMQ1}, \texttt{SMQ2} – Surveillance des files d'attente entrantes et
+        sortantes (qRFC/tRFC).
+  \item \texttt{SM12}, \texttt{SM13} – Révision des entrées verrouillées et des
+        enregistrements de mise à jour.
+  \item \texttt{ST03N} – Analyse des statistiques de charge de travail et de performance.
+  \item \texttt{SOST} – Surveillance des messages SAPconnect (e-mails, fax, etc.).
+  \item \texttt{ST13} – Outils BASIS pour les diagnostics approfondis et les journaux.
+\end{itemize}
+
+Ces T-codes ont été sélectionnés en raison de leur criticité pour les opérations en temps
+réel, de leur pertinence pour les équipes BASIS et de leur fréquence d'utilisation lors
+de la résolution des incidents. En surveillant en continu ces transactions et en
+interprétant leurs sorties par le biais d'un raisonnement assisté par IA, le système
+permet une détection précoce des anomalies et soutient une analyse plus rapide des causes
+profondes.
+
+% ============================================================
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+Ce chapitre souligne l'importance stratégique du développement d'un système de détection
+d'anomalies adapté aux transactions SAP dans le cadre de la méthodologie CRISP-DM. En
+alignant les capacités techniques sur les objectifs métier, ce projet vise à améliorer
+l'efficacité opérationnelle des équipes BASIS, à optimiser les processus de prise de
+décision et à réduire le temps moyen de résolution des incidents.

@@ -1,0 +1,869 @@
+% ============================================================
+%  Chapitre 1 : Cadre général du projet
+%  Rapport PFE – Rhaiem Chayma
+%  Compilé avec pdflatex (ou xelatex / lualatex)
+% ============================================================
+
+\documentclass[12pt,a4paper]{report}
+
+% ---- Encodage et langue ----
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+% ---- Mise en page ----
+\usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+% ---- Polices et typographie ----
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ---- Graphiques et couleurs ----
+\usepackage{graphicx}
+\usepackage[table,xcdraw]{xcolor}
+\definecolor{primaryblue}{RGB}{31, 73, 125}
+\definecolor{lightgray}{RGB}{242, 242, 242}
+
+% ---- Tableaux ----
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{array}
+
+% ---- Listes ----
+\usepackage{enumitem}
+
+% ---- En-têtes et pieds de page ----
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Chapitre 1 Cadre général du projet}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ---- Hyperliens ----
+\usepackage[hidelinks]{hyperref}
+
+% ---- Titre de chapitre personnalisé ----
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{primaryblue}}
+  {\chaptertitlename\ \thechapter}{20pt}{\Huge}
+
+% ============================================================
+\begin{document}
+
+% ---- Page de titre du chapitre (optionnelle, à supprimer si intégré dans un rapport complet) ----
+\setcounter{chapter}{0}   % mettre à 0 pour que le chapitre soit numéroté 1
+
+% ============================================================
+\chapter{Cadre général du projet}
+\label{chap:cadre_general}
+
+% ============================================================
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+Ce chapitre a pour objectif de présenter le cadre général dans lequel s'inscrit ce projet
+de fin d'études. Nous commençons par une présentation de l'organisme d'accueil, puis
+nous effectuons une étude de l'existant afin d'identifier les lacunes des solutions actuelles
+de surveillance des systèmes SAP. Nous détaillons ensuite la problématique retenue, avant
+de présenter la solution proposée et la méthodologie de développement adoptée.
+
+% ============================================================
+\section{Présentation de l'organisme d'accueil}
+\label{sec:organisme}
+
+\subsection{AVAXIA GROUP}
+
+AVAXIA GROUP est une société de conseil en technologies de l'information à dimension
+internationale, fondée en 2006. Elle dispose d'une présence stratégique dans plusieurs
+régions, avec son siège social à Dubaï et des centres opérationnels en Tunisie, au Japon
+et au Canada. L'organisation est spécialisée dans les solutions technologiques d'entreprise,
+avec un accent particulier sur l'implémentation des systèmes ERP (\textit{Enterprise Resource
+Planning}), l'intégration de systèmes et les services gérés pour les applications métiers
+critiques. Son expertise technique s'étend à l'écosystème SAP ainsi qu'à des plateformes
+complémentaires telles que Salesforce.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.35\textwidth]{avaxia_logo.png}
+ 
+  \caption{Logo Avaxia Group}
+  \label{fig:avaxia_logo.png}
+\end{figure}
+
+\subsection{Philosophie et approche}
+
+Avaxia Group adopte une méthodologie résolument centrée sur le client dans son modèle
+de prestation de services, en privilégiant des partenariats collaboratifs plutôt que des
+relations purement transactionnelles.
+
+\subsection{Portefeuille de services}
+
+Avaxia met à disposition  un portefeuille complet de services numériques et de conseil, avec une
+forte orientation vers les solutions d'entreprise, le support d'infrastructure et les
+technologies émergentes. Le groupe est structuré autour de deux départements spécialisés,
+chacun offrant des domaines de services distincts :
+
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{Consultance fonctionnelle :} Conception de solutions métier pour le
+        déploiement de nouveaux modules SAP fonctionnels, analyse et optimisation des
+        processus de bout en bout, ainsi que la gestion du déploiement fonctionnel et de
+        la planification des tests.
+  \item \textbf{Big Data :} Services incluant la gestion, la transformation, l'intégration,
+        le stockage et l'analyse des données. Les compétences couvrent le développement de
+        pipelines de données, les processus ETL et la gouvernance des données.
+  \item \textbf{VR / AR :} Développement d'environnements VR interactifs permettant aux
+        utilisateurs de naviguer, d'interagir avec des objets et de collaborer en temps
+        réel. Les applications comprennent les systèmes de surveillance, les simulations,
+        les programmes de formation et les visites virtuelles.
+\end{itemize}
+
+\subsection{Structure organisationnelle}
+
+L'architecture organisationnelle d'Avaxia Group est conçue pour faciliter une expertise
+spécialisée tout en maintenant une collaboration transversale. La structure du groupe
+s'articule autour de trois niveaux :
+
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{Organisation divisionnelle :} Assure les responsabilités de chaque
+        département en fonction de son rôle, en gérant le développement commercial et les
+        décisions stratégiques.
+  \item \textbf{Organisation opérationnelle :} Se concentre sur les défis techniques et
+        les expertises qui pilotent les projets et services (planification, exécution,
+        livraison et support). Elle permet également de suivre, évaluer et optimiser les
+        opérations de projets.
+  \item \textbf{Structure corporative :} Supporte le front office en représentant les
+        opérations internes (Finance, RH, Formation, Marketing, Qualité de service,
+        Informatique), afin d'assurer la continuité de l'activité dans son ensemble.
+\end{itemize}
+
+Ce projet se déroule au sein de l'équipe Quadient, rattachée au département
+\textit{SAP Infrastructure and BASIS} du bureau tunisien d'Avaxia Group. Les
+responsabilités de cette équipe englobent la surveillance et le support des systèmes SAP
+critiques auprès de plusieurs clients, ce qui en fait un environnement idéal pour
+développer et valider un système avancé de détection d'anomalies basé sur la technologie
+RAG.
+
+% ============================================================
+% ============================================================
+\section{Étude de l'existant}
+\label{sec:existant}
+ 
+Dans le cadre du développement d'un système intelligent de surveillance des systèmes SAP
+au sein d'Avaxia Group, une étude approfondie de l'existant a été menée. Cette étude
+décrit les processus actuellement en place au sein de l'équipe BASIS.
+ 
+\subsection*{Surveillance manuelle des systèmes SAP}
+ 
+La surveillance quotidienne des systèmes SAP repose sur l'intervention des consultants
+BASIS qui interrogent manuellement une série de codes de transaction. \texttt{SM37}
+permet de vérifier l'état des jobs en arrière plan, \texttt{ST22} permet de consulter
+les dumps ABAP survenus, et \texttt{SP01} permet de contrôler les spools d'impression
+en attente. Cette vérification est effectuée chaque matin pour chaque système client
+géré par Avaxia Group.
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm,
+    every node/.style={font=\small},
+    mainbox/.style={draw, rounded corners=4pt, minimum height=0.9cm, text centered, font=\small\bfseries},
+    tcode/.style={draw=#1, fill=#1!10, rounded corners=4pt, minimum width=2.2cm, minimum height=1.2cm, text centered, font=\small\bfseries, text=#1!80!black},
+    resultbox/.style={draw=red!70!black, fill=red!5, rounded corners=4pt, minimum height=0.9cm, text centered, font=\small\bfseries, text=red!70!black},
+    arr/.style={-{Stealth[length=5pt]}, thick, color=gray!70!black},
+]
+ 
+% Consultant
+\node[mainbox, draw=blue!60, fill=blue!8, minimum width=5cm] (consultant) {Consultant BASIS};
+ 
+% Daily check
+\node[mainbox, draw=gray!60, fill=gray!8, minimum width=7cm, below=of consultant] (check) {Vérification manuelle quotidienne};
+\draw[arr] (consultant) -- (check);
+ 
+% Annotation
+\node[font=\scriptsize\itshape, color=gray!70, below=0.15cm of check] (annot) {Interroge chaque T-code séparément};
+ 
+% T-codes row
+\node[tcode=violet, below=1cm of check, xshift=-5cm] (sm37) {\textbf{SM37}\\\scriptsize Jobs batch};
+\node[tcode=violet, right=0.3cm of sm37] (st22) {\textbf{ST22}\\\scriptsize Dumps ABAP};
+\node[tcode=violet, right=0.3cm of st22] (sp01) {\textbf{SP01}\\\scriptsize Spools};
+\node[tcode=violet, right=0.3cm of sp01] (db02) {\textbf{DB02}\\\scriptsize Stats BD};
+\node[tcode=violet, right=0.3cm of db02] (sm66) {\textbf{SM66}\\\scriptsize Processus};
+ 
+% Arrows from check to T-codes
+\foreach \n in {sm37, st22, sp01, db02, sm66} {
+    \draw[arr] (check.south) -- ++(0,-0.3) -| (\n.north);
+}
+ 
+% Convergence
+\coordinate (conv) at ($(sp01.south)+(0,-0.8)$);
+\foreach \n in {sm37, st22, sp01, db02, sm66} {
+    \draw[gray!50, thin] (\n.south) -- (\n.south |- conv);
+}
+\draw[gray!50, thin] (sm37.south |- conv) -- (sm66.south |- conv);
+ 
+% Manual analysis
+\node[mainbox, draw=orange!70!black, fill=orange!8, minimum width=7cm, below=1.5cm of sp01, text=orange!70!black] (analyse) {Analyse manuelle};
+\node[font=\scriptsize\itshape, color=gray!60, below=0.05cm of analyse] {Sans agrégation $\cdot$ Risque d'omission};
+\draw[arr] (conv) -- (analyse.north);
+ 
+% Result
+\node[resultbox, minimum width=5.5cm, below=0.8cm of analyse] (result) {Détection tardive des anomalies};
+\draw[arr] (analyse.south) -- (result.north);
+ 
+\end{tikzpicture}
+\caption{Processus de surveillance manuelle des systèmes SAP}
+\label{fig:surveillance-manuelle}
+\end{figure}
+\subsection*{Surcharge et hétérogénéité des données}
+ 
+Les systèmes SAP génèrent quotidiennement un volume important de données
+transactionnelles. Chaque T-code produit des logs avec une structure propre : par exemple,
+\texttt{SM37} expose les champs \textit{Job\_Name}, \textit{Job\_ID}, \textit{Status},
+\textit{Start\_Date} et \textit{End\_Date}, tandis que \texttt{ST22} expose
+\textit{Error\_Name}, \textit{Server}, \textit{Date}, \textit{Time}, \textit{User} et
+\textit{Client}. Ces structures variables sont traitées séparément par les consultants
+sans mécanisme d'agrégation unifié.
+ 
+
+\subsection*{Gestion de la connaissance SAP}
+ 
+La connaissance SAP au sein de l'équipe est répartie entre plusieurs sources : le portail
+SAP Help, qui organise la documentation de manière hiérarchique sur des milliers de
+pages, des livres techniques au format PDF, des SAP Notes référencées par numéro, et
+l'expérience individuelle des consultants. Chaque consultant accède à ces sources de
+manière indépendante selon ses besoins, sans système centralisé de partage ou de
+capitalisation des connaissances.
+% ============================================================
+\subsection{Critique de l'existant}
+\label{sec:critique}
+
+À la suite de notre description de l'existant, nous allons étudier les difficultés et
+les problèmes du système actuel au niveau de chaque procédure analysée précédemment :
+
+\subsubsection*{Surveillance des transactions SAP}
+
+Le système actuel de surveillance des transactions SAP repose sur une approche
+essentiellement manuelle et réactive. Les consultants BASIS doivent interroger
+individuellement chaque T-code pour obtenir l'état du système, ce qui entraîne des délais
+significatifs dans l'identification des anomalies et augmente le risque d'omission.
+L'absence d'une vue consolidée et en temps réel de l'ensemble des transactions actives
+impose une charge opérationnelle élevée, incompatible avec la criticité des environnements
+SAP de production.
+
+Par ailleurs, les alertes basées sur des seuils fixes génèrent un taux élevé de faux
+positifs : des notifications sont déclenchées pour des variations normales du système,
+saturant les équipes techniques et réduisant leur réactivité face aux véritables incidents.
+À l'inverse, des anomalies subtiles ou progressives — qui ne franchissent pas les seuils
+configurés — passent inaperçues, exposant les systèmes à des défaillances non anticipées.
+Le système actuel ne dispose d'aucun mécanisme d'analyse des tendances ni de détection
+proactive des dérives comportementales.
+
+\subsubsection*{Gestion de la documentation et des connaissances SAP}
+
+La gestion de la documentation SAP présente des lacunes majeures dans le système actuel.
+L'expertise est fragmentée entre de multiples sources hétérogènes — portail SAP Help,
+livres techniques en PDF, SAP Notes, expériences personnelles — sans mécanisme unifié
+d'accès ni d'interrogation. La recherche d'une information pertinente repose sur des
+requêtes par mots-clés dans des moteurs généralistes, qui ne prennent pas en compte le
+contexte sémantique de la requête ni les relations entre les documents.
+
+La gestion des renvois inter-documents est entièrement manuelle : lorsqu'une note SAP
+fait référence à un autre document, le consultant doit retrouver manuellement la source
+citée. Cette fragmentation des connaissances allonge considérablement le temps de
+résolution des incidents et expose l'entreprise à une dépendance critique vis-à-vis des
+experts individuels. Toute absence ou départ d'un consultant expérimenté constitue un
+risque direct pour la continuité opérationnelle.
+\subsection{Solutions existantes et analyse concurrentielle}
+\label{sec:solutions_existantes}
+
+La majorité des organisations s'appuient actuellement sur plusieurs types de solutions
+pour surveiller leurs environnements SAP : des outils de surveillance natifs SAP,
+des plateformes de surveillance tierces adaptées à SAP, des procédures manuelles
+effectuées par les consultants BASIS, et des systèmes d'alerte basés sur des seuils
+prédéfinis.
+
+Le tableau~\ref{tab:benchmark} présente un benchmarking comparatif des principales
+solutions existantes sur le marché.
+
+\begin{longtable}{>{\bfseries}p{2.6cm} p{2cm} p{1.8cm} p{3.5cm} p{3.5cm}}
+  \caption{Benchmarking des outils de surveillance pour les environnements SAP}
+  \label{tab:benchmark} \\
+  \toprule
+  \textbf{Outil} & \textbf{Type} & \textbf{Tarif} & \textbf{Points forts} & \textbf{Limites} \\
+  \midrule
+  \endfirsthead
+  \multicolumn{5}{c}{\textit{(Suite du Tableau~\ref{tab:benchmark})}} \\
+  \toprule
+  \textbf{Outil} & \textbf{Type} & \textbf{Tarif} & \textbf{Points forts} & \textbf{Limites} \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+
+  SAP Solution Manager (SolMan)
+    & On-premises & Inclus SAP
+    & Support SAP natif, surveillance intégrée des T-codes
+    & Courbe d'apprentissage élevée, absence de fonctionnalités IA ou sémantiques \\
+  \midrule
+
+  Splunk
+    & Cloud / On-prem & Payant
+    & Analytique avancée des logs, dashboards flexibles
+    & Intégration SAP complexe, pas de raisonnement sémantique \\
+  \midrule
+
+  Elastic Stack (ELK)
+    & Open source & Gratuit / Payant
+    & Logs temps réel, dashboards Kibana, ingestion scalable
+    & Intégration SAP personnalisée requise, pas de logique métier \\
+  \midrule
+
+  Microsoft Azure Monitor
+    & Cloud & Payant
+    & Surveillance cloud riche, détection d'anomalies intégrée
+    & Nécessite des agents et adaptateurs SAP spécifiques \\
+  \midrule
+
+  SAP Leonardo ML
+    & SAP Cloud Suite & Payant
+    & Services ML natifs SAP, intégration ERP temps réel
+    & Flexibilité limitée, cloud uniquement, coût élevé \\
+  \midrule
+
+  Zabbix
+    & Open source & Gratuit
+    & Léger, hautement personnalisable, support SNMP
+    & Pas de support SAP natif, pas de corrélation sémantique \\
+  \midrule
+
+  Datadog
+    & Cloud & Payant
+    & Interface moderne, intégration cloud robuste
+    & Coûteux à grande échelle, observabilité T-codes limitée \\
+  \midrule
+
+  AppDynamics
+    & Cloud & Payant
+    & APM avec traçage transactionnel, soutenu par Cisco
+    & Configuration complexe, effort d'intégration SAP important \\
+  \midrule
+
+  Instana
+    & Cloud & Payant
+    & Observabilité temps réel, analyse automatique des causes
+    & Flexibilité limitée, non orienté transactions SAP \\
+
+\end{longtable}
+
+Ces solutions mettent en évidence les limites communes du paysage actuel : une
+configuration extensive pour les cas d'usage SAP spécifiques, une interprétation manuelle
+significative des alertes, une compréhension contextuelle limitée des processus métier
+SAP, et des taux de faux positifs élevés qui saturent les équipes techniques.
+
+
+
+
+
+
+
+% ============================================================
+\subsection{Solution proposée}
+\label{sec:solution}
+
+Afin de remédier aux limites constatées dans le système actuel, un système de surveillance
+intelligent des environnements SAP est proposé. Cette solution a pour objectif d'automatiser
+la détection des anomalies, de fournir des alertes enrichies en contexte et de centraliser
+l'accès à la documentation SAP.
+
+
+\begin{itemize}[leftmargin=*, label=\textbullet]
+
+  \item \textbf{Collecte et traitement de la documentation :} La solution collecte automatiquement
+la documentation SAP depuis le portail SAP Help ainsi que les livres techniques, en
+préservant leur structure et leur contenu. Les données collectées sont ensuite nettoyées,
+organisées et enrichies avec des informations contextuelles pour faciliter leur
+exploitation ultérieure.
+
+  \item \textbf{Collecte et traitement de la documentation :} La solution collecte automatiquement
+la documentation SAP depuis le portail SAP Help ainsi que les livres techniques, en
+préservant leur structure et leur contenu. Les données collectées sont ensuite nettoyées,
+organisées et enrichies avec des informations contextuelles pour faciliter leur
+exploitation ultérieure.
+
+  \item \textbf{Base de connaissances centralisée :} L'ensemble de la documentation traitée est
+stocké dans une base de connaissances unifiée, permettant aux consultants d'interroger
+directement le système en langage naturel pour retrouver une information pertinente, sans
+avoir à naviguer manuellement entre plusieurs sources.
+
+ 
+
+  \item \textbf{Recherche et génération de réponses :} Lorsqu'un consultant pose une question,
+le système identifie les documents les plus pertinents dans la base de connaissances et
+génère automatiquement une réponse argumentée et sourcée, adaptée au contexte de la
+requête.
+  \item \textbf{Prévention des erreurs :} Des mécanismes de validation sont intégrés pour
+s'assurer que les réponses générées sont bien fondées sur la documentation disponible
+et non sur des informations incorrectes.
+  \item \textbf{Interface et déploiement :} La solution est accessible via une interface web
+intuitive comprenant un chatbot de support, un tableau de bord de surveillance en temps
+réel et un panneau d'administration. Elle est également connectée à Microsoft Teams afin
+de notifier automatiquement les équipes lors de la survenue d'incidents critiques.
+
+
+ 
+
+\end{itemize}
+
+% ============================================================
+\section{Méthodologie de développement}
+\label{sec:methodologie}
+
+
+\subsection{Présentation des méthodologies candidates}
+
+\subsubsection{CRISP-DM}
+
+CRISP-DM (\textit{Cross-Industry Standard Process for Data Mining}) est une méthodologie
+éprouvée par l'industrie pour guider les projets de fouille de données. Son cycle de vie
+se compose de six phases interdépendantes (voir Figure~\ref{fig:crisp_dm}) :
+
+\begin{figure}[htbp]
+  \centering
+   \includegraphics[width=0.65\textwidth]{crisp_dm.png}
+  
+  \caption{Cycle de vie du framework CRISP-DM}
+  \label{fig:crisp_dm}
+\end{figure}
+
+\begin{enumerate}[leftmargin=*, label=\arabic*.]
+  \item \textbf{Compréhension métier (\textit{Business Understanding}) :} Définir les
+        objectifs du projet et traduire les objectifs métier en problèmes de fouille de
+        données.
+  \item \textbf{Compréhension des données (\textit{Data Understanding}) :} Collecter les
+        données initiales, évaluer leur qualité et découvrir des premières perspectives.
+  \item \textbf{Préparation des données (\textit{Data Preparation}) :} Nettoyer,
+        transformer et mettre en forme les données pour les besoins de la modélisation.
+  \item \textbf{Modélisation (\textit{Modeling}) :} Sélectionner et appliquer des
+        techniques de modélisation avec des paramètres optimisés.
+  \item \textbf{Évaluation (\textit{Evaluation}) :} Évaluer les résultats du modèle par
+        rapport aux objectifs métier et aux critères de succès.
+  \item \textbf{Déploiement (\textit{Deployment}) :} Mettre en production les résultats
+        et établir une stratégie de surveillance continue.
+\end{enumerate}
+
+\paragraph{Avantages de CRISP-DM}
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{Orienté métier :} Démarre par la compréhension métier, en parfait
+        alignement avec les besoins d'entreprise tels que l'interprétation des anomalies
+        SAP et l'analyse d'impact.
+  \item \textbf{Workflow itératif :} Encourage les retours continus et le raffinement du
+        modèle, utile pour améliorer la précision et la pertinence des alertes.
+  \item \textbf{Neutre technologiquement :} N'impose pas de contraintes d'outillage, bien
+        adapté à une intégration flexible avec des stacks modernes.
+  \item \textbf{Largement adopté :} Éprouvé par l'industrie et soutenu par une
+        documentation et des outils abondants.
+  \item \textbf{Accent sur l'évaluation :} Inclut des phases dédiées à l'évaluation de
+        la performance technique et de l'adéquation métier, essentielles pour les
+        applications de surveillance SAP.
+\end{itemize}
+
+\paragraph{Limites de CRISP-DM}
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{Absence de MLOps intégré :} Ne traite pas nativement les pratiques de
+        déploiement modernes (CI/CD, versionnage, surveillance).
+\end{itemize}
+
+\subsubsection{KDD – Knowledge Discovery in Databases}
+
+Le processus KDD (\textit{Knowledge Discovery in Databases}), introduit par Fayyad et al.
+en 1996, est l'une des premières méthodologies formelles pour extraire des connaissances
+actionnables de larges volumes de données. Il met l'accent sur le cycle de vie complet,
+de la préparation des données jusqu'à l'interprétation des connaissances.
+
+\begin{figure}[htbp]
+  \centering
+   \includegraphics[width=0.65\textwidth]{kdd.png}
+  
+  \caption{Étapes du processus KDD}
+  \label{fig:kdd}
+\end{figure}
+
+\paragraph{Avantages}
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item Fort accent sur la validité, la nouveauté et l'utilité des connaissances.
+  \item Promeut un pipeline d'analyse de données complet et itératif.
+\end{itemize}
+
+\paragraph{Inconvénients}
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item Guidance limitée sur le déploiement ou l'opérationnalisation.
+  \item Moins d'accent sur les pratiques agiles ou les principes d'ingénierie logicielle.
+\end{itemize}
+
+\subsubsection{TDSP – Team Data Science Process}
+
+Le TDSP (\textit{Team Data Science Process}) est un framework développé par Microsoft
+pour guider les projets de data science. Son cycle de vie comprend cinq étapes itératives,
+similaires à celles de CRISP-DM (voir Figure~\ref{fig:tdsp}).
+
+\begin{figure}[htbp]
+  \centering
+   \includegraphics[width=0.65\textwidth]{tdsp.png}
+  
+  \caption{Cycle de vie de la méthodologie Microsoft TDSP}
+  \label{fig:tdsp}
+\end{figure}
+
+\begin{enumerate}[leftmargin=*, label=\arabic*.]
+  \item \textbf{Compréhension métier :} Définir les objectifs et identifier les sources
+        de données.
+  \item \textbf{Acquisition et compréhension des données :} Ingérer les données et
+        déterminer si elles peuvent répondre à la question posée.
+  \item \textbf{Modélisation :} Ingénierie des fonctionnalités et entraînement des
+        modèles.
+  \item \textbf{Déploiement :} Mise en production dans un environnement opérationnel.
+\end{enumerate}
+
+\paragraph{Avantages}
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{Agile :} Insiste sur les livrables incrémentaux.
+  \item \textbf{Familier :} Backlog produit, user stories, versionnage Git et sprint
+        planning familiers aux équipes habituées aux pratiques logicielles courantes.
+  \item \textbf{Natif data science :} Reconnaît les différences entre data science et
+        ingénierie logicielle.
+  \item \textbf{Flexible :} Peut être implémenté seul ou combiné avec d'autres approches.
+\end{itemize}
+
+\paragraph{Inconvénients}
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{Sprints fixes :} De nombreux data scientists peinent avec les sprints de
+        durée fixe imposés par TDSP.
+  \item \textbf{Quelques incohérences :} La documentation Microsoft n'est pas toujours
+        parfaitement cohérente.
+\end{itemize}
+
+\subsection{Comparaison des méthodologies}
+
+\begin{table}[htbp]
+  \centering
+  \caption{Comparaison des méthodologies CRISP-DM, TDSP et KDD}
+  \label{tab:methodo_comparison}
+  \begin{tabularx}{\textwidth}{>{\bfseries}p{3.2cm} X X X}
+    \toprule
+    \textbf{Aspect} & \textbf{CRISP-DM} & \textbf{TDSP} & \textbf{KDD} \\
+    \midrule
+    Objectif principal & Processus structuré et itératif pour la fouille de données orientée métier & Cycle de vie agile pour projets ML scalables & Extraction de patterns et connaissances depuis des données brutes \\
+    \midrule
+    Intégration métier & Forte : la compréhension métier est le point de départ & Forte : phase d'alignement intégré & Limitée : orientée données et patterns \\
+    \midrule
+    Préparation des données & Extensive et itérative & Forte, souvent automatisée & Phase centrale \\
+    \midrule
+    Support à la modélisation & Sélection et ajustement de modèles inclus & Fort avec suivi de performance & Présent mais moins structuré \\
+    \midrule
+    Support au déploiement & Modéré : inclus mais peu prescriptif & Fort : accent sur la production et DevOps & Minimal \\
+    \midrule
+    Interprétabilité & Soulignée lors de l'évaluation & Modérée : axée sur la reproductibilité & Haute : les patterns doivent être compréhensibles \\
+    \midrule
+    Meilleur cas d'usage & Fouille de données avec contexte métier fort & Flux ML collaboratifs et itératifs & Découverte de connaissances dans des données brutes non étiquetées \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Méthodologie retenue : CRISP-DM}
+
+\textbf{CRISP-DM} a été adoptée comme méthodologie principale de ce projet en raison de
+son alignement métier, de sa neutralité technologique et de son accent sur l'amélioration
+itérative — une exigence clé pour la construction d'un assistant de surveillance SAP
+utilisable et adaptable.
+
+% ============================================================
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+Ce chapitre a mis en évidence l'importance stratégique du développement d'un système
+de détection d'anomalies SAP répondant aux lacunes critiques des approches de
+surveillance actuelles. Grâce à la méthodologie CRISP-DM, le projet vise à transformer
+la surveillance SAP réactive en une détection d'anomalies proactive et contextualisée.
+La solution proposée, basée sur une architecture hybride RAG enrichie par des graphes de
+connaissances, constitue une réponse innovante aux limites des outils existants, tout en
+s'appuyant sur des technologies open source accessibles et performantes.
+
+% ============================================================
+\chapter{Planification et spécification des besoins}
+
+\vspace{1.5cm}
+
+\noindent \textbf{Introduction}
+
+\vspace{0.8cm}
+
+\begin{enumerate}
+\item Visions et objectifs du système futur
+\item Spécification des besoins
+\item Diagramme de cas d'utilisation général
+\item Prototypages des interfaces
+\item Gestion de projet avec la méthode SCRUM
+\item Diagramme de Gantt
+\end{enumerate}
+
+\vspace{0.8cm}
+
+\noindent \textbf{Conclusion}
+
+\clearpage  
+
+\section*{Introduction}
+
+Ce chapitre présente le futur système de l’application en mettant en évidence ses principaux objectifs ainsi que la spécification des besoins. Il distingue les exigences fonctionnelles des exigences non fonctionnelles nécessaires au bon fonctionnement du système. 
+
+Nous présenterons également une vue d’ensemble des interactions entre les utilisateurs et le système, accompagnée de prototypes d’interfaces illustrant les principales fonctionnalités proposées. 
+
+Enfin, nous aborderons l’adoption de la méthodologie CRISP-DM afin d’organiser et de structurer le projet en nous appuyant sur les différentes étapes de ce processus.
+
+
+
+\section{Vision et objectifs du système futur}
+
+Dans le cadre de l'optimisation et de la modernisation de l'exploitation des systèmes SAP, le projet vise à développer un assistant intelligent capable d'analyser et d'exploiter de manière efficace les données issues des différentes transactions et opérations. Les principaux objectifs du système futur sont les suivants :
+
+\begin{itemize} 
+    \item \textbf{Centraliser et organiser les données SAP} provenant des différents modules, afin de disposer d'une source unique et fiable d'informations.
+    \item \textbf{Analyser et interpréter les données} grâce à des techniques d'intelligence artificielle et d'analyse avancée, transformant les informations brutes en indicateurs et rapports exploitables.
+    \item \textbf{Détecter rapidement les anomalies et incidents} en utilisant l'IA pour identifier les comportements inhabituels ou les erreurs récurrentes dans le système.
+    \item \textbf{Intégrer la documentation SAP} pour fournir aux utilisateurs des recommandations, des explications et des solutions adaptées aux problèmes rencontrés.
+    \item \textbf{Offrir une interface interactive} sous forme d'assistant conversationnel permettant aux utilisateurs de poser des questions, d'obtenir des analyses et de recevoir des conseils personnalisés.
+    \item \textbf{Assurer une accessibilité via une application web} intuitive, permettant de visualiser les analyses, exploiter les données collectées et interagir avec l'assistant de manière ergonomique.
+\end{itemize}
+
+Ainsi, ce système contribuera à améliorer la compréhension et la gestion des données SAP, à faciliter l'analyse des anomalies, et à offrir un outil intelligent d'aide à la décision pour les utilisateurs.
+
+
+
+
+\section{Spécification des besoins}
+\label{sec:specification_besoins}
+
+L'analyse des besoins a pour objectif de comprendre les attentes des utilisateurs et à définir le
+contexte métier dans lequel s'inscrit le système à développer. Elle permet de décrire
+les fonctionnalités que le système prendra en charge, ses interactions avec les différents
+intervenants, ainsi que les règles qui encadrent ces interactions.
+
+% ---- 2.1 Identification des acteurs ----
+\subsection{Identification des acteurs}
+
+Pour déterminer les besoins fonctionnels et non fonctionnels, nous débutons par
+l'identification des acteurs impliqués dans le système, en précisant le rôle spécifique
+de chacun. Ainsi, nous identifions trois rôles distincts qui interagissent avec le
+système :
+\subsection{Besoins fonctionnels}
+
+Les besoins fonctionnels définissent les différentes fonctionnalités que le système doit fournir afin de permettre aux utilisateurs d'exploiter et d'analyser les données provenant du système SAP à travers un assistant intelligent basé sur l'intelligence artificielle.
+
+Le système comporte principalement deux types d’acteurs : l’\textbf{Administrateur SAP} et l’\textbf{Utilisateur SAP}. 
+
+\subsubsection*{Administrateur SAP}
+
+L’administrateur assure un rôle de supervision du système. Ses principales fonctionnalités sont les suivantes :
+
+\begin{itemize}
+\item S’authentifier à l’application.
+\item Consulter les journaux d’activité du système SAP.
+\item Accéder aux graphiques et analyses générés par l’assistant intelligent.
+\item Configurer les paramètres du système et les règles d’alertes. .
+\item Consulter l’historique global des conversations effectuées avec le chatbot.
+\end{itemize}
+
+\subsubsection*{Utilisateur SAP}
+
+L’utilisateur SAP constitue l’acteur principal de l’application. Il peut exploiter les fonctionnalités suivantes :
+
+\begin{itemize}
+\item S’authentifier à l’application.
+\item Interagir avec l’assistant intelligent à travers une interface conversationnelle.
+\item Poser des questions en langage naturel concernant les données issues du système SAP.
+\item Consulter les alertes associées aux transactions SAP (T-Code).
+\item Accéder aux journaux des transactions SAP.
+\item Visualiser les graphiques et analyses générés par le système.
+\item Consulter l’historique des interactions avec le chatbot.
+\end{itemize}
+\subsection{Besoins Non Fonctionnels}
+
+Les besoins non fonctionnels définissent les contraintes qualité du 
+système indépendamment des fonctionnalités métier. Pour un système RAG 
+déployé en environnement SAP BASIS de production, ces exigences sont 
+critiques car une réponse incorrecte sur une procédure de configuration 
+peut provoquer des incidents système graves.
+
+\subsubsection*{Performance}
+Le pipeline complet (retrieval + génération) doit retourner une réponse 
+en moins de \textbf{5 secondes} pour 95\% des requêtes. Ce seuil justifie 
+le choix de l'index HNSW (recherche en $O(\log n)$) et le déploiement 
+local du LLM via Ollama pour éliminer toute latence réseau.
+
+\subsubsection*{Fiabilité}
+Le taux d'hallucination doit rester inférieur à \textbf{5\%}, garanti 
+par la validation NLI à chaque réponse générée. Si aucun chunk pertinent 
+n'est trouvé (score similarité $< 0.5$), le système retourne explicitement 
+une absence de réponse plutôt que d'inventer une information.
+
+\subsubsection*{Confidentialité}
+L'intégralité du pipeline tourne en local — LLM via Ollama, base 
+vectorielle via pgvector. Aucune donnée SAP (configurations, credentials, 
+topologie réseau) n'est transmise à des APIs cloud externes. C'est un 
+prérequis non négociable pour les environnements d'entreprise SAP.
+
+\subsubsection*{Scalabilité}
+L'index HNSW supporte l'insertion incrémentale sans reconstruction, 
+ce qui permet d'ajouter de nouvelles SAP Notes ou de nouveaux modules 
+sans réindexer l'intégralité du corpus.
+
+\subsection{Synthèse}
+
+\begin{table}[H]
+\centering
+\caption{Synthèse des besoins non fonctionnels}
+\begin{tabular}{lll}
+\toprule
+\textbf{Catégorie} & \textbf{Seuil cible} & \textbf{Mécanisme} \\
+\midrule
+Temps de réponse        & $\leq$ 5s (p95)   & HNSW + Ollama local \\
+Taux hallucination      & $\leq$ 5\%        & Validation NLI \\
+Recall@5                & $\geq$ 0.75       & BM25 + vecteur hybride \\
+Confidentialité données & 100\% local       & Ollama on-premise \\
+Insertion incrémentale  & Sans rebuild      & Index HNSW \\
+Maintenabilité          & Pipeline rejouable & Git + scripts versionnés \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Diagramme de cas d'utilisation général}
+
+Dans cette section, les exigences fonctionnelles du système sont représentées à l’aide d’un diagramme de cas d’utilisation conforme au langage de modélisation UML. Ce diagramme (voir figure \ref{fig:usecase}) met en évidence les différents acteurs du système ainsi que les interactions possibles entre ces acteurs et les fonctionnalités offertes par l’application. Il permet ainsi de fournir une vision globale du comportement du système et des services qu’il propose aux utilisateurs.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{diagramme vierge.png}
+    \caption{Diagramme de cas d'utilisation général du système}
+    \label{fig:usecase}
+\end{figure}
+% ============================================================
+\chapter{Compréhension métier}
+\label{chap:business_understanding}
+
+% ============================================================
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+Ce chapitre présente le contexte métier et les objectifs du projet de détection
+d'anomalies dans le cadre de la méthodologie CRISP-DM. Il met en évidence l'importance
+d'aligner les efforts techniques sur les objectifs métier, afin que la solution développée
+réponde aux défis réels auxquels sont confrontées les équipes SAP.
+
+% ============================================================
+\section{État de l'art}
+\label{sec:etat_art}
+
+\subsection{Qu'est-ce qu'un ERP ?}
+
+Un système ERP (\textit{Enterprise Resource Planning}) est un logiciel qui intègre et
+gère les principaux processus métier d'une organisation : finances, ressources humaines,
+fabrication, chaîne d'approvisionnement, ventes et achats. Il fournit une source unique
+de vérité, élimine la duplication des données et améliore l'efficacité opérationnelle.
+Les solutions ERP permettent aux entreprises d'obtenir une visibilité en temps réel sur
+leurs opérations, d'automatiser les processus et de prendre des décisions basées sur
+les données.
+
+\textbf{SAP} (\textit{Systems, Applications and Products in Data Processing}) est l'un
+des principaux fournisseurs de logiciels ERP. Sa suite logicielle couvre de nombreux
+domaines fonctionnels. Parmi ses modules les plus utilisés :
+
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{SAP EWM (\textit{Extended Warehouse Management}) :} Module spécialisé
+        dans l'optimisation des entrepôts et la gestion des stocks. Il aide les entreprises
+        à gérer efficacement leurs opérations d'entreposage et à garantir la disponibilité
+        des produits au bon moment.
+  \item \textbf{SAP ECC (\textit{Enterprise Central Component}) :} Module central de
+        l'ERP SAP. Il intègre les finances, les ventes, les achats, la fabrication et
+        les ressources humaines au sein d'une plateforme unifiée.
+  \item \textbf{SAP Solution Manager (SOLMAN) :} Outil central de gestion et de
+        surveillance fourni par SAP. Il couvre la gestion du cycle de vie des applications,
+        la gestion de projets, la gestion des services IT et le suivi des processus métier.
+\end{itemize}
+
+\subsection{Le consultant SAP BASIS}
+
+Le consultant SAP BASIS est responsable de l'infrastructure technique de l'environnement
+SAP : installations, mises à jour et application des correctifs. Il assure la résolution
+des problèmes de connectivité, les ajustements de composants et l'assistance aux systèmes
+externes et aux bases de données. Ses principales responsabilités comprennent :
+
+\begin{enumerate}[leftmargin=*, label=\arabic*.]
+  \item Administration des systèmes
+  \item Surveillance et optimisation des performances
+  \item Administration de la sécurité
+  \item Administration des bases de données
+  \item Résolution des incidents techniques
+  \item Sauvegarde et récupération des données
+  \item Gestion des intégrations et des interfaces
+  \item Mises à jour et migrations des systèmes
+  \item Documentation et formation
+\end{enumerate}
+
+\subsection{Les codes de transaction SAP (T-codes)}
+
+Dans SAP, les codes de transaction (T-codes) sont des commandes alphanumériques courtes
+permettant d'accéder rapidement à des fonctions spécifiques, des rapports ou des
+diagnostics système. Ils servent de points d'entrée dans les modules fonctionnels de SAP,
+permettant aux utilisateurs de contourner les menus profonds et d'exécuter directement
+des tâches telles que la surveillance des jobs, la gestion des files d'attente ou
+l'analyse des performances.
+
+Chaque T-code correspond à une fonction ou un programme backend — généralement implémenté
+en ABAP — qui effectue un ensemble défini d'opérations. Lors de l'exécution d'un T-code,
+SAP vérifie les autorisations de l'utilisateur, exécute la logique associée et présente
+une interface interactive.
+
+Dans le cadre de ce projet, un ensemble de T-codes à haute criticité a été sélectionné
+pour assurer une couverture complète du comportement des systèmes SAP :
+
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \texttt{ST22} – Analyse des erreurs d'exécution ABAP (\textit{short dumps}).
+  \item \texttt{DB02} – Surveillance des statistiques de base de données (croissance,
+        espace table, index manquants).
+  \item \texttt{SM37} – Surveillance des jobs en arrière-plan.
+  \item \texttt{SP01} – Vérification des requêtes d'impression et de leurs statuts.
+  \item \texttt{SM66} – Vue globale des processus de travail actifs.
+  \item \texttt{SM58} – Analyse des erreurs RFC transactionnelles (traitement asynchrone).
+  \item \texttt{SMQ1}, \texttt{SMQ2} – Surveillance des files d'attente entrantes et
+        sortantes (qRFC/tRFC).
+  \item \texttt{SM12}, \texttt{SM13} – Révision des entrées verrouillées et des
+        enregistrements de mise à jour.
+  \item \texttt{ST03N} – Analyse des statistiques de charge de travail et de performance.
+  \item \texttt{SOST} – Surveillance des messages SAPconnect (e-mails, fax, etc.).
+  \item \texttt{ST13} – Outils BASIS pour les diagnostics approfondis et les journaux.
+\end{itemize}
+
+Ces T-codes ont été sélectionnés en raison de leur criticité pour les opérations en temps
+réel, de leur pertinence pour les équipes BASIS et de leur fréquence d'utilisation lors
+de la résolution des incidents. En surveillant en continu ces transactions et en
+interprétant leurs sorties par le biais d'un raisonnement assisté par IA, le système
+permet une détection précoce des anomalies et soutient une analyse plus rapide des causes
+profondes.
+
+% ============================================================
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+Ce chapitre souligne l'importance stratégique du développement d'un système de détection
+d'anomalies adapté aux transactions SAP dans le cadre de la méthodologie CRISP-DM. En
+alignant les capacités techniques sur les objectifs métier, ce projet vise à améliorer
+l'efficacité opérationnelle des équipes BASIS, à optimiser les processus de prise de
+décision et à réduire le temps moyen de résolution des incidents.
+\end{document}

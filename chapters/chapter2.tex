@@ -1,0 +1,161 @@
+% ============================================================
+%  Chapitre 2 : Planification et spécification des besoins
+% ============================================================
+
+\chapter{Planification et spécification des besoins}
+
+\vspace{1.5cm}
+
+\noindent \textbf{Introduction}
+
+\vspace{0.8cm}
+
+\begin{enumerate}
+\item Visions et objectifs du système futur
+\item Spécification des besoins
+\item Diagramme de cas d'utilisation général
+\item Gestion de projet avec la méthode CRISP-DM
+\item Diagramme de Gantt
+\end{enumerate}
+
+\vspace{0.8cm}
+
+\noindent \textbf{Conclusion}
+
+\clearpage
+
+\section*{Introduction}
+
+Ce chapitre présente le futur système de l'application en mettant en évidence ses principaux objectifs ainsi que la spécification des besoins. Il distingue les exigences fonctionnelles des exigences non fonctionnelles nécessaires au bon fonctionnement du système.
+
+Nous présenterons également une vue d'ensemble des interactions entre les utilisateurs et le système, accompagnée de prototypes d'interfaces illustrant les principales fonctionnalités proposées.
+
+Enfin, nous aborderons l'adoption de la méthodologie CRISP-DM afin d'organiser et de structurer le projet en nous appuyant sur les différentes étapes de ce processus.
+
+
+
+\section{Vision et objectifs du système futur}
+
+Dans le cadre de l'optimisation et de la modernisation de l'exploitation des systèmes SAP, le projet vise à développer un assistant intelligent capable d'analyser et d'exploiter de manière efficace les données issues des différentes transactions et opérations. Les principaux objectifs du système futur sont les suivants :
+
+\begin{itemize}
+    \item \textbf{Centraliser et organiser les données SAP} provenant des différents modules, afin de disposer d'une source unique et fiable d'informations.
+    \item \textbf{Analyser et interpréter les données} grâce à des techniques d'intelligence artificielle et d'analyse avancée, transformant les informations brutes en indicateurs et rapports exploitables.
+    \item \textbf{Détecter rapidement les anomalies et incidents} en utilisant l'IA pour identifier les comportements inhabituels ou les erreurs récurrentes dans le système.
+    \item \textbf{Intégrer la documentation SAP} pour fournir aux utilisateurs des recommandations, des explications et des solutions adaptées aux problèmes rencontrés.
+    \item \textbf{Offrir une interface interactive} sous forme d'assistant conversationnel permettant aux utilisateurs de poser des questions, d'obtenir des analyses et de recevoir des conseils personnalisés.
+    \item \textbf{Assurer une accessibilité via une application web} intuitive, permettant de visualiser les analyses, exploiter les données collectées et interagir avec l'assistant de manière ergonomique.
+\end{itemize}
+
+Ainsi, ce système contribuera à améliorer la compréhension et la gestion des données SAP, à faciliter l'analyse des anomalies, et à offrir un outil intelligent d'aide à la décision pour les utilisateurs.
+
+
+
+
+\section{Spécification des besoins}
+\label{sec:specification_besoins}
+
+L'analyse des besoins a pour objectif de comprendre les attentes des utilisateurs et à définir le
+contexte métier dans lequel s'inscrit le système à développer. Elle permet de décrire
+les fonctionnalités que le système prendra en charge, ses interactions avec les différents
+intervenants, ainsi que les règles qui encadrent ces interactions.
+
+% ---- 2.1 Identification des acteurs ----
+\subsection{Identification des acteurs}
+
+Pour déterminer les besoins fonctionnels et non fonctionnels, nous débutons par
+l'identification des acteurs impliqués dans le système, en précisant le rôle spécifique
+de chacun. Ainsi, nous identifions trois rôles distincts qui interagissent avec le
+système :
+\subsection{Besoins fonctionnels}
+
+Les besoins fonctionnels définissent les différentes fonctionnalités que le système doit fournir afin de permettre aux utilisateurs d'exploiter et d'analyser les données provenant du système SAP à travers un assistant intelligent basé sur l'intelligence artificielle.
+
+Le système comporte principalement deux types d'acteurs : l'\textbf{Administrateur SAP} et l'\textbf{Utilisateur SAP}.
+
+\subsubsection*{Administrateur SAP}
+
+L'administrateur assure un rôle de supervision du système. Ses principales fonctionnalités sont les suivantes :
+
+\begin{itemize}
+\item S'authentifier à l'application.
+\item Consulter les journaux d'activité du système SAP.
+\item Accéder aux graphiques et analyses générés par l'assistant intelligent.
+\item Configurer les paramètres du système et les règles d'alertes.
+\item Consulter l'historique global des conversations effectuées avec le chatbot.
+\end{itemize}
+
+\subsubsection*{Utilisateur SAP}
+
+L'utilisateur SAP constitue l'acteur principal de l'application. Il peut exploiter les fonctionnalités suivantes :
+
+\begin{itemize}
+\item S'authentifier à l'application.
+\item Interagir avec l'assistant intelligent à travers une interface conversationnelle.
+\item Poser des questions en langage naturel concernant les données issues du système SAP.
+\item Consulter les alertes associées aux transactions SAP (T-Code).
+\item Accéder aux journaux des transactions SAP.
+\item Visualiser les graphiques et analyses générés par le système.
+\item Consulter l'historique des interactions avec le chatbot.
+\end{itemize}
+\subsection{Besoins Non Fonctionnels}
+
+Les besoins non fonctionnels définissent les contraintes qualité du
+système indépendamment des fonctionnalités métier. Pour un système RAG
+déployé en environnement SAP BASIS de production, ces exigences sont
+critiques car une réponse incorrecte sur une procédure de configuration
+peut provoquer des incidents système graves.
+
+\subsubsection*{Performance}
+Le pipeline complet (retrieval + génération) doit retourner une réponse
+en moins de \textbf{5 secondes} pour 95\% des requêtes. Ce seuil justifie
+le choix de l'index HNSW (recherche en $O(\log n)$) et le déploiement
+local du LLM via Ollama pour éliminer toute latence réseau.
+
+\subsubsection*{Fiabilité}
+Le taux d'hallucination doit rester inférieur à \textbf{5\%}, garanti
+par la validation NLI à chaque réponse générée. Si aucun chunk pertinent
+n'est trouvé (score similarité $< 0.5$), le système retourne explicitement
+une absence de réponse plutôt que d'inventer une information.
+
+\subsubsection*{Confidentialité}
+L'intégralité du pipeline tourne en local — LLM via Ollama, base
+vectorielle via pgvector. Aucune donnée SAP (configurations, credentials,
+topologie réseau) n'est transmise à des APIs cloud externes. C'est un
+prérequis non négociable pour les environnements d'entreprise SAP.
+
+\subsubsection*{Scalabilité}
+L'index HNSW supporte l'insertion incrémentale sans reconstruction,
+ce qui permet d'ajouter de nouvelles SAP Notes ou de nouveaux modules
+sans réindexer l'intégralité du corpus.
+
+\subsection{Synthèse}
+
+\begin{table}[H]
+\centering
+\caption{Synthèse des besoins non fonctionnels}
+\begin{tabular}{lll}
+\toprule
+\textbf{Catégorie} & \textbf{Seuil cible} & \textbf{Mécanisme} \\
+\midrule
+Temps de réponse        & $\leq$ 5s (p95)   & HNSW + Ollama local \\
+Taux hallucination      & $\leq$ 5\%        & Validation NLI \\
+Recall@5                & $\geq$ 0.75       & BM25 + vecteur hybride \\
+Confidentialité données & 100\% local       & Ollama on-premise \\
+Insertion incrémentale  & Sans rebuild      & Index HNSW \\
+Maintenabilité          & Pipeline rejouable & Git + scripts versionnés \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Diagramme de cas d'utilisation général}
+
+Dans cette section, les exigences fonctionnelles du système sont représentées à l'aide d'un diagramme de cas d'utilisation conforme au langage de modélisation UML. Ce diagramme (voir figure \ref{fig:usecase}) met en évidence les différents acteurs du système ainsi que les interactions possibles entre ces acteurs et les fonctionnalités offertes par l'application. Il permet ainsi de fournir une vision globale du comportement du système et des services qu'il propose aux utilisateurs.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Diagramme vierge.png}
+    \caption{Diagramme de cas d'utilisation général du système}
+    \label{fig:usecase}
+\end{figure}
