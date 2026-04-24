@@ -1,489 +1,590 @@
-% ============================================================
-%  Chapitre 4 : Compréhension et Acquisition des Données
-% ============================================================
-
 \chapter{Compréhension et Acquisition des Données}
 
-\section{Introduction}
+\section{Sources de Données}
 
-Le chapitre d’acquisition et de compréhension des données est essentiel pour établir une base solide pour le système de détection d’anomalies développé pour les transactions SAP. Ce chapitre détaille la collecte, le traitement et l’analyse systématiques des données nécessaires pour comprendre le contexte métier, définir les conditions d’alerte et identifier les schémas de transactions anormales. Il met en évidence l’importance des documents de base de connaissances (KB), élaborés en fonction des besoins métier, qui guident les processus de surveillance et de génération d’alertes.
-Dans le cadre de ce projet, trois sources de données hétérogènes ont
-été identifiées et exploitées :
+\subsection*{Journaux de Transactions SAP}
 
+Ces journaux capturent des enregistrements détaillés des transactions traitées au sein du
+système SAP. Chaque entrée comprend généralement des attributs tels que les codes de
+transaction (Tcode), les horodatages, les identifiants utilisateurs, les messages d'erreur
+et d'autres métadonnées. Ces données sont essentielles pour identifier des schémas et
+détecter des anomalies dans le traitement des transactions.
+
+L'une des façons d'obtenir des enregistrements de Tcodes (par exemple, ST22 dans cet
+exemple) est d'utiliser la navigation SAP GUI pour accéder aux journaux d'erreurs
+d'exécution ABAP, une activité quotidienne que tous les consultants SAP BASIS doivent
+répéter manuellement plusieurs fois au cours de leurs quarts de travail.
+
+\subsection*{Extraction de Données en Temps Réel}
+
+Pour l'extraction en temps réel des codes de transaction et de leurs données associées,
+les ingénieurs de l'équipe SAP ont implémenté PyRFC (Python RFC Connector) afin
+d'établir des connexions directes avec le système SAP. Les capacités de PyRFC à appeler
+les Remote Function Calls (RFCs) SAP directement depuis Python nous ont permis de
+disposer d'une extraction automatisée, prête à l'emploi et évolutive des enregistrements
+Tcode, sans intervention manuelle via la SAP GUI.
+
+L'implémentation de PyRFC offre plusieurs avantages :
 \begin{itemize}
-    \item Le \textbf{portail SAP Help Portal} — documentation officielle
-    SAP accessible via scraping web
-    \item Les \textbf{livres techniques SAP} — 298 ouvrages de formation
-    au format PDF couvrant les modules BASIS, ABAP, Fiori et S/4HANA
-    \item Les \textbf{logs de transactions SAP} — données temps réel
-    extraites depuis les transactions SM37, ST22 et SP01
+    \item \textbf{Accès en temps réel :} Surveillance continue et extraction des données de transaction au fur et à mesure qu'elles se produisent dans le système SAP.
+    \item \textbf{Traitement automatisé :} Élimine le besoin de navigation manuelle dans la SAP GUI que les consultants BASIS effectuent généralement plusieurs fois par quart de travail.
+    \item \textbf{Récupération de données structurées :} Accès direct aux modules de fonction SAP et aux tables contenant les journaux de transactions et les métadonnées.
 \end{itemize}
 
-\section{Sources}
-% ============================================================
-\subsection{SAP Help Portal}
-% ============================================================
+\subsection*{Documentation du Portail d'Aide SAP}
 
-\subsubsection{Description et structure}
+Pour construire une compréhension complète des codes de transaction SAP et de leurs
+fonctionnalités, nous avons systématiquement extrait la documentation du Portail d'Aide
+SAP. Cette source de données externe fournit une documentation technique détaillée, des
+guides de configuration et des informations de dépannage pour divers modules et codes de
+transaction SAP.
 
-Le SAP Help Portal (\texttt{help.sap.com}) constitue la source de
-documentation officielle SAP. Il expose une structure hiérarchique
-profonde de pages HTML organisées par produit, version et module.
-Chaque page contient du contenu textuel structuré (procédures,
-paramètres, notes techniques) ainsi que des métadonnées de navigation
-(breadcrumbs, liens parent-enfant).
+\subsubsection*{Implémentation du Web Scraping}
 
-\begin{sourcebox}{Caractéristiques du SAP Help Portal}
+Nous avons utilisé plusieurs technologies de web scraping pour extraire efficacement la
+documentation du Portail d'Aide SAP :
+
 \begin{itemize}
-    \item \textbf{Volume} : environ 50,000 pages indexées par le sitemap
-    \item \textbf{Structure} : hiérarchie à 4-6 niveaux de profondeur
-    \item \textbf{Langue} : principalement anglais, avec contenu
-    français et allemand
-    \item \textbf{Versions} : SAP NetWeaver 7.x, S/4HANA, Fiori
-    Launchpad
-    \item \textbf{Types de contenu} : procédures pas-à-pas, références
-    API, notes de configuration, paramètres de transactions
+    \item \textbf{Scrapy :} Scrapy a été choisi comme moteur de crawl principal en raison de ses hautes performances, de sa gestion asynchrone des requêtes et de son support natif pour la gestion de l'extraction structurée à grande échelle.
 \end{itemize}
-\end{sourcebox}
 
-\subsubsection{Architecture de scraping}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\textwidth]{figures/scrapy_logo}
+    \caption{Logo de Scrapy\footnotemark}
+\end{figure}
+\footnotetext{\url{https://github.com/scrapy/scrapy}}
 
-La figure~\ref{fig:scraping_architecture} présente l'architecture
-complète du pipeline de web scraping développé pour extraire la
-documentation du SAP Help Portal.
+\begin{itemize}
+    \item \textbf{Playwright :} Nous avons intégré Playwright dans le pipeline pour gérer les composants dynamiques et chargés en JavaScript du portail que Scrapy seul ne pouvait pas atteindre. Nous avons choisi Playwright plutôt que Selenium pour plusieurs raisons :\footnotemark
+    \begin{itemize}
+        \item \textbf{Performance :} Playwright offre une exécution plus rapide grâce à son architecture événementielle.
+    \end{itemize}
+\end{itemize}
+\footnotetext{\url{https://playwright.dev/}}
 
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    node distance=1.2cm and 2cm,
-    box/.style={
-        rectangle, rounded corners=4pt,
-        minimum width=3cm, minimum height=0.9cm,
-        text centered, align=center, font=\small\bfseries,
-        drop shadow
-    },
-    sapblue/.style={box, fill=SAPLightBlue, draw=SAPBlue,
-                    text=SAPBlue},
-    sapgreen/.style={box, fill=SAPLightGreen, draw=SAPGreen,
-                     text=SAPGreen!60!black},
-    saporange/.style={box, fill=SAPLightOrange, draw=SAPOrange,
-                      text=SAPOrange!80!black},
-    sapgray/.style={box, fill=SAPLightGray, draw=SAPGray,
-                    text=SAPGray},
-    arrow/.style={-Stealth, thick, color=SAPBlue},
-    dasharrow/.style={-Stealth, thick, dashed, color=SAPGray},
-    label/.style={font=\tiny\itshape, text=SAPGray}
-]
-
-% ── Colonne 1 : Sources ──
-\node[sapblue] (sitemap)  {Sitemap XML};
-\node[sapblue, below=0.7cm of sitemap] (helpportal) {SAP Help Portal};
-\node[sapblue, below=0.7cm of helpportal] (robots) {robots.txt};
-
-% ── Colonne 2 : Scraper ──
-\node[saporange, right=2.5cm of helpportal] (scraper)
-    {\begin{tabular}{c}Scraper\\Engine\end{tabular}};
-
-% ── Colonne 3 : Traitement ──
-\node[sapgreen, right=2.2cm of scraper, yshift=1.5cm] (parser)
-    {HTML Parser};
-\node[sapgreen, right=2.2cm of scraper] (breadcrumb)
-    {Breadcrumb\\Tracker};
-\node[sapgreen, right=2.2cm of scraper, yshift=-1.5cm] (meta)
-    {Metadata\\Extractor};
-
-% ── Colonne 4 : Output ──
-\node[sapgray, right=2.2cm of breadcrumb] (json)
-    {JSON Output};
-
-% ── Boîte Rate Limiting ──
-\node[sapgray, below=0.5cm of scraper, minimum width=2.8cm,
-      font=\tiny, text=SAPGray] (rate)
-    {\textit{Rate limiting: 1 req/s}};
-
-% Flèches sources → scraper
-\draw[arrow] (sitemap) -- (scraper);
-\draw[arrow] (helpportal) -- (scraper);
-\draw[dasharrow] (robots) -- node[label, left]{vérifié} (scraper);
-
-% Flèches scraper → traitement
-\draw[arrow] (scraper) -- (parser);
-\draw[arrow] (scraper) -- (breadcrumb);
-\draw[arrow] (scraper) -- (meta);
-
-% Flèches traitement → output
-\draw[arrow] (parser) -- (json);
-\draw[arrow] (breadcrumb) -- (json);
-\draw[arrow] (meta) -- (json);
-
-% Annotations
-\node[label, above=0.1cm of sitemap] {Point d'entrée};
-\node[label, above=0.1cm of json] {sap\_help.json};
-
-% Légende
-\node[below=2.2cm of scraper, xshift=-1cm] (leg) {};
-\node[sapblue, right=0.3cm of leg, minimum width=1cm,
-      minimum height=0.5cm, font=\tiny] (l1) {Sources};
-\node[saporange, right=0.5cm of l1, minimum width=1cm,
-      minimum height=0.5cm, font=\tiny] (l2) {Moteur};
-\node[sapgreen, right=0.5cm of l2, minimum width=1cm,
-      minimum height=0.5cm, font=\tiny] (l3) {Traitement};
-\node[sapgray, right=0.5cm of l3, minimum width=1cm,
-      minimum height=0.5cm, font=\tiny] (l4) {Sortie};
-
-\end{tikzpicture}
-\caption{Architecture et flux du web scraping SAP Help Portal}
-\label{fig:scraping_architecture}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\textwidth]{figures/playwright_logo}
+    \caption{Logo de Playwright}
 \end{figure}
 
-\subsubsection{Gestion des structures imbriquées}
-
-Le SAP Help Portal présente des structures documentaires imbriquées
-à plusieurs niveaux. Notre framework de scraping adresse ce défi par
-quatre mécanismes complémentaires :
-
-\begin{enumerate}
-    \item \textbf{Breadcrumb Tracking} — maintien du chemin de
-    navigation complet pour préserver la localisation de chaque
-    document dans la hiérarchie globale. Exemple :
-    \texttt{["SAP Fiori Launchpad", "Configuring Roles",
-    "Tile Catalogs"]}
-
-    \item \textbf{Relations Parent-Enfant} — capture explicite des
-    liens \texttt{parent\_id} / \texttt{doc\_id} entre documents
-    principaux et sous-documents, permettant la reconstruction de
-    la hiérarchie complète
-
-    \item \textbf{Cross-Reference Mapping} — identification et
-    préservation des liens entre documents connexes dans différentes
-    sections (liens hypertexte inter-modules)
-
-    \item \textbf{Context Inheritance} — les documents imbriqués
-    héritent du contexte pertinent de leurs parents (version SAP,
-    module, composants mentionnés)
-\end{enumerate}
-
-% ============================================================
-\subsection{Livres Techniques SAP (PDFs)}
-% ============================================================
-
-\subsubsection{Description du corpus}
-
-Le corpus de livres techniques SAP comprend 298 ouvrages de formation
-officielle couvrant l'ensemble des modules SAP. Ces documents, au
-format PDF, présentent une structure pédagogique standardisée
-(unités, leçons, exercices, évaluations) et constituent une source
-de connaissance procédurale dense.
-
-\begin{sourcebox}{Caractéristiques du corpus PDF}
 \begin{itemize}
-    \item \textbf{Volume} : 298 ouvrages, environ 45,000 pages
-    \item \textbf{Format} : PDF avec structure hiérarchique
-    (chapitres, sections, sous-sections)
-    \item \textbf{Contenu} : procédures de configuration, schémas
-    d'architecture, tableaux de paramètres, exercices pratiques
-    \item \textbf{Modules couverts} : BASIS, ABAP, Fiori, S/4HANA,
-    MM, SD, FI, CO, HR, PM
-    \item \textbf{Défis techniques} : encodage CID dans certains
-    PDFs, espaces manquants dans les polices personnalisées,
-    tables des matières indexées comme contenu
+    \item \textbf{BeautifulSoup :} Utilisé dans la couche de parsing final pour traiter et nettoyer le HTML brut collecté par Scrapy et Playwright. BeautifulSoup s'est révélé particulièrement efficace pour extraire du contenu imbriqué (par exemple, les tableaux, les listes à puces, les titres) et le transformer en texte sémantiquement organisé.
 \end{itemize}
-\end{sourcebox}
 
-\subsubsection{Pipeline d'ingestion des données}
+Le processus de scraping a été conçu pour respecter les directives \texttt{robots.txt} du portail
+et mettre en œuvre des délais appropriés afin d'éviter de surcharger l'infrastructure du
+serveur.
 
-La figure~\ref{fig:ingestion_pipeline} présente le pipeline complet
-d'ingestion des données depuis les sources brutes jusqu'à
-l'indexation dans pgvector.
+\subsection*{Notes SAP et Documentation Interne}
 
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    node distance=0.8cm and 1.5cm,
-    stage/.style={
-        rectangle, rounded corners=5pt,
-        minimum width=2.8cm, minimum height=1cm,
-        text centered, align=center, font=\small\bfseries,
-        drop shadow
-    },
-    s1/.style={stage, fill=SAPLightBlue, draw=SAPBlue,
-               text=SAPBlue},
-    s2/.style={stage, fill=SAPLightOrange, draw=SAPOrange,
-               text=SAPOrange!80!black},
-    s3/.style={stage, fill=SAPLightGreen, draw=SAPGreen,
-               text=SAPGreen!60!black},
-    s4/.style={stage, fill=SAPLightGray, draw=SAPGray,
-               text=SAPGray},
-    arrow/.style={-Stealth, very thick, color=SAPBlue},
-    note/.style={font=\tiny, text=SAPGray, text width=2.5cm,
-                 text centered},
-    count/.style={font=\tiny\bfseries, text=SAPBlue}
-]
+Les Notes SAP fournissent des informations critiques de dépannage, des problèmes connus
+et des recommandations de configuration pour des codes de transaction et des scénarios
+système spécifiques. En raison de l'accès restreint aux Notes SAP via le SAP Launchpad,
+ces documents ont été principalement fournis par l'équipe SAP de l'entreprise, complétés
+par une extraction ciblée là où les autorisations d'accès le permettaient.
 
-% ── Ligne 1 : Sources ──
-\node[s1] (src1) {SAP Help\\Portal};
-\node[s1, right=1cm of src1] (src2) {PDFs\\(298 livres)};
-\node[s1, right=1cm of src2] (src3) {Transactions\\Real time data};
-
-% ── Étape 1 : Extraction ──
-\node[s2, below=1.2cm of src2] (extract)
-    {\begin{tabular}{c}Extraction\\Brute\end{tabular}};
-
-% ── Étape 2 : Normalisation ──
-\node[s3, below=1cm of extract] (normalize)
-    {\begin{tabular}{c}Normalisation\end{tabular}};
-
-% ── Étape 3 : Déduplication ──
-\node[s3, below=1cm of normalize] (dedup)
-    {\begin{tabular}{c}Déduplication\end{tabular}};
-
-% ── Étape 4 : Filtrage qualité ──
-\node[s3, below=1cm of dedup] (filter)
-    {\begin{tabular}{c}Filtrage Qualité\end{tabular}};
-
-% ── Étape 5 : Chunking ──
-\node[s2, below=1cm of filter] (chunk)
-    {\begin{tabular}{c}Chunking\\Sliding Window\end{tabular}};
-
-% ── Étape 6 : Embedding ──
-\node[s4, below=1cm of chunk] (embed)
-    {\begin{tabular}{c}Embedding\\bge-m3 (1024d)\end{tabular}};
-
-% ── Étape 7 : Indexation ──
-\node[s4, below=1cm of embed] (index)
-    {\begin{tabular}{c}Indexation\\pgvector HNSW\end{tabular}};
-
-% Flèches sources → extraction
-\draw[arrow] (src1.south) -- ++(0,-0.4) -| (extract.north);
-\draw[arrow] (src2) -- (extract);
-\draw[arrow] (src3.south) -- ++(0,-0.4) -| (extract.north);
-
-% Flèches pipeline vertical
-\draw[arrow] (extract) -- (normalize);
-\draw[arrow] (normalize) -- (dedup);
-\draw[arrow] (dedup) -- (filter);
-\draw[arrow] (filter) -- (chunk);
-\draw[arrow] (chunk) -- (embed);
-\draw[arrow] (embed) -- (index);
-
-% Annotations chiffres à droite
-\node[count, right=0.3cm of extract]   {155,721 chunks};
-\node[count, right=0.3cm of normalize] {148,143 chunks};
-\node[count, right=0.3cm of dedup]     {142,798 chunks};
-\node[count, right=0.3cm of filter]    {142,525 chunks};
-\node[count, right=0.3cm of chunk]     {105,331 chunks};
-\node[count, right=0.3cm of embed]     {105,331 × 1024};
-\node[count, right=0.3cm of index]     {HNSW cosine};
-
-% Annotations à gauche
-\node[note, left=0.3cm of normalize]   {CID fix\\T-codes\\Casing};
-\node[note, left=0.3cm of dedup]       {7,578\\supprimés};
-\node[note, left=0.3cm of filter]      {5,618 QCM\\273 TOC};
-\node[note, left=0.3cm of chunk]       {avg 175 tok\\max 600 tok};
-
-\end{tikzpicture}
-\caption{Pipeline complet d'ingestion des données SAP}
-\label{fig:ingestion_pipeline}
-\end{figure}
-
-\subsubsection{Défis techniques et solutions}
-
-Trois problèmes majeurs ont été identifiés et résolus durant la
-phase d'acquisition :
-
-\textbf{Encodage CID dans les PDFs.} Certains livres SAP utilisent
-des polices de type CIDFont sans table de correspondance Unicode.
-L'extracteur produit alors des séquences \texttt{(cid:127)}
-illisibles. La solution appliquée combine une détection par ratio
-de contamination (seuil 2\%) et une conversion des codes CID
-fréquents vers leurs équivalents Unicode (\texttt{(cid:127)} →
-\texttt{•}).
-
-\textbf{Doublons inter-sources.} Le portail SAP Help et les livres
-techniques partagent parfois les mêmes procédures de configuration.
-7,578 chunks dupliqués ont été identifiés par fingerprint MD5 sur
-les 300 premiers caractères normalisés et supprimés, en conservant
-le chunk avec les métadonnées les plus riches.
-
-\textbf{Pages QCM de formation.} Les livres techniques SAP incluent
-des pages d'évaluation (quiz XTrue/XFalse) sans valeur documentaire
-pour le RAG. 5,618 chunks de ce type ont été filtrés par détection
-de patterns (\texttt{XTrue}, \texttt{XFalse},
-\texttt{determine whether}).
-
-% ============================================================
-\subsection{Logs de Transactions SAP}
-% ============================================================
-
-\subsubsection{Transactions surveillées}
-
-Le système surveille en temps réel trois transactions SAP BASIS
-critiques pour la santé de l'environnement :
-
-\begin{sourcebox}{Transactions SAP Monitorées}
+La collection de Notes SAP comprend :
 \begin{itemize}
-    \item \textbf{SM37} — Moniteur de jobs batch : suivi des
-    travaux planifiés, détection des jobs en erreur ou bloqués
-    \item \textbf{ST22} — Analyseur de dumps ABAP : capture et
-    analyse des exceptions runtime du système ABAP
-    \item \textbf{SP01} — Gestionnaire de spool : surveillance
-    des impressions et des sorties système
+    \item Des guides de dépannage technique pour des t\_codes et des systèmes spécifiques utilisant les composants et versions spécifiés pour chacun.
+    \item Des patterns d'erreurs connus et leurs résolutions selon le composant et le patch concerné.
+    \item Des recommandations de configuration système et le diagnostic des symptômes avec leurs solutions.
+    \item Des directives d'optimisation des performances.
 \end{itemize}
-\end{sourcebox}
 
-\subsubsection{Structure des données SM37}
+% ─────────────────────────────────────────────────────────────────────────────
 
-Le listing~\ref{lst:sm37} présente la structure de données extraite
-depuis la transaction SM37 pour l'alimentation du pipeline RAG en
-temps réel.
+\section{Exemples de Codes de Transaction et Analyse de la Structure des Données}
 
-\begin{figure}[H]
-\begin{lstlisting}[language=Python, caption={Structure de données de la transaction SM37}, label={lst:sm37}]
-# SM37 Transaction Data Structure
-# Extracted via RFC/BAPI call to SAP system
+Cette section fournit des exemples anonymisés des différentes structures de données
+rencontrées lors du processus d'acquisition de données, illustrant la variété et la
+complexité des sources d'information utilisées pour construire le système de détection
+d'anomalies.
 
-sm37_record = {
-    # Identifiants
-    "job_name":      "RDDIMPDP",          # Nom du job batch
-    "job_id":        "14521234",           # ID unique SAP
-    "job_class":     "A",                  # Priorite (A/B/C)
+\subsection{Exemples de Données de Codes de Transaction}
 
-    # Planification
-    "start_date":    "2024-01-15",         # Date de depart
-    "start_time":    "02:00:00",           # Heure de depart
-    "end_date":      "2024-01-15",         # Date de fin
-    "end_time":      "02:04:32",           # Heure de fin
-    "duration_sec":  272,                  # Duree en secondes
+Les exemples suivants illustrent les diverses structures des données de transaction
+extraites via PyRFC.
 
-    # Statut
-    "status":        "ABORTED",            # FINISHED/ABORTED/ACTIVE
-    "return_code":   4,                    # 0=OK, 4=Warning, 8=Error
+\subsubsection*{SP01 – Moniteur de Demandes de Spool}
 
-    # Contexte systeme
-    "host":          "SAPAPP01",           # Serveur d'application
-    "client":        "100",                # Mandant SAP
-    "user":          "BATCHUSER",          # Utilisateur lanceur
-    "program":       "RDDIMPDP",           # Programme ABAP associe
+\textbf{Objectif de la transaction :} Surveiller et gérer les demandes de spool et les travaux
+d'impression au sein du système SAP.
 
-    # Correlation avec ST22
-    "dump_reference": "ST22-20240115-001", # Lien dump si ABORTED
-    "error_message":  "RAISE_EXCEPTION",   # Message d'erreur ABAP
-
-    # Metadonnees RAG
-    "source_type":   "transaction_log",
-    "transaction":   "SM37",
-    "extracted_at":  "2024-01-15T02:05:00Z",
-    "sap_version":   "S/4HANA 2023"
+\begin{lstlisting}[caption={Structure de données de la transaction SP01}, label={lst:sp01}]
+{
+  "Spool No."    : "119973",
+  "User Name"    : "USER____",
+  "Date"         : "2024-09-09",
+  "Status"       : "Error",
+  "System"       : "ECC-___-02",
+  "Timestamp"    : "2024-10-10 10:47:50.626",
+  "sid"          : "___",
+  "t_code"       : "SP01",
 }
 \end{lstlisting}
+
+Paramètres de surveillance clés :
+\begin{itemize}
+    \item Taux d'erreurs dans le traitement des spools.
+    \item Temps de complétion pour le traitement des travaux d'impression.
+\end{itemize}
+
+\subsubsection*{SM12 – Affichage des Entrées de Verrouillage}
+
+\textbf{Objectif de la transaction :} Afficher et gérer les entrées de verrouillage pour surveiller
+les verrous système et les situations potentielles de blocage (deadlock).
+
+\begin{lstlisting}[caption={Structure de données de la transaction SM12}, label={lst:sm12}]
+{
+  "Client"    : "620",
+  "User name" : "USER____",
+  "Time"      : "11:50:22",
+  "Date"      : "2024-12-12",
+  "Table Name": "LUBU",
+  "Timestamp" : "2024-12-12 11:50:28.580",
+  "sid"       : "___",
+  "t_code"    : "SM12",
+}
+\end{lstlisting}
+
+Paramètres de surveillance clés :
+\begin{itemize}
+    \item Durée des entrées de verrouillage et leurs fréquences sur les tables critiques.
+    \item Patterns de verrouillage spécifiques aux utilisateurs.
+\end{itemize}
+
+\subsubsection*{SM37 – Moniteur de Jobs en Arrière-plan}
+
+\textbf{Objectif de la transaction :} Surveiller les jobs en arrière-plan, leur statut et les détails
+d'exécution pour les processus d'automatisation système.
+
+\begin{lstlisting}[caption={Structure de données de la transaction SM37}, label={lst:sm37}]
+{
+  "Job"           : "Z3_WM_________UPDATE",
+  "Job Created By": "________",
+  "Status"        : "Cancelled",
+  "Start Date"    : "2025-04-24",
+  "Start Time"    : "19:08:01",
+  "End Date"      : "2025-04-24",
+  "End Time"      : "19:08:01",
+  "Timestamp"     : "2025-04-25 10:59:14.105",
+  "sid"           : "___",
+  "t_code"        : "SM37",
+}
+\end{lstlisting}
+
+Paramètres de surveillance clés :
+\begin{itemize}
+    \item Taux de complétion des jobs et patterns d'échec.
+    \item Analyse du temps d'exécution des jobs planifiés.
+\end{itemize}
+
+\subsubsection*{ST22 – Analyse des Erreurs d'Exécution ABAP}
+
+\textbf{Objectif de la transaction :} Analyser les erreurs d'exécution ABAP et les dumps système
+pour le dépannage et la surveillance de la stabilité du système.
+
+\begin{lstlisting}[caption={Structure de données de la transaction ST22}, label={lst:st22}]
+{
+  "Current Date"          : "2024-12-11",
+  "Time"                  : "14:46:45",
+  "Application Server"    : "ECC-___-00____00",
+  "User Name"             : "________",
+  "Client"                : "620",
+  "Name of runtime error" : "DBIF_RSQL_INVALID_REQUEST",
+  "Timestamp"             : "2024-12-12 11:49:32",
+  "sid"                   : "___",
+  "t_code"                : "ST22",
+}
+\end{lstlisting}
+
+Paramètres de surveillance clés :
+\begin{itemize}
+    \item Fréquence des erreurs d'exécution spécifiques.
+    \item Patterns utilisateurs et systèmes dans l'occurrence des erreurs.
+    \item Distribution des erreurs par serveur d'application.
+\end{itemize}
+
+\subsection{Variations de Structure des Données et Défis}
+
+\subsubsection*{Variabilité des Codes de Transaction}
+
+L'analyse des données de transaction révèle des variations structurelles significatives :
+\begin{itemize}
+    \item \textbf{Diversité des champs :} Différents t\_codes génèrent des ensembles de champs complètement différents.
+    \item \textbf{Types de données :} Types mixtes incluant des horodatages, des codes de statut et du texte descriptif.
+    \item \textbf{Conventions de nommage :} Nommage des champs incohérent entre les différents types de transactions.
+    \item \textbf{Champs optionnels :} Présence variable des champs selon le contexte de la transaction.
+\end{itemize}
+
+\subsubsection*{Solutions d'Intégration}
+
+Pour gérer la diversité structurelle, nous avons implémenté :
+\begin{itemize}
+    \item \textbf{Mapping de schéma :} Correspondance dynamique des champs pour différents types de transactions.
+    \item \textbf{Préservation des métadonnées :} Maintien des noms et structures de champs originaux.
+    \item \textbf{Standardisation des types :} Gestion cohérente des types de données entre les sources.
+    \item \textbf{Normalisation des horodatages :} Formats d'horodatage unifiés pour l'analyse temporelle.
+\end{itemize}
+
+\subsubsection*{Nettoyage et Prétraitement des Données}
+
+La qualité et la cohérence des données ont été assurées par :
+\begin{itemize}
+    \item La suppression des doublons dans la documentation extraite et les journaux de transactions.
+    \item La gestion des valeurs manquantes dans les données de transaction structurées et la documentation non structurée.
+    \item La normalisation des formats de données et des horodatages entre les différentes sources.
+    \item La standardisation des formats de documents provenant de diverses sources de scraping.
+    \item Le prétraitement du texte pour la documentation extraite, incluant la tokenisation, le nettoyage des artefacts HTML et la standardisation des formats.
+\end{itemize}
+
+Les journaux de transactions bruts et la documentation extraite ont été structurés dans des
+formats adaptés à un traitement et une analyse ultérieurs.
+
+\subsubsection*{Ingestion des Données}
+
+Des stratégies complètes d'ingestion de données ont été mises en œuvre pour gérer
+plusieurs sources de données :
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/data_ingestion_pipeline}
+    \caption{Pipeline d'ingestion des données}
 \end{figure}
 
-\subsection{Pipeline d'extraction temps réel}
+\begin{itemize}
+    \item \textbf{Ingestion en temps réel :} Extraction continue des journaux de transactions basée sur PyRFC.
+    \item \textbf{Traitement par lots :} Scraping planifié de la documentation du Portail d'Aide SAP.
+    \item \textbf{Upload manuel :} Intégration des Notes SAP et de la documentation interne fournis par l'entreprise.
+    \item \textbf{Intégration de la base de connaissances :} Stockage structuré des documents de la base de connaissances pilotée par les métiers.
+\end{itemize}
 
-L'extraction des données de transactions SAP repose sur deux
-mécanismes complémentaires :
+Cette approche multi-sources a permis de s'assurer que toutes les données pertinentes
+étaient disponibles pour le traitement, tout en maintenant la traçabilité des données et
+l'attribution des sources.
 
-\begin{enumerate}
-    \item \textbf{Appels RFC/BAPI} — connexion directe au système
-    SAP via l'interface Remote Function Call. Les BAPIs standards
-    \texttt{BAPI\_XBP\_JOB\_SELECT} (SM37) et
-    \texttt{BAPI\_ABAP\_DOCU\_GET} (ST22) sont utilisés pour
-    extraire les données sans modifier l'état du système
+% ─────────────────────────────────────────────────────────────────────────────
 
-    \item \textbf{Polling périodique} — interrogation toutes les
-    5 minutes pour les jobs actifs, toutes les 15 minutes pour
-    l'historique des dernières 24 heures
-\end{enumerate}
+\section{Scraping Conscient des Métadonnées et Extraction de Contenu}
 
-\begin{remarquebox}
-Les logs de transactions constituent la source de données
-\textbf{dynamique} du système, par opposition aux sources
-documentaires statiques (Help Portal et PDFs). Ils alimentent
-le contexte situationnel du RAG : lorsqu'un consultant interroge
-le système sur une erreur SM37, le contexte du job en erreur
-est automatiquement injecté dans le prompt de génération.
-\end{remarquebox}
+Une partie très importante de la stratégie d'acquisition de données consistait à implémenter
+un scraping conscient des métadonnées qui préserve la structure hiérarchique et les
+relations contextuelles au sein des documents extraits, afin de garantir que la signification
+sémantique et la structure organisationnelle de la documentation originale soient maintenues.
 
-% ============================================================
-\section{Analyse Statistique du Corpus Final}
-% ============================================================
+\subsection{Stratégie d'Implémentation pour les Documents Imbriqués}
 
-Le tableau~\ref{tab:corpus_stats} présente une synthèse statistique
-complète du corpus après l'ensemble des étapes de nettoyage et de
-filtrage.
+Le Portail d'Aide SAP contient des structures de documentation imbriquées complexes qui
+nécessitent une gestion spécialisée.
 
-\begin{table}[H]
+\subsubsection*{Gestion de la Navigation Multi-niveaux}
+
+Notre framework de scraping adresse le défi des documents imbriqués par :
+\begin{itemize}
+    \item \textbf{Suivi du fil d'Ariane :} Maintien des chemins de navigation pour préserver la localisation des documents au sein de la structure globale.
+    \item \textbf{Relations parent-enfant :} Capture explicite des relations entre les documents principaux et leurs sous-documents.
+    \item \textbf{Cartographie des références croisées :} Identification et préservation des liens entre documents connexes dans différentes sections.
+    \item \textbf{Héritage de contexte :} Garantie que les documents imbriqués héritent du contexte pertinent de leurs documents parents.
+\end{itemize}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/web_scraping_architecture}
+    \caption{Architecture et flux du Web Scraping}
+\end{figure}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+\section{Exploration des Données et Définition des Anomalies}
+
+Nous avons défini ce qui constitue une anomalie dans le contexte des transactions SAP sur
+la base d'une analyse historique, des informations tirées de la documentation extraite et
+des connaissances métier recueillies lors de réunions et de discussions au bureau.
+
+Il s'avère que les anomalies dans notre système ne se limitent pas à des Tcodes individuels
+se comportant de manière anormale. Au contraire, les anomalies peuvent se manifester
+sous la forme de :
+\begin{itemize}
+    \item \textbf{Anomalies de transaction individuelles :} Déviations par rapport aux patterns attendus, telles que des pics inhabituels dans les taux d'erreurs ou des retards inattendus dans les temps de traitement pour des Tcodes spécifiques.
+    \item \textbf{Anomalies de patterns de transactions :} Groupes de Tcodes normaux qui, lorsqu'ils apparaissent dans des combinaisons spécifiques ou avec des patterns de répétition inhabituels, indiquent des problèmes système potentiels.
+    \item \textbf{Anomalies temporelles :} Transactions normales se produisant à des moments ou avec des fréquences inhabituelles, s'écartant des patterns établis.
+    \item \textbf{Anomalies séquentielles :} Patterns de séquences de transactions qui, bien qu'individuellement normaux, indiquent collectivement un comportement système anormal.
+\end{itemize}
+
+Ces patterns sont identifiés par recoupement avec les Notes SAP et la documentation,
+combiné à une analyse des données de transactions historiques.
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+\section{Construction de la Base de Connaissances et Organisation des Données}
+
+La création de la Base de Connaissances (BdC) a été un processus collaboratif impliquant
+un engagement direct avec les consultants et administrateurs SAP BASIS. Le développement
+de la BdC et l'architecture de récupération suivent une approche hiérarchique conçue pour
+optimiser la récupération d'informations pour la détection d'anomalies.
+
+\subsection{Processus de Développement de la Base de Connaissances}
+
+\subsubsection*{Étape 1 : Identification Collaborative des Patterns Critiques}
+
+En travaillant directement avec les consultants et administrateurs SAP BASIS, nous avons
+identifié :
+\begin{itemize}
+    \item \textbf{Combinaisons de transactions critiques :} Groupes de t\_codes qui, lorsqu'ils surviennent ensemble, indiquent des états système spécifiques ou des problèmes potentiels.
+    \item \textbf{Patterns de répétition :} Des t\_codes normaux qui deviennent anormaux lorsqu'ils sont répétés au-delà de certains seuils.
+    \item \textbf{Patterns temporels :} Des patterns basés sur le temps où des transactions normales deviennent anormales selon le moment.
+    \item \textbf{Dépendances séquentielles :} Des séquences de transactions qui doivent être surveillées en tant que workflows complets.
+\end{itemize}
+
+\subsubsection*{Étape 2 : Définition des Stratégies de Surveillance basées sur les Patterns}
+
+Les stratégies de surveillance ont été développées pour traiter :
+\begin{itemize}
+    \item \textbf{Surveillance individuelle des transactions :} Surveillance traditionnelle par t\_code unique avec les temps de complétion, les taux d'erreurs et les temps de réponse du système.
+    \item \textbf{Reconnaissance de patterns :} Surveillance des combinaisons et séquences spécifiques de t\_codes.
+    \item \textbf{Analyse de fréquence :} Détection des transactions normales se produisant avec une fréquence inhabituelle.
+    \item \textbf{Analyse de corrélation :} Identification des relations entre des transactions apparemment sans rapport.
+\end{itemize}
+
+\subsubsection*{Étape 3 : Établissement des Conditions d'Alerte basées sur les Patterns}
+
+Des conditions d'alerte ont été établies pour :
+\begin{itemize}
+    \item \textbf{Alertes de combinaison :} Se déclenchent lorsque des combinaisons spécifiques de t\_codes se produisent dans des fenêtres temporelles définies.
+    \item \textbf{Alertes de répétition :} Notifications lorsque des t\_codes normaux dépassent les seuils de répétition.
+    \item \textbf{Alertes de séquence :} Alertes pour les séquences de transactions interrompues ou incomplètes.
+    \item \textbf{Alertes temporelles :} Notifications pour les transactions se produisant en dehors des patterns temporels attendus.
+\end{itemize}
+
+\subsection{Stratégie de Découpage (Chunking)}
+
+En plus des considérations de génération et de stockage des embeddings, la mise en œuvre
+d'une stratégie de découpage est essentielle lorsqu'on traite de grands ensembles de
+données ou de longues entrées textuelles.
+
+\subsubsection*{Qu'est-ce que le Chunking ?}
+
+Le chunking consiste à décomposer de grands blocs de texte ou des ensembles de données
+en segments plus petits et gérables, appelés « chunks ». Cette technique est particulièrement
+utile lorsqu'on travaille avec des modèles d'apprentissage automatique ayant des
+limitations de taille d'entrée, ou lors du traitement de grands volumes de données
+transactionnelles où les entrées individuelles doivent être analysées séparément mais
+contribuent collectivement aux informations globales.
+
+\subsubsection*{Avantages du Chunking}
+
+\begin{itemize}
+    \item \textbf{Amélioration de l'efficacité de traitement :} En décomposant les grands ensembles de données en chunks plus petits, chaque segment peut être traité indépendamment sans surcharger les ressources système ni dépasser les limites de mémoire.
+    \item \textbf{Amélioration des performances du modèle :} Des entrées plus petites permettent aux modèles comme les LLMs (Grands Modèles de Langage) de générer des réponses plus précises, car ils se concentrent sur moins de détails à la fois plutôt que d'essayer d'analyser de vastes ensembles de données en une seule fois.
+    \item \textbf{Capacités de traitement parallèle :} Le chunking permet des techniques de traitement parallèle où plusieurs chunks peuvent être traités simultanément sur différents threads ou processus, accélérant considérablement le temps de calcul global.
+\end{itemize}
+
+\subsection{Implémentation de la Stratégie de Chunking Améliorée}
+
+Lors de l'implémentation du chunking dans notre système :
+\begin{itemize}
+    \item Définir des tailles de chunks appropriées en fonction des contraintes du modèle --- en s'assurant que chaque chunk contient suffisamment de contexte tout en restant dans les limites d'entrée.
+    \item Maintenir les relations entre les chunks de sorte que toute analyse effectuée conserve la conscience de la manière dont les chunks se rapportent aux transactions originales ou aux ensembles de données plus grands.
+\end{itemize}
+
+Cette section détaille les deux approches de chunking distinctes mises en œuvre pour le
+système de détection d'anomalies SAP : le chunking adaptatif pour la construction du
+graphe de connaissances et le chunking hiérarchique pour l'optimisation du vector store.
+
+\subsection{Stratégie de Chunking Adaptatif pour la Construction du Graphe de Connaissances}
+
+L'implémentation du graphe de connaissances emploie une stratégie de chunking adaptatif
+intelligente qui ajuste dynamiquement les tailles des chunks en fonction des caractéristiques
+du contenu et de la cohérence sémantique. Cette approche garantit une extraction optimale
+des connaissances tout en préservant les relations contextuelles entre les patterns de
+transactions SAP.
+
+\subsubsection*{Algorithme de Chunking Adaptatif de Base}
+
+L'algorithme de chunking adaptatif fonctionne avec les paramètres suivants :
+\begin{itemize}
+    \item Taille de chunk de base : 516 tokens (optimisée pour l'extraction de connaissances).
+    \item Taille de chunk minimale : 128 tokens (assure un contexte suffisant).
+    \item Taille de chunk maximale : 2048 tokens (prévient la surcharge d'information).
+    \item Taux de chevauchement : 30\% (maintient la continuité du contexte).
+\end{itemize}
+
+\subsubsection*{Ajustement de Taille Adapté au Contenu}
+
+L'algorithme ajuste dynamiquement les tailles de chunks en fonction de :
+
+\paragraph{Analyse de la Complexité du Texte}
+\begin{itemize}
+    \item Contenu de haute complexité (complexité $> 0{,}7$) : Réduit la taille du chunk de 20\%.
+    \item Contenu de faible complexité (complexité $< 0{,}3$) : Augmente la taille du chunk de 20\%.
+    \item Complexité calculée comme le ratio tokens uniques / tokens totaux.
+\end{itemize}
+
+\paragraph{Évaluation de la Densité du Contenu}
+\begin{itemize}
+    \item Densité élevée de contenu spécifique SAP ($> 0{,}5$) : Réduit la taille du chunk de 10\%.
+    \item Assure un traitement détaillé de la documentation technique SAP.
+\end{itemize}
+
+\paragraph{Détection des Frontières Sémantiques}
+\begin{itemize}
+    \item Priorise les frontières de phrases pour des coupures de texte naturelles.
+    \item Maintient la cohérence sémantique au sein des chunks.
+    \item Calcule les scores de cohérence sémantique via le traitement spaCy.
+\end{itemize}
+
+\subsection{Gestion Spéciale du Contenu}
+
+La stratégie de chunking adaptatif inclut une gestion spécialisée pour :
+\begin{itemize}
+    \item \textbf{Reconnaissance des patterns de Notes SAP :} Identifie et préserve les références aux Notes SAP.
+    \item \textbf{Traitement des références aux images :} Maintient les associations entre le texte et les éléments visuels.
+    \item \textbf{Détection des frontières de section :} Reconnaît les changements de structure du document.
+    \item \textbf{Préservation des termes techniques :} Garantit que la terminologie spécifique à SAP reste intacte.
+\end{itemize}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/adaptive_chunking_flow}
+    \caption{Flux de l'algorithme de chunking adaptatif}
+\end{figure}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+\section{Stratégie de Chunking Hiérarchique pour le Vector Store}
+
+L'implémentation du vector store utilise une approche de chunking hiérarchique qui
+préserve la structure du document tout en optimisant les performances de récupération.
+Cette stratégie est spécifiquement conçue pour gérer la structure imbriquée complexe de
+la documentation SAP.
+
+\subsection{Préservation de la Structure du Document}
+
+Le processus de chunking hiérarchique suit ces principes clés :
+
+\subsubsection*{Extraction Consciente de la Mise en Page}
+\begin{itemize}
+    \item Maintient les hiérarchies de titres (H1, H2, H3, etc.).
+    \item Préserve les relations parent-enfant entre les sections.
+    \item Identifie et traite les tableaux en HTML structuré.
+    \item Reconnaît et maintient les structures de liste avec leur imbrication correcte.
+\end{itemize}
+
+\subsubsection*{Traitement Conscient des Métadonnées}
+\begin{itemize}
+    \item Extrait les métadonnées du document (titre, date de création, version).
+    \item Préserve les métadonnées structurelles (hiérarchie des sections, organisation du contenu).
+    \item Maintient les métadonnées techniques (associations aux modules SAP, références aux codes de transaction).
+\end{itemize}
+
+\subsection{Traitement du Contenu Multi-niveaux}
+
+Le système traite le contenu à plusieurs niveaux :
+
+\subsubsection*{Analyse au Niveau des Blocs}
+\begin{itemize}
+    \item \textbf{Détection des titres :} Identifie les titres en fonction de leur position, mise en forme et propriétés de texte.
+    \item \textbf{Classification du type de contenu :} Distingue les paragraphes, listes, tableaux et images.
+    \item \textbf{Analyse spatiale :} Utilise les informations de coordonnées pour comprendre la mise en page du document.
+\end{itemize}
+
+\subsubsection*{Gestion Spécifique au Type de Contenu}
+\begin{itemize}
+    \item \textbf{Traitement des tableaux :} Convertit les tableaux complexes en format HTML lorsque cela est activé.
+    \item \textbf{Consolidation des listes :} Combine les éléments de liste connexes en chunks cohérents.
+    \item \textbf{Association des images :} Lie les légendes et descriptions aux images correspondantes.
+\end{itemize}
+
+\subsection{Optimisation de la Taille des Chunks}
+
+La stratégie de chunking du vector store emploie :
+\begin{itemize}
+    \item Taille de chunk cible : 768 tokens (optimisée pour les modèles d'embedding).
+    \item Chevauchement des chunks : 50 tokens (assure la continuité du contexte).
+    \item Découpage adaptatif : Utilise \texttt{RecursiveCharacterTextSplitter} avec des séparateurs intelligents.
+    \item Optimisation des frontières : Priorise les frontières de texte naturelles (paragraphes, phrases).
+\end{itemize}
+
+\subsection{Mesures d'Assurance Qualité}
+
+L'implémentation du chunking inclut plusieurs mécanismes d'assurance qualité :
+
+\subsubsection*{Validation du Contenu}
+\begin{itemize}
+    \item Garantit des seuils de contenu minimaux.
+    \item Valide la complétude des chunks.
+\end{itemize}
+
+\subsubsection*{Détection des Doublons}
+\begin{itemize}
+    \item Génère des IDs de chunks déterministes à l'aide du hachage du contenu et des métadonnées.
+\end{itemize}
+
+\subsection{Analyse Comparative : Chunking Adaptatif vs.\ Hiérarchique}
+
+\begin{table}[h]
 \centering
-\caption{Statistiques du corpus après normalisation et filtrage}
-\label{tab:corpus_stats}
-\begin{tabular}{lrrl}
-\toprule
-\textbf{Métrique} & \textbf{Valeur} & \textbf{Pourcentage} &
-\textbf{Remarque} \\
-\midrule
-\multicolumn{4}{l}{\textit{Volume brut}} \\
-Pages SAP Help Portal scrappées   & 50,000  & —     & Sitemap complet \\
-Livres PDF traités                & 298     & —     & Corpus complet \\
-Figures extraites                 & 47,219  & —     & Avant filtrage \\
-\midrule
-\multicolumn{4}{l}{\textit{Après extraction}} \\
-Chunks bruts totaux               & 155,721 & 100\% & Avant nettoyage \\
-\quad dont SAP Help               & 21,084  & 13.5\%& \\
-\quad dont livres techniques      & 87,418  & 56.1\%& \\
-\quad dont figures                & 47,219  & 30.3\%& \\
-\midrule
-\multicolumn{4}{l}{\textit{Après corrections}} \\
-Doublons supprimés                & 7,578   & 4.9\% & Fingerprint MD5 \\
-QCM/Learning Assessment supprimés & 5,618  & 3.6\% & Bruit sémantique \\
-Chunks CID corrompus filtrés      & 212     & 0.1\% & WSMFB (97\% CID) \\
-Chunks dupliqués internes corrigés & 3,808  & 2.4\% & Truncation \\
-\midrule
-\multicolumn{4}{l}{\textit{Corpus final}} \\
-\textbf{Total chunks normalisés}  & \textbf{142,798} & 91.7\% & \\
-\quad dont SAP Help               & 17,785  & 12.5\%& 0 CID, 0 TOC \\
-\quad dont livres techniques      & 83,990  & 58.8\%& CID nettoyés \\
-\quad dont figures                & 46,368  & 32.5\%& Caps. extraites \\
-\midrule
-\multicolumn{4}{l}{\textit{Après chunking (indexés)}} \\
-\textbf{Chunks indexés total}     & \textbf{105,331} & 73.8\% & \\
-\quad Figures avec légende        & 39,014  & 37.0\%& Indexables \\
-\quad SAP Help                    & 30,433  & 28.9\%& \\
-\quad Livres techniques           & 35,884  & 34.1\%& \\
-T-codes uniques extraits          & 2,794   & —     & Dont namespace \\
-Longueur moyenne des chunks       & 175 tokens & —  & Optimal bge-m3 \\
-Longueur maximale des chunks      & 600 tokens & —  & $\ll$ 8192 limite \\
-\bottomrule
+\caption{Analyse comparative des stratégies de chunking}
+\label{tab:chunking-comparison}
+\begin{tabular}{|p{3cm}|p{5.5cm}|p{5.5cm}|}
+\hline
+\textbf{Aspect} & \textbf{Chunking Adaptatif (Graphe de Connaissances)} & \textbf{Chunking Hiérarchique (Vector Store)} \\
+\hline
+Objectif principal & Extraction de connaissances et cartographie des relations & Récupération optimale et recherche sémantique \\
+\hline
+Stratégie de taille & Dynamique selon la complexité du contenu & Fixe avec détection intelligente des frontières \\
+\hline
+Traitement du contenu & Analyse linguistique et sémantique & Traitement structuré du document \\
+\hline
+Focus des métadonnées & Cohérence sémantique et contenu spécifique SAP & Hiérarchie du document et contexte positionnel \\
+\hline
+Gestion du chevauchement & Adaptatif selon la densité du contenu & Fixe pour la préservation du contexte \\
+\hline
+Détection des frontières & Frontières sémantiques au niveau de la phrase & Frontières de structure du document \\
+\hline
 \end{tabular}
 \end{table}
 
-% ============================================================
-\section{Bilan de la Phase d'Acquisition}
-% ============================================================
+Bien que le chunking offre de nombreux avantages, il présente également des défis tels que
+garantir la continuité entre les chunks lors du traitement ou la perte potentielle de contexte
+si cela n'est pas géré avec soin.
 
-La phase d'acquisition et de compréhension des données a permis de
-constituer un corpus de \textbf{105,331 chunks indexables} à partir
-de trois sources hétérogènes, après application de huit corrections
-qualité motivées par des diagnostics empiriques sur les données réelles.
+\subsubsection*{Organisation Stratégique}
 
-Les principaux enseignements de cette phase sont :
-
+Pour éviter la surcharge d'informations provenant de plusieurs sources de données, nous
+avons organisé chaque document autour de thèmes spécifiques liés aux patterns de
+transactions plutôt qu'aux t\_codes individuels. Cette approche garantit que les utilisateurs
+peuvent facilement trouver les informations pertinentes sans se noyer dans des informations
+excessives. Nous l'implémentons avec une structure simple :
 \begin{itemize}
-    \item La \textbf{diversité des sources} (documentation officielle,
-    livres de formation, logs temps réel) est un avantage différenciateur
-    majeur : le système peut répondre à la fois à des questions
-    procédurales, conceptuelles et situationnelles
-
-    \item La \textbf{rigueur du nettoyage} (8.3\% de chunks supprimés
-    ou corrigés) garantit que le retrieval ne sera pas pollué par du
-    bruit sémantique (QCM, doublons, contenu illisible)
-
-    \item L'\textbf{extraction des 2,794 T-codes} avec support des
-    namespaces (\texttt{/UI2/NWBC\_CFG\_CUST}) constitue un avantage
-    clé pour la recherche hybride BM25 : les identifiants SAP exacts
-    sont préservés et indexés
-
-    \item La \textbf{structure hiérarchique préservée} (breadcrumbs,
-    parent\_id, position) permettra d'enrichir le contexte de retrieval
-    au Sprint 4 par injection du contexte parent
+    \item \textbf{Vue d'ensemble :} Un bref résumé combinant l'objectif du pattern de transaction issu de la documentation du Portail d'Aide avec le contexte opérationnel des données en temps réel.
+    \item \textbf{Critères de reconnaissance des patterns :} Paramètres et seuils dérivés de l'analyse des données historiques et des meilleures pratiques de documentation pour l'identification des patterns anormaux.
+    \item \textbf{Conditions d'alerte :} Critères spécifiques combinant l'analyse statistique des données en temps réel avec les patterns de problèmes connus issus des Notes SAP.
+    \item \textbf{Exemples :} Études de cas de patterns normaux versus anormaux, validés à travers plusieurs sources de données.
 \end{itemize}
 
+\subsubsection*{Définitions Claires et Exemples}
+
+Chaque document inclut des définitions explicites des termes techniques extraits de la
+documentation du Portail d'Aide SAP, garantissant que les utilisateurs ne sont pas
+submergés par le jargon. Des exemples pratiques sont inclus pour démontrer comment les
+critères définis s'appliquent dans des scénarios réels, validés par des données de
+transactions historiques et des patterns de problèmes documentés.
+
+\begin{quote}
+\textbf{Exemple :} Un « pattern de répétition anormal » est défini comme toute séquence de
+Tcodes normalement acceptables se produisant plus de 3 fois dans une fenêtre de
+10 minutes, basée sur l'analyse statistique des données historiques extraites par PyRFC
+et validée par rapport aux directives de performance du Portail d'Aide SAP et à
+l'expertise des consultants. Par exemple, SM37 suivi de ST22 se produisant 4 fois en
+8 minutes déclencherait une alerte basée sur un pattern, même si chaque transaction
+individuelle est normale.
+\end{quote}
+
+\subsubsection*{Conclusion}
+
+Les informations obtenues au cours de cette phase, notamment l'établissement des
+paramètres de surveillance basés sur les patterns et les définitions des anomalies, sont
+précieuses pour les stratégies de modélisation choisies par la suite.
