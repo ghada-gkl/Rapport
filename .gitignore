@@ -1,0 +1,15 @@
+# LaTeX generated files
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# PDF output (optional but recommended)
+*.pdf
+
+# OS files
+.DS_Store
+Thumbs.db
