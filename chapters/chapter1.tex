@@ -95,7 +95,7 @@ RAG.
 
 Dans le cadre du développement d’un système intelligent de surveillance des systèmes SAP au sein d’Avaxia Group, une analyse de l’existant a été réalisée pour comprendre les pratiques actuelles mises en œuvre par l’équipe SAP BASIS.
 
-\subsection*{Rôle du consultant SAP BASIS}
+
 
 Le consultant SAP BASIS joue un rôle central dans l’administration technique des systèmes SAP. Il est chargé d’assurer le bon fonctionnement des environnements en prenant en charge plusieurs activités essentielles, notamment la surveillance des systèmes SAP, la gestion des performances des systèmes SAP, le traitement des incidents techniques ainsi que la maintenance quotidienne des systèmes SAP.
 
@@ -141,7 +141,7 @@ Ces transactions sont utilisées par les consultants BASIS\footnotemark[1] pour 
     node distance=0.8cm,
     every node/.style={font=\small},
     mainbox/.style={draw, rounded corners=4pt, minimum height=0.9cm, text centered, font=\small\bfseries},
-    tcode/.style={draw=#1, fill=#1!10, rounded corners=4pt, minimum width=2.2cm, minimum height=1.2cm, text centered, font=\small\bfseries, text=#1!80!black},
+    tcode/.style={draw=#1, fill=#1!10, rounded corners=4pt, minimum width=2.2cm, minimum height=1.2cm, text centered, align=center, font=\small\bfseries, text=#1!80!black},
     resultbox/.style={draw=red!70!black, fill=red!5, rounded corners=4pt, minimum height=0.9cm, text centered, font=\small\bfseries, text=red!70!black},
     arr/.style={-{Stealth[length=5pt]}, thick, color=gray!70!black},
 ]
@@ -224,7 +224,7 @@ les différentes activités en cours.
 \node[mainbox, draw=gray!35, fill=gray!4, minimum width=12cm] (sap) {Système SAP --- volume important de logs quotidiens};
  
 % SM37
-\node[fieldbox=blue!30, below=1cm of sap, xshift=-4.5cm] (sm37) {};
+\node[fieldbox=blue, below=1cm of sap, xshift=-4.5cm] (sm37) {};
 \node[font=\small\bfseries, text=blue!45!black] at ($(sm37.north)+(0,-0.4)$) {SM37};
 \node[font=\scriptsize\itshape, text=gray!55] at ($(sm37.north)+(0,-0.75)$) {Jobs en arrière-plan};
 \node[font=\scriptsize\ttfamily, text=gray!60, anchor=west, align=left] at ($(sm37.west)+(0.3,-0.3)$) {
@@ -232,7 +232,7 @@ les différentes activités en cours.
 };
  
 % ST22
-\node[fieldbox=teal!35, below=1cm of sap] (st22) {};
+\node[fieldbox=teal, below=1cm of sap] (st22) {};
 \node[font=\small\bfseries, text=teal!45!black] at ($(st22.north)+(0,-0.4)$) {ST22};
 \node[font=\scriptsize\itshape, text=gray!55] at ($(st22.north)+(0,-0.75)$) {Dumps ABAP};
 \node[font=\scriptsize\ttfamily, text=gray!60, anchor=west, align=left] at ($(st22.west)+(0.3,-0.3)$) {
@@ -240,7 +240,7 @@ les différentes activités en cours.
 };
  
 % SP01
-\node[fieldbox=orange!20, below=1cm of sap, xshift=4.5cm] (sp01) {};
+\node[fieldbox=orange, below=1cm of sap, xshift=4.5cm] (sp01) {};
 \node[font=\small\bfseries, text=orange!45!black] at ($(sp01.north)+(0,-0.4)$) {SP01};
 \node[font=\scriptsize\itshape, text=gray!55] at ($(sp01.north)+(0,-0.75)$) {Spools d'impression};
 \node[font=\scriptsize\ttfamily, text=gray!60, anchor=west, align=left] at ($(sp01.west)+(0.3,-0.3)$) {
@@ -283,7 +283,7 @@ les différentes activités en cours.
 \end{figure}
 
 
-\subsection*{Gestion de la connaissance SAP}
+\subsubsection*{Gestion de la connaissance SAP}
 
 La connaissance SAP au sein de l'équipe est répartie entre plusieurs sources : le portail
 SAP Help, qui organise la documentation de manière hiérarchique sur des milliers de
@@ -291,232 +291,32 @@ pages, des livres techniques au format PDF, des SAP Notes référencées par num
 l'expérience individuelle des consultants. Chaque consultant accède à ces sources de
 manière indépendante selon ses besoins, sans système centralisé de partage ou de
 capitalisation des connaissances.
+\subsection*{Solutions existantes}
+SAP, en complément des dispositifs plus classiques de supervision des systèmes, dispose de solutions intégrant des capacités de Machine Learning comme :
+\subsubsection*{SAP Leonardo ML}
+les solutions SAP Leonardo ML et qui permettent d’exploiter les données produites par les systèmes SAP pour détecter des comportements anormaux en identifiant des patterns. Il importe de relever que l’intégration native avec les systèmes ERP constitue un attribut majeur de ces solutions puisqu’elle offre un accès aux données issues des divers modules SAP et garantit une exploitation continue de ces dernières. En sus, ces solutions mettent à disposition des outils d’introduction d’une dimension prédictive dans la supervision des systèmes sur la base d’une analyse des données historiques.
+\subsubsection*{SAP JOULE}
+
+SAP intègre aussi des solutions plus récentes d’intelligence artificielle génératives comme SAP Joule. Cette solution fait office de copilote intelligent embarqué dans les applications SAP, permettant de dialoguer avec les systèmes grâce au langage naturel et d’utiliser tant les données métiers que techniques afin de fournir des informations, d’automatiser des tâches disparates et d’assister les utilisateurs dans leurs analyses.
+
 % ============================================================
 % ============================================================
 \subsection{Critique de l'existant}
 \label{sec:critique}
+\subsubsection{L’analyse de l’existant}
 
-L’analyse de l’existant met en évidence plusieurs limites structurelles et
-fonctionnelles dans les processus actuels de surveillance et de gestion de la
-connaissance au sein de l’équipe BASIS.
+L’analyse de l’existant, incluant les pratiques actuelles de surveillance ainsi que les solutions proposées, met en évidence plusieurs limites liées à la gestion et au suivi des systèmes SAP.
 
-\subsubsection*{Limites de la surveillance des systèmes SAP}
+Dans le cadre des méthodes traditionnelles utilisées par les consultants SAP BASIS, la surveillance repose principalement sur l’utilisation de multiples transactions techniques nécessitant une vérification manuelle régulière. Cette approche engendre un temps important consacré au contrôle manuel des différents indicateurs du système. Le consultant doit parcourir plusieurs transactions afin de vérifier l’état des jobs, des processus, des logs et des performances, ce qui peut rendre le suivi global chronophage. Par ailleurs, la consolidation des informations reste une tâche manuelle, ce qui peut influencer la rapidité d’analyse et la réactivité face aux incidents.
 
-Le processus actuel de surveillance repose principalement sur une approche manuelle,
-dans laquelle les consultants BASIS interrogent individuellement plusieurs transactions
-afin d’obtenir une vision de l’état du système. Cette approche induit une dépendance
-forte à l’intervention humaine et mobilise un effort opérationnel important, notamment
-dans des environnements multi-systèmes.
+En ce qui concerne les solutions existantes proposées par SAP, telles que SAP Leonardo ML et SAP Joule, elles offrent des capacités avancées basées sur le Machine Learning et l’intelligence artificielle. Toutefois, ces solutions peuvent représenter un investissement important pour les organisations, notamment en termes de coûts d’implémentation et d’exploitation. De plus, elles sont conçues pour répondre à des besoins généraux et standards, ce qui peut limiter leur adaptation à des contextes spécifiques. Dans certains cas, les particularités des données propres aux systèmes et aux clients, comme celles d’un environnement spécifique tel que Quadient, peuvent nécessiter des ajustements ou des traitements complémentaires pour une exploitation optimale.
 
-En outre, l’absence de consolidation des informations issues des différents T-codes
-ne permet pas d’obtenir une vue globale et cohérente du système. Les données étant
-consultées de manière isolée, la corrélation entre événements devient difficile,
-ce qui limite la capacité d’analyse transversale.
-
-Par ailleurs, le mode de surveillance actuel repose sur des mécanismes de détection
-basés sur des seuils statiques. Ce type d’approche présente des limites importantes :
-d’une part, il peut générer un volume élevé d’alertes non pertinentes dans le cas
-de variations normales du système ; d’autre part, certaines anomalies progressives
-ou atypiques peuvent ne pas être détectées si elles ne dépassent pas les seuils définis.
-
-Enfin, l’absence de mécanismes d’analyse prédictive ou de détection des tendances
-empêche toute anticipation des dégradations du système, limitant ainsi la surveillance
-à une logique essentiellement réactive.
-
-\subsubsection*{Limites liées à la gestion des données}
-
-Les données générées par les systèmes SAP présentent une forte hétérogénéité en termes
-de structure et de format, chaque transaction produisant ses propres champs et
-indicateurs. Cette diversité complique leur exploitation et rend difficile toute
-forme de traitement unifié.
-
-L’absence d’un mécanisme d’agrégation ou de normalisation des données limite la
-possibilité d’analyse globale et empêche la mise en place d’outils avancés d’analyse,
-notamment dans le cadre de la détection d’anomalies ou de corrélations complexes entre événements.
-
-De plus, le volume important de données à analyser quotidiennement constitue une
-charge cognitive significative pour les consultants, ce qui peut impacter l’efficacité
-du processus de surveillance et la rapidité de prise de décision.
-
-\subsubsection*{Limites de la gestion des connaissances SAP}
-
-La gestion des connaissances au sein de l’équipe repose sur un ensemble de sources
-hétérogènes et distribuées, incluant la documentation officielle, les SAP Notes
-et les ressources internes. Cette organisation ne repose sur aucun système unifié
-permettant une centralisation ou une structuration des informations.
-
-La recherche d’information s’effectue généralement à partir de mots-clés, sans prise
-en compte du contexte sémantique ni des relations entre les documents. Cela peut
-entraîner des difficultés dans l’identification rapide des informations pertinentes.
-
-Par ailleurs, les liens entre les différentes منابع documentaires ne sont pas
-explicitement structurés, ce qui oblige les consultants à naviguer manuellement entre
-plusieurs sources. Cette situation peut allonger les délais de résolution des incidents.
-
-Enfin, la dépendance à l’expertise individuelle constitue un facteur de fragilité
-organisationnelle. L’absence de mécanismes de capitalisation et de partage structuré
-des connaissances peut entraîner une perte d’information critique en cas d’indisponibilité
-ou de départ de certains experts.
-\subsection{Solutions existantes et analyse concurrentielle}
-\label{sec:solutions_existantes}
-
-Plusieurs solutions dédiées ou adaptées à la surveillance des environnements SAP
-existent actuellement. Ces solutions se distinguent principalement par leur niveau
-d’intégration avec l’écosystème SAP, leurs capacités d’analyse ainsi que leur
-approche de la détection des anomalies.
-
-\subsubsection*{Outils natifs SAP}
-
-Les outils natifs proposés par SAP constituent la première catégorie de solutions
-utilisées pour la supervision des systèmes. Parmi eux, SAP Solution Manager (SolMan)
-offre un ensemble de fonctionnalités intégrées permettant la surveillance technique,
-la gestion des incidents ainsi que le suivi des performances des systèmes SAP.
-
-Cette solution présente l’avantage d’une intégration native avec les environnements SAP,
-permettant un accès direct aux données internes et aux transactions. Elle propose
-également des mécanismes de monitoring centralisé et des outils de diagnostic.
-
-Cependant, ces outils restent principalement orientés vers une surveillance technique
-classique. Ils reposent en grande partie sur des règles et des seuils prédéfinis,
-et offrent des capacités limitées en matière d’analyse intelligente, notamment en
-ce qui concerne la détection proactive des anomalies ou l’interprétation contextuelle
-des événements.
-
-\subsubsection*{Solutions SAP basées sur le Machine Learning}
-
-SAP propose également des solutions intégrant des capacités de Machine Learning,
-notamment à travers SAP Leonardo ML. Ces solutions permettent d’exploiter les données
-générées par les systèmes SAP afin d’identifier des patterns et de détecter certaines
-anomalies.
-
-L’intégration native avec les systèmes ERP constitue un avantage majeur, facilitant
-l’accès aux données et leur traitement en temps réel. Ces outils permettent également
-d’introduire une dimension prédictive dans la surveillance des systèmes.
-
-Néanmoins, ces solutions présentent certaines limites, notamment en termes de flexibilité
-et de personnalisation. Elles sont généralement dépendantes de l’écosystème SAP et
-souvent orientées vers des déploiements cloud, ce qui peut ne pas convenir à toutes
-les architectures existantes. De plus, leur coût peut représenter un frein pour
-certaines organisations.
-
-\subsubsection*{Approches hybrides et pratiques courantes}
-
-En complément des outils existants, de nombreuses organisations adoptent des approches
-hybrides combinant les outils SAP avec des procédures manuelles réalisées par les
-consultants BASIS. Ces pratiques incluent l’utilisation des T-codes de surveillance
-ainsi que l’analyse directe des logs système.
-
-Cette approche permet une certaine flexibilité et une adaptation aux besoins spécifiques
-de chaque environnement SAP. Elle repose toutefois fortement sur l’expertise humaine
-et nécessite une interprétation manuelle des informations collectées.
-\subsubsection*{Synthèse comparative}
-
-\begin{table}[H]
-\centering
-\caption{Synthèse des solutions de surveillance SAP}
-\label{tab:synthese_sap}
-\renewcommand{\arraystretch}{1.4}
-\begin{tabular}{|p{3.2cm}|p{3.5cm}|p{3.5cm}|p{3.5cm}|}
-\hline
-\textbf{Catégorie} & \textbf{Approche} & \textbf{Points forts} & \textbf{Limites} \\
-\hline
-
-Outils natifs SAP (SolMan)
-&
-Surveillance basée sur T-codes et règles prédéfinies
-&
-Intégration native avec SAP \newline
-Accès direct aux données système \newline
-Supervision centralisée
-&
-Faible capacité d'analyse intelligente \newline
-Basé sur des seuils statiques \newline
-Peu flexible
-\\
-\hline
-
-Solutions SAP avec Machine Learning (SAP Leonardo ML)
-&
-Analyse basée sur des modèles de Machine Learning
-&
-Détection d'anomalies \newline
-Analyse prédictive \newline
-Intégration ERP native
-&
-Coût élevé \newline
-Dépendance au cloud \newline
-Personnalisation limitée
-\\
-\hline
-
-Approches hybrides (outils + intervention humaine)
-&
-Combinaison de monitoring automatique et analyse manuelle
-&
-Flexibilité \newline
-Adaptation aux besoins spécifiques \newline
-Exploitation de l'expertise humaine
-&
-Dépendance aux consultants \newline
-Charge opérationnelle élevée \newline
-Risque d'erreur humaine
-\\
-\hline
-
-\end{tabular}
-\end{table}
-\subsubsection*{Synthèse}
-
-L’analyse des solutions existantes montre que, malgré la disponibilité d’outils
-performants, la surveillance des systèmes SAP reste largement dépendante de
-configurations spécifiques, de règles statiques et de l’intervention humaine.
-
-Les capacités d’analyse avancée, notamment en termes de compréhension contextuelle
-des événements et de détection intelligente des anomalies, restent limitées ou
-partiellement exploitées dans les solutions actuelles.
+Ainsi, ces éléments mettent en évidence certaines limites des approches existantes, tant au niveau des méthodes traditionnelles que des solutions avancées, notamment en termes de temps, de coût et d’adaptation aux besoins spécifiques
 \label{sec:solution}
+\subsubsection{la solution proposée}
+A fin de traiter les limites repérées dans les solutions existantes, notre proposition consiste à réaliser un assistant intelligent de surveillance du Système SAP qui s’appuie sur des techniques d’intelligence artificielle ainsi qu’une approche moderne de l’analyse des données afin d’améliorer la compréhension et le suivi de l’évènement système. Car, à partir du moment où tous les outils de surveillance classiques reposent sur des traces fixes ou sur une détection par seuils ou niveaux, la mise au point des solutions de surveillance de ce Système ne s’envisage que sur la base de deux techniques : la recherche d’information et la mise à disposition de documents présentant l’avantage d’apporter des explications contextualisées d’incidents et de suggestion d’explications de résolution de ceux-ci. Le cadre théorique sur lequel s’appuie notre solution est bien le cadre hybride Retrieval-Augmented Generation (RAG) couplé à un mécanisme de cache (CAG).La solution, conçue pour interpréter une grande diversité de problèmes du domaine des systèmes SAP, même lorsqu'ils ne sont pas exprimés de la même manière, s’appuie sur des techniques de recherche sémantique pour établir des relations pertinentes entre les incidents rencontrés et les connaissances disponibles pour la réponse. À ce sujet, les réponses, issues de documents fiables, devraient permettre de réduire le nombre de faux positifs et d’améliorer la pertinence des réponses issues des analyses.
 
-Afin de remédier aux limites constatées dans le système actuel, un système de surveillance
-intelligent des environnements SAP est proposé. Cette solution a pour objectif d'automatiser
-la détection des anomalies, de fournir des alertes enrichies en contexte et de centraliser
-l'accès à la documentation SAP.
-
-
-\begin{itemize}[leftmargin=*, label=\textbullet]
-
-  \item \textbf{Collecte et traitement de la documentation :} La solution collecte automatiquement
-la documentation SAP depuis le portail SAP Help ainsi que les livres techniques, en
-préservant leur structure et leur contenu. Les données collectées sont ensuite nettoyées,
-organisées et enrichies avec des informations contextuelles pour faciliter leur
-exploitation ultérieure.
-
-  \item \textbf{Collecte et traitement de la documentation :} La solution collecte automatiquement
-la documentation SAP depuis le portail SAP Help ainsi que les livres techniques, en
-préservant leur structure et leur contenu. Les données collectées sont ensuite nettoyées,
-organisées et enrichies avec des informations contextuelles pour faciliter leur
-exploitation ultérieure.
-
-  \item \textbf{Base de connaissances centralisée :} L'ensemble de la documentation traitée est
-stocké dans une base de connaissances unifiée, permettant aux consultants d'interroger
-directement le système en langage naturel pour retrouver une information pertinente, sans
-avoir à naviguer manuellement entre plusieurs sources.
-
-
-
-  \item \textbf{Recherche et génération de réponses :} Lorsqu'un consultant pose une question,
-le système identifie les documents les plus pertinents dans la base de connaissances et
-génère automatiquement une réponse argumentée et sourcée, adaptée au contexte de la
-requête.
-  \item \textbf{Prévention des erreurs :} Des mécanismes de validation sont intégrés pour
-s'assurer que les réponses générées sont bien fondées sur la documentation disponible
-et non sur des informations incorrectes.
-  \item \textbf{Interface et déploiement :} La solution est accessible via une interface web
-intuitive comprenant un chatbot de support, un tableau de bord de surveillance en temps
-réel et un panneau d'administration. Elle est également connectée à Microsoft Teams afin
-de notifier automatiquement les équipes lors de la survenue d'incidents critiques.
-
-
-
+Cette approche hybride permet une large couverture de l’ensemble des cas possibles tout en garantissant un haut degré de précision pour la réponse. Elle s'inscrit dans la volonté d’améliorer le processus décisionnel du consultant SAP BASIS en lui fournissant des données significatives, pouvant contribuer à sa prise de décision, en un temps raisonnable, tout en réduisant les tâches de validation à mener.
 
 \end{itemize}
 
