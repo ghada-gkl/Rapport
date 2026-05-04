@@ -50,7 +50,7 @@ documentation du Portail d'Aide SAP :
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.3\textwidth]{figures/scrapy_logo}
+    \includegraphics[width=0.3\textwidth]{images/scrapy.png}
     \caption{Logo de Scrapy\footnotemark}
 \end{figure}
 \footnotetext{\url{https://github.com/scrapy/scrapy}}
@@ -65,7 +65,7 @@ documentation du Portail d'Aide SAP :
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.3\textwidth]{figures/playwright_logo}
+    \includegraphics[width=0.3\textwidth]{images/playwright.png}
     \caption{Logo de Playwright}
 \end{figure}
 
@@ -248,6 +248,7 @@ formats adaptés à un traitement et une analyse ultérieurs.
 Des stratégies complètes d'ingestion de données ont été mises en œuvre pour gérer
 plusieurs sources de données :
 
+
 %% ─── Colour palette ────────────────────────────────────────────────────────
 \definecolor{sapred}{RGB}{180,30,30}
 \definecolor{boxblue}{RGB}{220,235,255}
@@ -412,6 +413,66 @@ plusieurs sources de données :
 }
 \caption{Pipeline d'ingestion multi-sources des données SAP}
 \label{fig:ingestion-donnees-sap}
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.45cm and 2.0cm,
+        source/.style={
+            rectangle, rounded corners=6pt,
+            draw=blue!40, fill=blue!10,
+            text width=2.4cm, align=center,
+            minimum height=0.85cm, font=\small
+        },
+        process/.style={
+            rectangle, rounded corners=6pt,
+            draw=orange!70, fill=orange!10,
+            text width=2.4cm, align=center,
+            minimum height=0.85cm, font=\small
+        },
+        storage/.style={
+            cylinder, shape border rotate=90,
+            draw=green!60, fill=green!10,
+            text width=1.8cm, align=center,
+            minimum height=1.0cm, font=\small,
+            aspect=0.25
+        },
+        arrow/.style={-Stealth, thick, gray!60}
+    ]
+
+    %% ── Sources (colonne 1) ──────────────────────────────────────────────────
+    \node[source] (rt)     {Temps réel\\(PyRFC)};
+    \node[source, below=0.45cm of rt]    (batch)  {Traitement\\par lots};
+    \node[source, below=0.45cm of batch] (manual) {Upload\\manuel};
+    \node[source, below=0.45cm of manual](kb)     {Base de\\connaissances};
+
+    %% ── Nœud fantôme centré entre les 4 sources ──────────────────────────────
+    \coordinate (mid) at ($(rt.south)!0.5!(kb.north)$);
+
+    %% ── Ingestion Layer (colonne 2) ─────────────────────────────────────────
+    \node[process] (ingest) at (mid -| {$(rt.east)+(2.2cm,0)$})
+        {Couche\\d'Ingestion};
+
+    %% ── Processing Layer (colonne 3) ────────────────────────────────────────
+    \node[process, right=1.8cm of ingest] (proc)
+        {Traitement\\et Parsing};
+
+    %% ── Storage (colonne 4) ─────────────────────────────────────────────────
+    \node[storage, right=1.8cm of proc] (store)
+        {Stockage\\Structuré};
+
+    %% ── Flèches sources → ingestion ─────────────────────────────────────────
+    \foreach \src in {rt, batch, manual, kb}
+        \draw[arrow] (\src.east) -- (ingest.west);
+
+    %% ── Pipeline principal ──────────────────────────────────────────────────
+    \draw[arrow] (ingest) -- (proc);
+    \draw[arrow] (proc)   -- (store);
+
+    \end{tikzpicture}
+    \caption{Pipeline d'ingestion des données multi-sources}
+    \label{fig:data_ingestion_pipeline}
+
 \end{figure}
 
 \begin{itemize}
@@ -451,7 +512,7 @@ Notre framework de scraping adresse le défi des documents imbriqués par :
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.85\textwidth]{figures/web_scraping_architecture}
+    \includegraphics[width=0.85\textwidth]{images/webscraping.png}
     \caption{Architecture et flux du Web Scraping}
 \end{figure}
 
@@ -606,9 +667,41 @@ La stratégie de chunking adaptatif inclut une gestion spécialisée pour :
 \end{itemize}
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.85\textwidth]{figures/adaptive_chunking_flow}
-    \caption{Flux de l'algorithme de chunking adaptatif}
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm,
+    box/.style={rectangle, rounded corners=6pt, draw, align=center,
+                text width=8cm, minimum height=1cm, font=\small},
+    purple/.style={box, draw=violet!50, fill=violet!7},
+    amber/.style={box,  draw=orange!60, fill=orange!6},
+    teal/.style={box,   draw=teal!60,   fill=teal!7},
+    gray/.style={box,   draw=gray!50,   fill=gray!8, rounded corners=14pt},
+    arrow/.style={-Stealth, gray!60, thick}
+]
+
+\node[gray]   (src)  {Document source SAP};
+\node[purple, below=of src]  (ana)
+    {\textbf{Analyse du texte}\\Complexité · densité SAP · frontières};
+\node[purple, below=of ana]  (base)
+    {\textbf{Taille de base : 516 tokens}\\Min 128 — Max 2048 · chevauch. 30\,\%};
+\node[amber,  below=of base] (adj)
+    {\textbf{Ajustement adaptatif}\\Complexité élevée $-20\,\%$ · faible $+20\,\%$};
+\node[amber,  below=of adj]  (spec)
+    {\textbf{Gestion spéciale}\\Notes SAP · images · termes techniques};
+\node[teal,   below=of spec] (out)
+    {\textbf{Chunks finaux}\\Cohérence sémantique préservée};
+\node[gray,   below=of out]  (graph) {Graphe de connaissances};
+
+\draw[arrow] (src)  -- (ana);
+\draw[arrow] (ana)  -- (base);
+\draw[arrow] (base) -- (adj);
+\draw[arrow] (adj)  -- (spec);
+\draw[arrow] (spec) -- (out);
+\draw[arrow] (out)  -- (graph);
+
+\end{tikzpicture}
+\caption{Flux de l'algorithme de chunking adaptatif}
+\label{fig:chunking_adaptatif}
 \end{figure}
 
 % ─────────────────────────────────────────────────────────────────────────────
