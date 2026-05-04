@@ -137,6 +137,7 @@ Ces transactions sont utilisées par les consultants BASIS\footnotemark[1] pour 
 \footnotetext[2]{ABAP : langage de programmation SAP utilisé pour développer et personnaliser les applications.}% ============================================================
 \begin{figure}[H]
 \centering
+<<<<<<< Updated upstream
 \begin{tikzpicture}[
     node distance=0.8cm,
     every node/.style={font=\small},
@@ -185,6 +186,9 @@ Ces transactions sont utilisées par les consultants BASIS\footnotemark[1] pour 
 \draw[arr] (analyse.south) -- (result.north);
 
 \end{tikzpicture}
+=======
+\includegraphics[width=0.8\textwidth]{images/processus.png}
+>>>>>>> Stashed changes
 \caption{Processus de surveillance manuelle des systèmes SAP}
 \label{fig:surveillance-manuelle}
 \end{figure}
@@ -316,7 +320,45 @@ Ainsi, ces éléments mettent en évidence certaines limites des approches exist
 \subsubsection{la solution proposée}
 A fin de traiter les limites repérées dans les solutions existantes, notre proposition consiste à réaliser un assistant intelligent de surveillance du Système SAP qui s’appuie sur des techniques d’intelligence artificielle ainsi qu’une approche moderne de l’analyse des données afin d’améliorer la compréhension et le suivi de l’évènement système. Car, à partir du moment où tous les outils de surveillance classiques reposent sur des traces fixes ou sur une détection par seuils ou niveaux, la mise au point des solutions de surveillance de ce Système ne s’envisage que sur la base de deux techniques : la recherche d’information et la mise à disposition de documents présentant l’avantage d’apporter des explications contextualisées d’incidents et de suggestion d’explications de résolution de ceux-ci. Le cadre théorique sur lequel s’appuie notre solution est bien le cadre hybride Retrieval-Augmented Generation (RAG) couplé à un mécanisme de cache (CAG).La solution, conçue pour interpréter une grande diversité de problèmes du domaine des systèmes SAP, même lorsqu'ils ne sont pas exprimés de la même manière, s’appuie sur des techniques de recherche sémantique pour établir des relations pertinentes entre les incidents rencontrés et les connaissances disponibles pour la réponse. À ce sujet, les réponses, issues de documents fiables, devraient permettre de réduire le nombre de faux positifs et d’améliorer la pertinence des réponses issues des analyses.
 
+<<<<<<< Updated upstream
 Cette approche hybride permet une large couverture de l’ensemble des cas possibles tout en garantissant un haut degré de précision pour la réponse. Elle s'inscrit dans la volonté d’améliorer le processus décisionnel du consultant SAP BASIS en lui fournissant des données significatives, pouvant contribuer à sa prise de décision, en un temps raisonnable, tout en réduisant les tâches de validation à mener.
+=======
+Afin de remédier aux limites constatées dans le système actuel, un système de surveillance
+intelligent des environnements SAP est proposé. Cette solution a pour objectif d'automatiser
+la détection des anomalies, de fournir des alertes enrichies en contexte et de centraliser
+l'accès à la documentation SAP.
+
+
+\begin{itemize}[leftmargin=*, label=\textbullet]
+
+  \item \textbf{Collecte et traitement de la documentation :} La solution collecte automatiquement
+la documentation SAP depuis le portail SAP Help ainsi que les livres techniques, en
+préservant leur structure et leur contenu. Les données collectées sont ensuite nettoyées,
+organisées et enrichies avec des informations contextuelles pour faciliter leur
+exploitation ultérieure.
+
+  \item \textbf{Base de connaissances centralisée :} L'ensemble de la documentation traitée est
+stocké dans une base de connaissances unifiée, permettant aux consultants d'interroger
+directement le système en langage naturel pour retrouver une information pertinente, sans
+avoir à naviguer manuellement entre plusieurs sources.
+
+
+
+  \item \textbf{Recherche et génération de réponses :} Lorsqu'un consultant pose une question,
+le système identifie les documents les plus pertinents dans la base de connaissances et
+génère automatiquement une réponse argumentée et sourcée, adaptée au contexte de la
+requête.
+  \item \textbf{Prévention des erreurs :} Des mécanismes de validation sont intégrés pour
+s'assurer que les réponses générées sont bien fondées sur la documentation disponible
+et non sur des informations incorrectes.
+  \item \textbf{Interface et déploiement :} La solution est accessible via une interface web
+intuitive comprenant un chatbot de support, un tableau de bord de surveillance en temps
+réel et un panneau d'administration. Elle est également connectée à Microsoft Teams afin
+de notifier automatiquement les équipes lors de la survenue d'incidents critiques.
+
+
+
+>>>>>>> Stashed changes
 
 \end{itemize}
 
@@ -333,12 +375,42 @@ CRISP-DM (\textit{Cross-Industry Standard Process for Data Mining}) est une mét
 éprouvée par l'industrie pour guider les projets de fouille de données. Son cycle de vie
 se compose de six phases interdépendantes (voir Figure 1.4)
 
-\begin{figure}[htbp]
-  \centering
-   \includegraphics[width=0.65\textwidth]{crisp_dm.png}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    every node/.style={font=\small},
+    circle_node/.style={circle, draw=#1, fill=#1, text=white, font=\large\bfseries,
+                        minimum size=1.1cm, inner sep=0pt},
+    label_node/.style={text centered, font=\scriptsize, text width=2cm},
+    arr/.style={-{Stealth[length=6pt]}, line width=2pt, color=#1},
+]
 
-  \caption{Cycle de vie du framework CRISP-DM}
-  \label{fig:crisp_dm}
+% Circles
+\node[circle_node=yellow!80!orange] (n1) at (0,0)    {1};
+\node[circle_node=teal]             (n2) at (2.2,0)  {2};
+\node[circle_node=red!70!black]     (n3) at (4.4,0)  {3};
+\node[circle_node=olive!80!black]   (n4) at (6.6,0)  {4};
+\node[circle_node=blue!60!cyan]     (n5) at (8.8,0)  {5};
+\node[circle_node=yellow!70!orange] (n6) at (11.0,0) {6};
+
+% Arrows between circles
+\draw[arr=yellow!60!orange] (n1.east) -- (n2.west);
+\draw[arr=teal]             (n2.east) -- (n3.west);
+\draw[arr=red!60!black]     (n3.east) -- (n4.west);
+\draw[arr=olive!70!black]   (n4.east) -- (n5.west);
+\draw[arr=blue!50!cyan]     (n5.east) -- (n6.west);
+
+% Labels below
+\node[label_node, below=0.4cm of n1] {Compréhension\\ du métier};
+\node[label_node, below=0.4cm of n2] {Compréhension\\ des données};
+\node[label_node, below=0.4cm of n3] {Préparation\\ des données};
+\node[label_node, below=0.4cm of n4] {Modélisation};
+\node[label_node, below=0.4cm of n5] {Évaluation};
+\node[label_node, below=0.4cm of n6] {Déploiement};
+
+\end{tikzpicture}
+\caption{Cycle de vie du framework CRISP-DM}
+\label{fig:crisp-dm}
 \end{figure}
 
 \begin{enumerate}[leftmargin=*, label=\arabic*.]
