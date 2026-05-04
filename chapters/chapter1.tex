@@ -93,39 +93,48 @@ RAG.
 \section{Étude de l'existant}
 \label{sec:existant}
 
-Dans le cadre du développement d’un système intelligent de surveillance des systèmes SAP
-au sein d’Avaxia Group, une étude de l’existant a été réalisée afin de comprendre les
-processus actuels mis en œuvre par l’équipe BASIS.
+Dans le cadre du développement d’un système intelligent de surveillance des systèmes SAP au sein d’Avaxia Group, une analyse de l’existant a été réalisée pour comprendre les pratiques actuelles mises en œuvre par l’équipe SAP BASIS.
 
 \subsection*{Rôle du consultant SAP BASIS}
 
-Le consultant SAP BASIS est responsable de l’administration technique des systèmes SAP.
-Ses missions principales incluent la surveillance des systèmes, la gestion des performances,
-le traitement des incidents techniques ainsi que la maintenance quotidienne des environnements SAP.
+Le consultant SAP BASIS joue un rôle central dans l’administration technique des systèmes SAP. Il est chargé d’assurer le bon fonctionnement des environnements en prenant en charge plusieurs activités essentielles, notamment la surveillance des systèmes SAP, la gestion des performances des systèmes SAP, le traitement des incidents techniques ainsi que la maintenance quotidienne des systèmes SAP.
 
-Dans le cadre de la surveillance, le consultant BASIS vérifie régulièrement l’état global
-du système à travers différentes transactions SAP. Il analyse les jobs en arrière-plan,
-les erreurs système, les impressions en attente ainsi que l’activité des processus.
-Ces actions permettent d’assurer le bon fonctionnement des systèmes et d’identifier
-les anomalies éventuelles.
+Dans ses activités de surveillance des systèmes SAP, le consultant BASIS effectue un suivi régulier de l’état global du système SAP. Cette surveillance s’appuie sur l’utilisation de différentes transactions SAP, appelées T-codes, permettant d’accéder à des informations détaillées sur le fonctionnement du système SAP. Il examine notamment les jobs en arrière-plan afin de vérifier leur exécution correcte, analyse les erreurs système SAP susceptibles d’impacter les performances des systèmes SAP, contrôle les demandes d’impression en attente et observe l’activité des processus en cours.
+
+La surveillance des systèmes SAP repose ainsi sur un ensemble de transactions spécifiques, appelées T-codes, chacune étant dédiée à un aspect précis du système SAP. Toutefois, dans un contexte professionnel réel, un consultant SAP BASIS est souvent amené à intervenir simultanément sur plusieurs systèmes de production appartenant à des clients différents. Cette multiplicité d’environnements complexifie les activités de monitoring des systèmes SAP, en raison de la dispersion des informations et de la nécessité de naviguer entre plusieurs T-codes et systèmes SAP. Cela peut engendrer des difficultés de suivi des systèmes SAP, des risques de confusion et une perte d’efficacité dans la détection et le traitement des anomalies des systèmes SAP.
+
+
+\newpage
 \subsection*{Surveillance des systèmes SAP}
 
-La surveillance quotidienne des systèmes SAP repose sur l’utilisation de plusieurs codes
-de transaction (T-codes), chacun fournissant des informations spécifiques :
+La surveillance quotidienne des systèmes SAP s’appuie sur l’utilisation de nombreux codes de transaction (T-codes), chacun offrant une visibilité sur un aspect spécifique du système. À titre illustratif, les T-codes suivants figurent parmi les plus couramment utilisés :
 
-\begin{itemize}
-    \item \texttt{SM37} : permet de consulter les jobs en arrière-plan et leur état d’exécution.
-    \item \texttt{ST22} : permet d’analyser les dumps ABAP générés par les erreurs système.
-    \item \texttt{SP01} : permet de visualiser les spools d’impression.
-    \item \texttt{DB02} : fournit des informations sur l’état de la base de données.
-    \item \texttt{SM66} : permet de superviser les processus actifs du système.
-\end{itemize}
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|p{4cm}|p{7cm}|}
+\hline
+\textbf{T-code} & \textbf{Fonction} & \textbf{Description} \\
+\hline
+SM37 & Jobs en arrière-plan & Suivi et analyse des jobs batch (terminé, en cours, échoué). \\
+\hline
+ST22 & Dumps ABAP & Analyse des erreurs critiques du système (ABAP dumps). \\
+\hline
+SP01 & Spools & Consultation et gestion des demandes d’impression. \\
+\hline
+DB02 & Base de données & Informations sur l’espace et l’état de la base de données. \\
+\hline
+SM66 & Processus actifs & Supervision des processus en cours en temps réel. \\
+\hline
+\end{tabular}
+\caption{Exemples de T-codes utilisés pour la surveillance SAP}
+\end{table}
 
-Ces transactions sont utilisées de manière régulière par les consultants BASIS afin de
-collecter les informations nécessaires à la supervision des systèmes SAP.
-% ============================================================
-% Schema 1 : Surveillance manuelle des systèmes SAP
-% ============================================================
+Il est important de noter que ces exemples ne représentent qu’une infime partie des milliers de T-codes disponibles dans l’environnement SAP. Dans ce contexte, il est difficile pour un consultant SAP de maîtriser l’ensemble de ces transactions.
+
+Ces transactions sont utilisées par les consultants BASIS\footnotemark[1] pour superviser les systèmes. Certaines analyses impliquent également ABAP\footnotemark[2].
+
+\footnotetext[1]{SAP BASIS : couche technique assurant l’administration et la maintenance des systèmes SAP.}
+\footnotetext[2]{ABAP : langage de programmation SAP utilisé pour développer et personnaliser les applications.}% ============================================================
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}[
