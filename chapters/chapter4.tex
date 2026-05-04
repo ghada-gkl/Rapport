@@ -248,10 +248,170 @@ formats adaptés à un traitement et une analyse ultérieurs.
 Des stratégies complètes d'ingestion de données ont été mises en œuvre pour gérer
 plusieurs sources de données :
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.85\textwidth]{figures/data_ingestion_pipeline}
-    \caption{Pipeline d'ingestion des données}
+%% ─── Colour palette ────────────────────────────────────────────────────────
+\definecolor{sapred}{RGB}{180,30,30}
+\definecolor{boxblue}{RGB}{220,235,255}
+\definecolor{boxgray}{RGB}{245,245,245}
+\definecolor{sideboxbg}{RGB}{255,252,230}
+\definecolor{outputbg}{RGB}{230,245,230}
+\definecolor{arrowgray}{RGB}{100,100,100}
+
+%% ─── TikZ styles ────────────────────────────────────────────────────────────
+\tikzset{
+  %% Red source boxes (SAP System / SAP Help Portal / SAP Notes)
+  source/.style={
+    draw=sapred, fill=white, thick,
+    rounded corners=4pt,
+    font=\small\bfseries\color{sapred},
+    minimum width=2.6cm, minimum height=0.75cm,
+    align=center
+  },
+  %% Regular process boxes
+  proc/.style={
+    draw=arrowgray, fill=boxgray, thick,
+    rounded corners=3pt,
+    font=\small,
+    minimum width=3.0cm, minimum height=0.75cm,
+    align=center
+  },
+  %% Central hub box (Data Cleaning …)
+  hub/.style={
+    draw=arrowgray, fill=boxblue, thick,
+    rounded corners=4pt,
+    font=\small\bfseries,
+    minimum width=3.2cm, minimum height=1.4cm,
+    align=center
+  },
+  %% Right-side data-type boxes (dashed border)
+  databox/.style={
+    draw=arrowgray, fill=sideboxbg, thick, dashed,
+    rounded corners=3pt,
+    font=\footnotesize,
+    minimum width=3.5cm, minimum height=1.3cm,
+    align=center
+  },
+  %% Final output box
+  output/.style={
+    draw=arrowgray, fill=outputbg, thick,
+    rounded corners=4pt,
+    font=\small\bfseries,
+    minimum width=3.0cm, minimum height=1.1cm,
+    align=center
+  },
+  %% Solid arrows
+  arr/.style={-{Stealth[length=6pt]}, thick, color=arrowgray},
+  %% Dashed arrows
+  darr/.style={-{Stealth[length=6pt]}, thick, dashed, color=arrowgray},
+  %% Label on dashed arrow
+  lbl/.style={font=\footnotesize\itshape, fill=white, inner sep=2pt}
+}
+
+\begin{figure}[htbp]
+\centering
+\makebox[\textwidth][c]{%
+\resizebox{1.08\textwidth}{!}{%
+\begin{tikzpicture}[node distance=0pt]
+
+%% ════════════════════════════════════════════════════════════════════════════
+%%  ROW 1 – SAP System  →  PyRFC  →  Real-time Ingestion
+%% ════════════════════════════════════════════════════════════════════════════
+\node[source]  (sys)   {SAP Système};
+\node[proc,    right=1.4cm of sys]   (pyrfc)  {Extraction temps\\réel PyRFC};
+\node[proc,    right=1.4cm of pyrfc] (rt)     {Ingestion en\\temps réel};
+
+%% ════════════════════════════════════════════════════════════════════════════
+%%  ROW 2 – Portail d'aide SAP  →  Web Scraping  →  Traitement par lots
+%% ════════════════════════════════════════════════════════════════════════════
+\node[source,  below=2.4cm of sys]   (portal) {Portail d'aide SAP};
+\node[proc,    right=1.4cm of portal](scrape) {Pipeline de\\web scraping};
+\node[proc,    right=1.4cm of scrape](bp1)    {Traitement\\par lots};
+
+%% ════════════════════════════════════════════════════════════════════════════
+%%  ROW 3 – Notes SAP  →  Téléchargement manuel  →  Traitement par lots
+%% ════════════════════════════════════════════════════════════════════════════
+\node[source,  below=2.4cm of portal](notes)  {Notes SAP};
+\node[proc,    right=1.4cm of notes] (manual) {Téléchargement\\manuel};
+\node[proc,    right=1.4cm of manual](bp2)    {Traitement\\par lots};
+
+%% ════════════════════════════════════════════════════════════════════════════
+%%  CENTRE – Data Cleaning, Normalisation & Chunking
+%%  (vertically centred between the three rows)
+%% ════════════════════════════════════════════════════════════════════════════
+%% Compute a y-position midway between row 1 and row 3
+\node[hub, right=5.0cm of bp1, yshift=-1.2cm]
+      (hub) {Nettoyage, normalisation\\[2pt]\& segmentation\\des données};
+
+%% ════════════════════════════════════════════════════════════════════════════
+%%  RIGHT SIDE – three data-type boxes
+%% ════════════════════════════════════════════════════════════════════════════
+\node[databox, above right=0.7cm and 2.0cm of hub]
+      (d1) {Journaux de transactions\\Enregistrements d'erreurs\\Métriques de performance};
+
+\node[databox, right=2.0cm of hub]
+      (d2) {Documentation\\Guides de configuration\\Spécifications techniques};
+
+\node[databox, below right=0.7cm and 2.0cm of hub]
+      (d3) {Instructions de dépannage\\Versions des composants\\Problèmes connus · Symptômes\\Solutions};
+
+%% ════════════════════════════════════════════════════════════════════════════
+%%  FAR RIGHT – Construction de graphe et stockage vectoriel
+%% ════════════════════════════════════════════════════════════════════════════
+\node[output, right=2.2cm of d2]
+      (out) {stockage vectoriel};
+
+%% ════════════════════════════════════════════════════════════════════════════
+%%  SOLID ARROWS  (left side pipeline)
+%% ════════════════════════════════════════════════════════════════════════════
+\draw[arr] (sys)    -- (pyrfc);
+\draw[arr] (pyrfc)  -- (rt);
+\draw[arr] (portal) -- (scrape);
+\draw[arr] (scrape) -- (bp1);
+\draw[arr] (notes)  -- (manual);
+\draw[arr] (manual) -- (bp2);
+
+%% Each processing node feeds into the hub
+\draw[arr] (rt)  -- (hub);
+\draw[arr] (bp1) -- (hub);
+\draw[arr] (bp2) -- (hub);
+
+%% Hub to final output
+\draw[arr] (hub) -- (out);
+
+%% ════════════════════════════════════════════════════════════════════════════
+%%  DASHED ARROWS  (processing nodes → data-type boxes)
+%%  with cadence labels
+%% ════════════════════════════════════════════════════════════════════════════
+%% Real-time Ingestion  →  Transaction Logs  (Continuous)
+\draw[darr] (rt.east)  to[out=0, in=180]
+            node[lbl, pos=0.35] {En continu} (d1.west);
+
+%% Batch Processing (row 2) → Documentation  (Planifié)
+\draw[darr] (bp1.east) to[out=0, in=180]
+            node[lbl, pos=0.35] {Planifié} (d2.west);
+
+%% Batch Processing (row 3) → Troubleshooting  (Selon disponibilité)
+\draw[darr] (bp2.east) to[out=0, in=180]
+            node[lbl, pos=0.35] {Selon disponibilité} (d3.west);
+
+%% Data-type boxes feed into the hub (right side)
+\draw[darr] (d1.east) to[out=0, in=90]  (out.north);
+\draw[darr] (d2.east) -- (out.west);
+\draw[darr] (d3.east) to[out=0, in=270] (out.south);
+
+%% ════════════════════════════════════════════════════════════════════════════
+%%  OPTIONAL: light background panel around the three source nodes
+%% ════════════════════════════════════════════════════════════════════════════
+\begin{scope}[on background layer]
+  \node[draw=sapred!40, fill=sapred!5, rounded corners=6pt, dashed,
+        fit=(sys)(portal)(notes), inner sep=8pt,
+        label={[font=\tiny\color{sapred}]north west:Sources SAP}] {};
+\end{scope}
+
+\end{tikzpicture}%
+}%
+}
+\caption{Pipeline d'ingestion multi-sources des données SAP}
+\label{fig:ingestion-donnees-sap}
 \end{figure}
 
 \begin{itemize}
