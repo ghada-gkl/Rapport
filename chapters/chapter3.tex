@@ -45,6 +45,13 @@ domaines fonctionnels. Parmi ses modules les plus utilisés :
         la gestion de projets, la gestion des services IT et le suivi des processus métier.
 \end{itemize}
 
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.15\textwidth]{images/SAP_2011_logo.svg}
+  \caption{Logo SAP}
+  \label{fig:sap_logo}
+\end{figure}
+
 % ============================================================
 \subsection{Le consultant SAP BASIS}
 
@@ -104,7 +111,6 @@ interprétant leurs sorties par le biais d'un raisonnement assisté par IA, le s
 permet une détection précoce des anomalies et soutient une analyse plus rapide des causes
 profondes.
 
-% ---- SM37 ----
 \subsubsection*{SM37 — Job Overview}
 
 SM37 surveille les \textit{jobs batch} — ce sont des tâches automatiques qui
@@ -125,7 +131,6 @@ le délai éventuel. Cette vue permet à l'administrateur BASIS d'identifier en 
 d'œil tout job bloqué, annulé ou présentant un délai anormal, et d'intervenir
 rapidement avant que cela n'impacte les processus métier.
 
-% ---- DB02 ----
 \subsubsection*{DB02 — Space Overview}
 
 DB02 surveille la base de données — l'administrateur contrôle l'espace disque
@@ -146,7 +151,6 @@ tablespace et par segment (tables, index, autres). Un taux d'utilisation élevé
 comme les 87\% visibles ici — constitue un signal d'alerte critique nécessitant
 une action immédiate d'extension ou de purge pour prévenir toute saturation du système.
 
-% ---- ST22 ----
 \subsubsection*{ST22 — Runtime Errors}
 
 ST22 liste les erreurs critiques ABAP — l'administrateur analyse les
@@ -171,142 +175,97 @@ en priorité par l'équipe BASIS.
 % ============================================================
 \subsection{Les Fondements Technologiques de l'IA Générative}
 
-L'intelligence artificielle générative s'appuie sur une série de composants technologiques
-complémentaires qui, lorsqu'ils sont assemblés, permettent la création de systèmes capables
-d'interpréter, de raisonner et de produire du contenu à partir de données complexes. Ce
-rapport se concentre sur deux éléments essentiels : les modèles de langage de grande taille
-(LLMs), qui assurent la compréhension et la génération, et l'architecture RAG
-(\textit{Retrieval-Augmented Generation}), qui améliore ces modèles en leur offrant une
-base de savoir actualisée et vérifiable.
+L’intelligence artificielle générative repose sur un ensemble de technologies complémentaires qui, combinées, permettent de concevoir des systèmes capables d’analyser, de raisonner et de produire du contenu à partir de données complexes. Cette section présente les principaux fondements technologiques qui soutiennent la compréhension et la génération du langage naturel.
 
-% ============================================================
-\subsection{Architecture de l'IA RAG}
+Elle introduit tout d’abord les concepts essentiels de l’apprentissage automatique (\textit{Machine Learning}) et de l’intelligence artificielle, avant d’explorer l’apprentissage profond (\textit{Deep Learning}) ainsi que les modèles basés sur l’architecture \textit{Transformer}. Elle aborde ensuite le traitement automatique du langage naturel (\textit{NLP -- Natural Language Processing}) et met en lumière l’émergence des modèles de langage de grande taille (\textit{LLMs -- Large Language Models}), qui jouent un rôle central dans la génération de texte. Enfin, l’architecture \textit{RAG (Retrieval-Augmented Generation)} est présentée comme une approche permettant d’enrichir ces modèles en leur fournissant un accès à des connaissances actualisées et vérifiables. L’ensemble de ces technologies constitue le socle sur lequel repose la solution proposée dans ce projet.
 
-Un grand modèle de langage (LLM) détient une compréhension générale acquise lors de son
-entraînement, mais il n'a pas d'accès direct à vos documents internes, à vos bases de
-données confidentielles ou aux informations les plus récentes. L'architecture RAG
-(\textit{Retrieval-Augmented Generation}) pallie cette lacune : avant de générer une
-réponse, le système découpe d'abord les documents sources en fragments appelés
-\textit{chunks} — de courts passages de quelques phrases ou paragraphes —, puis transforme
-chacun d'eux en un \textit{embedding}, c'est-à-dire un vecteur numérique qui encode le
-sens du texte plutôt que ses mots exacts. Ces vecteurs sont stockés dans une base de
-données vectorielle, qui permet de retrouver en quelques millisecondes les chunks
-sémantiquement les plus proches d'une question donnée, grâce à une mesure de similarité
-cosinus. On peut percevoir le RAG comme un assistant disposant de sa propre bibliothèque :
-au lieu de répondre directement de mémoire, il consulte d'abord les bonnes références,
-extrait les passages essentiels, les injecte dans son contexte, puis construit une réponse
-ancrée sur des faits vérifiables et traçables.
+% ------------------------------------------------------------
+
+\subsection{Machine Learning et Intelligence Artificielle}
+
+Le \textit{Machine Learning}, ou apprentissage automatique, constitue l’un des piliers fondamentaux de l’intelligence artificielle. Il permet à un système d’apprendre à partir de données sans être explicitement programmé pour chaque tâche. En analysant des ensembles de données, le modèle identifie des régularités statistiques qu’il utilise pour effectuer des prédictions sur de nouvelles données. Cette capacité d’apprentissage automatique est à la base des avancées récentes en intelligence artificielle générative.
+
+% ------------------------------------------------------------
+
+\subsection{Deep Learning}
+
+L’apprentissage profond (\textit{Deep Learning}) est une sous-discipline du \textit{Machine Learning} qui repose sur des réseaux de neurones artificiels composés de plusieurs couches. Ces réseaux permettent d’extraire progressivement des représentations de plus en plus abstraites des données. Grâce à cette structure, ils sont particulièrement efficaces pour traiter des données non structurées telles que le texte, les images ou encore les signaux audio.
+
+% ------------------------------------------------------------
+
+\subsection{Architecture Transformer}
+
+Proposée en 2017 dans l’article \textit{« Attention is All You Need »} \cite{vaswani2017attention}, l’architecture \textit{Transformer} s’est imposée comme une référence dans le domaine du traitement du langage naturel. Elle repose sur le mécanisme d’\textbf{attention} (\textit{self-attention}), qui permet au modèle d’évaluer l’importance de chaque mot par rapport à tous les autres mots d’une séquence, indépendamment de leur position.
+
+Contrairement aux architectures séquentielles traditionnelles telles que les réseaux récurrents (\textit{RNN, LSTM}), le Transformer traite les données en parallèle, ce qui améliore considérablement les performances et permet de capturer efficacement les dépendances à long terme dans le texte.
+
+% ------------------------------------------------------------
+
+\subsection{Traitement Automatique du Langage Naturel (NLP)}
+
+Le traitement automatique du langage naturel (\textit{NLP}) est un domaine de l’intelligence artificielle dédié à l’interaction entre les machines et le langage humain. Il regroupe un ensemble de techniques permettant de comprendre, analyser et générer du texte.
+
+Parmi les principales applications du NLP figurent la classification de textes, l’analyse de sentiments, la traduction automatique, la reconnaissance d’entités nommées ainsi que la génération automatique de contenu.
+
+% ------------------------------------------------------------
+
+\subsection{Les Modèles de Langage de Grande Taille : Capacités et Limites}
+
+Les modèles de langage de grande taille (\textit{LLMs}) sont des modèles avancés d’apprentissage profond entraînés sur des volumes massifs de données textuelles (livres, articles, sites web, code, etc.). Leur objectif est de comprendre et de générer un langage proche de celui des humains.
+
+Comme illustré dans la figure~\ref{fig:llm_intersection}, ces modèles se situent à l’intersection du \textit{Deep Learning} et du \textit{NLP}, combinant ainsi la puissance des réseaux de neurones profonds avec les techniques d’analyse linguistique.
+
+En pratique, un LLM prédit le mot (ou jeton) le plus probable à la suite d’une séquence donnée. En répétant ce processus, il est capable de produire des textes cohérents, de répondre à des प्रश्नs, de résumer des documents ou encore de traduire des contenus. Plus le modèle contient de paramètres, plus il est capable de capturer les nuances complexes du langage.
+
 \begin{figure}[H]
   \centering
-  \resizebox{\textwidth}{!}{%
-  \begin{tikzpicture}[
-      node distance=0.8cm and 1.5cm,
-      box/.style={
-          draw,
-          rounded corners=8pt,
-          minimum width=3cm,
-          minimum height=1cm,
-          align=center,
-          font=\normalsize\bfseries,
-          line width=1.2pt
-      },
-      arrow/.style={-Latex, line width=1.5pt},
-      label/.style={font=\small, midway}
-  ]
-
-  % ══════════════════════════════
-  % LIGNE 1 (haut) : Indexation
-  % ══════════════════════════════
-  \node[box, fill=yellow!40, draw=yellow!80!black] (docs)
-      {Documents};
-
-  \node[box, fill=blue!25, draw=blue!70, right=2cm of docs] (chunking)
-      {Chunking};
-
-  \node[box, fill=purple!25, draw=purple!70, right=2cm of chunking] (embedding)
-      {Embeddings};
-
-  \node[box, fill=green!30, draw=green!70, right=2cm of embedding] (vector)
-      {Vector DB};
-
-  % ══════════════════════════════
-  % LIGNE 2 (bas) : Génération
-  % ══════════════════════════════
-  \node[box, fill=red!20, draw=red!70, below=2.5cm of vector] (retrieval)
-      {Top-K \\ Retrieval};
-
-  \node[box, fill=orange!30, draw=orange!80, left=2cm of retrieval] (llm)
-      {LLM};
-
-  \node[box, fill=cyan!25, draw=cyan!70, left=2cm of llm] (response)
-      {Response};
-
-  % ══════════════════════════════
-  % USER QUERY : centré verticalement
-  % ══════════════════════════════
-  \node[box, fill=gray!20, draw=gray!60,
-        below=2.5cm of embedding] (query)
-      {User Query};
-
-  % ══════════════════════════════
-  % FLÈCHES — Indexation (ligne 1)
-  % ══════════════════════════════
-  \draw[arrow, blue!80]
-      (docs) -- node[label, above]{\small découpage} (chunking);
-
-  \draw[arrow, purple!80]
-      (chunking) -- node[label, above]{\small vectorisation} (embedding);
-
-  \draw[arrow, green!80]
-      (embedding) -- node[label, above]{\small stockage} (vector);
-
-  % ══════════════════════════════
-  % FLÈCHES — Génération (ligne 2)
-  % ══════════════════════════════
-  \draw[arrow, red!80]
-      (vector) -- node[label, right]{\small similarité} (retrieval);
-
-  \draw[arrow, orange!80]
-      (retrieval) -- node[label, below]{\small contexte} (llm);
-
-  \draw[arrow, cyan!80]
-      (llm) -- node[label, below]{\small génération} (response);
-
-  % ══════════════════════════════
-  % FLÈCHES — User Query
-  % ══════════════════════════════
-  \draw[arrow, dashed, gray!70]
-      (query) -- node[label, right]{\small recherche} (vector);
-
-  \draw[arrow, gray!70]
-      (query) -- node[label, right]{\small prompt} (llm);
-
-  \end{tikzpicture}%
-  }
-
-  \caption{Pipeline RAG : indexation, vectorisation, récupération et génération}
-  \label{fig:rag_pipeline}
+  \includegraphics[width=0.6\textwidth]{images/llmv1.png}
+  \caption{Les LLMs à l'intersection du \textit{Deep Learning} et du \textit{NLP}}
+  \label{fig:llm_intersection}
 \end{figure}
 
-% ============================================================
-\subsection{Large Language Models (LLMs)}
+Malgré leurs performances impressionnantes, les LLMs présentent certaines limites. Leur connaissance est limitée aux données utilisées lors de leur entraînement, ce qui les empêche de traiter des informations récentes. De plus, ils peuvent générer des \textbf{hallucinations}, c’est-à-dire produire des réponses plausibles mais incorrectes. Enfin, ils n’ont pas accès aux données internes ou confidentielles d’une organisation.
 
-Un LLM (\textit{Large Language Model}) est un type de modèle d'intelligence artificielle
-qui a été formé sur d'énormes volumes de textes — tels que livres, articles, sites
-internet, code — dans le but de comprendre les structures, les significations et les
-connexions entre les mots d'une langue. En pratique, il anticipe le terme (ou jeton) le
-plus susceptible de suivre un certain texte et c'est en répétant ce processus des milliers
-de fois qu'il produit des réponses cohérentes, rédige des documents, fait des traductions,
-résume ou répond à des interrogations. Plus le modèle est vaste (comportant des milliards
-de paramètres), plus il a la capacité de saisir les subtilités complexes du langage. Des
-exemples de LLM accessibles au public comprennent ChatGPT, Claude et Gemini.
+Parmi les modèles les plus connus figurent \textit{GPT-4}, \textit{Claude} et \textit{Gemini}.
 
-% ============================================================
+% ------------------------------------------------------------
+
+\subsection{Architecture de l'IA RAG (Retrieval-Augmented Generation)}
+
+Bien que les LLMs possèdent une connaissance générale acquise lors de leur entraînement, ils ne disposent pas d’un accès direct aux données spécifiques d’une organisation ni aux informations les plus récentes. L’architecture \textit{RAG (Retrieval-Augmented Generation)} a été conçue pour répondre à cette limitation.
+
+Son fonctionnement repose sur plusieurs étapes. Tout d’abord, les documents sont découpés en fragments appelés \textit{chunks}. Chaque fragment est ensuite transformé en un vecteur numérique (\textit{embedding}) représentant son contenu sémantique. Ces vecteurs sont stockés dans une base de données vectorielle.
+
+Lorsqu’une requête utilisateur est soumise, le système identifie les fragments les plus pertinents à l’aide d’une mesure de similarité (généralement la similarité cosinus). Ces informations sont ensuite injectées dans le contexte du modèle, qui génère une réponse basée sur des données réelles et vérifiables.
+
+Ainsi, le RAG peut être comparé à un assistant intelligent capable de consulter une base documentaire avant de formuler une réponse, garantissant ainsi une meilleure fiabilité.
+
+% ------------------------------------------------------------
+
+\subsection{Pourquoi le RAG ?}
+
+Dans le cadre de ce projet, l’architecture RAG a été retenue pour plusieurs raisons essentielles :
+
+\begin{description}[leftmargin=0pt, labelindent=0pt, style=nextline]
+
+  \item[\textbf{Adaptation à un domaine évolutif}]
+  Dans des environnements tels que les systèmes ERP et SAP, les informations évoluent fréquemment. Le RAG permet d’intégrer des données actualisées au moment de la génération des réponses.
+
+  \item[\textbf{Amélioration de la fiabilité}]
+  En s’appuyant sur des documents externes, le RAG réduit significativement les hallucinations et améliore la précision des réponses \cite{ref20}.
+
+  \item[\textbf{Optimisation des coûts}]
+  Contrairement à d’autres approches, le RAG ne nécessite pas de réentraînement du modèle, ce qui permet de limiter les coûts tout en conservant ses capacités \cite{ref21}.
+
+\end{description}
+
+En outre, en l’absence de jeux de données annotés par des experts et compte tenu de la complexité des \textit{SAP Notes}, l’utilisation d’approches telles que la distillation de connaissances n’est pas adaptée. Le RAG constitue ainsi un compromis efficace entre flexibilité, précision et scalabilité, particulièrement pertinent pour les applications en entreprise.
+
+% ------------------------------------------------------------
+
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 
-Ce chapitre souligne l'importance stratégique du développement d'un système de détection
-d'anomalies adapté aux transactions SAP dans le cadre de la méthodologie CRISP-DM. En
-alignant les capacités techniques sur les objectifs métier, ce projet vise à améliorer
-l'efficacité opérationnelle des équipes BASIS, à optimiser les processus de prise de
-décision et à réduire le temps moyen de résolution des incidents.
+Ce chapitre met en évidence l’importance stratégique de la mise en place d’un système intelligent dédié à la détection des anomalies dans les transactions SAP, en s’appuyant sur une démarche structurée inspirée de la méthodologie CRISP-DM.
+
+En alignant les solutions technologiques avec les besoins métiers, ce projet vise à améliorer l’efficacité opérationnelle des équipes BASIS, à faciliter la prise de décision et à réduire le temps nécessaire à la résolution des incidents. Il s’inscrit ainsi dans une dynamique d’innovation où l’exploitation des données devient un levier essentiel pour optimiser la performance des systèmes d’information.
