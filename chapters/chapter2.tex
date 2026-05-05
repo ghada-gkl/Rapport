@@ -69,20 +69,34 @@ de chacun. Ainsi, nous identifions trois rôles distincts qui interagissent avec
 système :
 \subsection{Besoins fonctionnels}
 
-Les besoins fonctionnels définissent les différentes fonctionnalités que le système doit fournir afin de permettre aux utilisateurs d'exploiter et d'analyser les données provenant du système SAP à travers un assistant intelligent basé sur l'intelligence artificielle.
+Les besoins fonctionnels définissent l'ensemble des fonctionnalités que le système doit
+fournir afin de permettre aux utilisateurs d'exploiter et d'analyser les données issues
+de l'environnement SAP à travers un assistant intelligent basé sur l'intelligence
+artificielle et reposant sur une architecture de génération augmentée par récupération
+\textit{(RAG -- Retrieval-Augmented Generation)}.
 
-Le système comporte principalement deux types d'acteurs : l'\textbf{Administrateur SAP} et l'\textbf{Utilisateur SAP}.
+Le système repose sur deux types d'acteurs principaux : l'\textbf{Administrateur SAP}
+et l'\textbf{Utilisateur SAP}. Il convient de préciser que l'administrateur SAP englobe
+l'ensemble des privilèges de l'utilisateur SAP : en plus de ses responsabilités de
+supervision et de configuration, il peut également interagir avec l'assistant intelligent
+et exploiter pleinement les fonctionnalités offertes par le module RAG, au même titre
+qu'un utilisateur standard.
 
 \subsubsection*{Administrateur SAP}
 
-L'administrateur assure un rôle de supervision du système. Ses principales fonctionnalités sont les suivantes :
+L'administrateur occupe un rôle central de supervision et de gouvernance du système.
+En tant qu'acteur disposant des droits les plus étendus, il cumule les fonctionnalités
+d'administration et celles de l'utilisateur SAP. Ses responsabilités spécifiques
+sont les suivantes :
 
 \begin{itemize}
-\item S'authentifier à l'application.
-\item Consulter les journaux d'activité du système SAP.
-\item Accéder aux graphiques et analyses générés par l'assistant intelligent.
-\item Configurer les paramètres du système et les règles d'alertes.
-\item Consulter l'historique global des conversations effectuées avec le chatbot.
+  \item S'authentifier à l'application de manière sécurisée.
+  \item Consulter et analyser les journaux d'activité du système SAP.
+  \item Configurer les paramètres du système ainsi que les règles d'alertes.
+  \item Consulter l'historique global des conversations effectuées avec le chatbot.
+  \item Interagir avec l'assistant intelligent \textit{(RAG)} et formuler des requêtes
+        en langage naturel portant sur les données SAP, au même titre qu'un utilisateur.
+  \item Accéder aux graphiques et aux analyses générés par l'assistant intelligent.
 \end{itemize}
 
 \subsubsection*{Utilisateur SAP}
@@ -129,7 +143,6 @@ L'index HNSW supporte l'insertion incrémentale sans reconstruction,
 ce qui permet d'ajouter de nouvelles SAP Notes ou de nouveaux modules
 sans réindexer l'intégralité du corpus.
 
-\subsection{Synthèse}
 
 \begin{table}[H]
 \centering
