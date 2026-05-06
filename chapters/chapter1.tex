@@ -137,58 +137,8 @@ Ces transactions sont utilisées par les consultants BASIS\footnotemark[1] pour 
 \footnotetext[2]{ABAP : langage de programmation SAP utilisé pour développer et personnaliser les applications.}% ============================================================
 \begin{figure}[H]
 \centering
-<<<<<<< Updated upstream
-\begin{tikzpicture}[
-    node distance=0.8cm,
-    every node/.style={font=\small},
-    mainbox/.style={draw, rounded corners=4pt, minimum height=0.9cm, text centered, font=\small\bfseries},
-    tcode/.style={draw=#1, fill=#1!10, rounded corners=4pt, minimum width=2.2cm, minimum height=1.2cm, text centered, align=center, font=\small\bfseries, text=#1!80!black},
-    resultbox/.style={draw=red!70!black, fill=red!5, rounded corners=4pt, minimum height=0.9cm, text centered, font=\small\bfseries, text=red!70!black},
-    arr/.style={-{Stealth[length=5pt]}, thick, color=gray!70!black},
-]
 
-% Consultant
-\node[mainbox, draw=blue!60, fill=blue!8, minimum width=5cm] (consultant) {Consultant BASIS};
-
-% Daily check
-\node[mainbox, draw=gray!60, fill=gray!8, minimum width=7cm, below=of consultant] (check) {Vérification manuelle quotidienne};
-\draw[arr] (consultant) -- (check);
-
-% Annotation
-\node[font=\scriptsize\itshape, color=gray!70, below=0.15cm of check] (annot) {Interroge chaque T-code séparément};
-
-% T-codes row
-\node[tcode=violet, below=1cm of check, xshift=-5cm] (sm37) {\textbf{SM37}\\\scriptsize Jobs batch};
-\node[tcode=violet, right=0.3cm of sm37] (st22) {\textbf{ST22}\\\scriptsize Dumps ABAP};
-\node[tcode=violet, right=0.3cm of st22] (sp01) {\textbf{SP01}\\\scriptsize Spools};
-\node[tcode=violet, right=0.3cm of sp01] (db02) {\textbf{DB02}\\\scriptsize Stats BD};
-\node[tcode=violet, right=0.3cm of db02] (sm66) {\textbf{SM66}\\\scriptsize Processus};
-
-% Arrows from check to T-codes
-\foreach \n in {sm37, st22, sp01, db02, sm66} {
-    \draw[arr] (check.south) -- ++(0,-0.3) -| (\n.north);
-}
-
-% Convergence
-\coordinate (conv) at ($(sp01.south)+(0,-0.8)$);
-\foreach \n in {sm37, st22, sp01, db02, sm66} {
-    \draw[gray!50, thin] (\n.south) -- (\n.south |- conv);
-}
-\draw[gray!50, thin] (sm37.south |- conv) -- (sm66.south |- conv);
-
-% Manual analysis
-\node[mainbox, draw=orange!70!black, fill=orange!8, minimum width=7cm, below=1.5cm of sp01, text=orange!70!black] (analyse) {Analyse manuelle};
-\node[font=\scriptsize\itshape, color=gray!60, below=0.05cm of analyse] {Sans agrégation $\cdot$ Risque d'omission};
-\draw[arr] (conv) -- (analyse.north);
-
-% Result
-\node[resultbox, minimum width=5.5cm, below=0.8cm of analyse] (result) {Détection tardive des anomalies};
-\draw[arr] (analyse.south) -- (result.north);
-
-\end{tikzpicture}
-=======
 \includegraphics[width=0.8\textwidth]{images/processus.png}
->>>>>>> Stashed changes
 \caption{Processus de surveillance manuelle des systèmes SAP}
 \label{fig:surveillance-manuelle}
 \end{figure}

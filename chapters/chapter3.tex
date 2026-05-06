@@ -215,7 +215,7 @@ Les modèles de langage de grande taille (\textit{LLMs}) sont des modèles avanc
 
 Comme illustré dans la figure~\ref{fig:llm_intersection}, ces modèles se situent à l’intersection du \textit{Deep Learning} et du \textit{NLP}, combinant ainsi la puissance des réseaux de neurones profonds avec les techniques d’analyse linguistique.
 
-En pratique, un LLM prédit le mot (ou jeton) le plus probable à la suite d’une séquence donnée. En répétant ce processus, il est capable de produire des textes cohérents, de répondre à des प्रश्नs, de résumer des documents ou encore de traduire des contenus. Plus le modèle contient de paramètres, plus il est capable de capturer les nuances complexes du langage.
+En pratique, un LLM prédit le mot (ou jeton) le plus probable à la suite d’une séquence donnée. En répétant ce processus, il est capable de produire des textes cohérents, de répondre à des questions, de résumer des documents ou encore de traduire des contenus. Plus le modèle contient de paramètres, plus il est capable de capturer les nuances complexes du langage.
 
 \begin{figure}[H]
   \centering
@@ -239,10 +239,65 @@ Son fonctionnement repose sur plusieurs étapes. Tout d’abord, les documents s
 Lorsqu’une requête utilisateur est soumise, le système identifie les fragments les plus pertinents à l’aide d’une mesure de similarité (généralement la similarité cosinus). Ces informations sont ensuite injectées dans le contexte du modèle, qui génère une réponse basée sur des données réelles et vérifiables.
 
 Ainsi, le RAG peut être comparé à un assistant intelligent capable de consulter une base documentaire avant de formuler une réponse, garantissant ainsi une meilleure fiabilité.
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{ % <-- ajuste automatiquement à la largeur A4
+\begin{tikzpicture}[
+    node distance=2.2cm and 1.6cm,
+    every node/.style={font=\footnotesize},
+    box/.style={
+        draw,
+        rounded corners=8pt,
+        minimum width=2.6cm,
+        minimum height=0.9cm,
+        align=center,
+        line width=0.8pt,
+        drop shadow={opacity=0.15}
+    },
+    arrow/.style={->, line width=0.9pt}
+]
 
-% ------------------------------------------------------------
+% ---- NODES ----
+\node[box, fill=SAPLightOrange, draw=SAPOrange] (docs) {Documents};
 
-\subsection{Pourquoi le RAG ?}
+\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of docs] (chunk) {Chunking};
+
+\node[box, fill=gray!10, draw=black!50, right=of chunk] (query) {User Query};
+
+\node[box, fill=SAPLightGreen, draw=SAPGreen, right=of query] (vectordb) {Vector DB};
+
+\node[box, fill=SAPLightOrange, draw=SAPRed, below=1.8cm of vectordb] (retrieval) {Top-K\\Retrieval};
+
+\node[box, fill=SAPLightOrange, draw=SAPOrange, left=of retrieval] (llm) {LLM};
+
+\node[box, fill=SAPLightBlue, draw=SAPBlue, left=of llm] (response) {Response};
+
+% ---- FLUX ----
+\draw[arrow] (docs) -- node[above]{découpage} (chunk);
+
+\draw[arrow] (chunk) -- node[above]{vectorisation} (query);
+
+\draw[arrow, dashed, color=SAPGreen] 
+(query) -- node[above]{stockage} (vectordb);
+
+\draw[arrow, color=SAPRed] 
+(vectordb) -- node[right]{sim} (retrieval);
+
+\draw[arrow] (query) -- (llm);
+
+\draw[arrow, color=SAPOrange] 
+(retrieval) -- node[above]{contexte} (llm);
+
+\draw[arrow, color=SAPBlue] 
+(llm) -- node[above]{génération} (response);
+
+\end{tikzpicture}
+}
+\caption{Architecture du système RAG }
+\label{fig:rag_compact}
+\end{figure}
+
+\subsection{Le choix du RAG pour ce projet}
 
 Dans le cadre de ce projet, l’architecture RAG a été retenue pour plusieurs raisons essentielles :
 
