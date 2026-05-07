@@ -152,6 +152,18 @@ Ces transactions sont utilisées par les consultants BASIS\footnotemark[1] pour 
 \label{fig:surveillance-manuelle}
 \end{figure}
 
+\subsection{Critique de l'existant}
+L’étude de l’existant a montré que le processus de surveillance des environnements SAP demande beaucoup d’efforts de la part des consultants SAP BASIS. La surveillance repose surtout sur des tâches manuelles répétées plusieurs fois par jour via différents T-codes et plusieurs systèmes SAP.
+
+Chez Quadient, les consultants doivent superviser environ dix systèmes répartis sur différents serveurs comme P01, PWD et PW1. Cette diversité des environnements rend le monitoring long et difficile à gérer, surtout lorsque plusieurs incidents surviennent en même temps. Le consultant passe alors beaucoup de temps à naviguer entre les systèmes pour vérifier les informations et analyser les résultats.
+
+Le principal problème de cette approche est le temps nécessaire pour réaliser les contrôles quotidiens. Comme les mêmes opérations se répètent chaque shift, le travail devient rapidement lourd et fatigant. Cette répétition peut entraîner des oublis, des erreurs de vérification ou des retards dans la détection d’anomalies importantes.
+
+De plus, les informations étant dispersées entre plusieurs T-codes et plusieurs systèmes, il devient difficile d’avoir une vue globale et rapide de l’état des environnements SAP. Lorsqu’un problème est détecté, le consultant doit souvent effectuer plusieurs vérifications avant d’identifier l’origine de l’incident et de contacter les équipes concernées, comme les développeurs ABAP ou les consultants fonctionnels.
+
+L’étude a également révélé une autre difficulté liée au niveau d’expérience des consultants SAP BASIS. Un consultant débutant peut avoir besoin de beaucoup plus de temps pour analyser les résultats des T-codes, comprendre certaines anomalies ou identifier les actions à prendre. L'interprétation des informations dépend souvent de l’expérience acquise sur les différents systèmes SAP et des connaissances métier du client. Cela peut ralentir le traitement des incidents et rendre la surveillance moins efficace.
+
+Enfin, les consultants passent une grande partie de leur temps sur des tâches répétitives de contrôle au lieu de se concentrer sur l’analyse et l’anticipation des problèmes. Ces limites montrent donc la nécessité d’une solution intelligente et centralisée pour aider les consultants dans leurs activités de surveillance, réduire les tâches manuelles et faciliter la détection rapide des anomalies.
 
 \subsection{Solutions existantes}
 SAP, en plus des outils de supervision classiques tels que les tableaux de bord et les alertes techniques, propose désormais des solutions qui utilisent le Machine Learning et l'intelligence artificielle. Ces solutions permettent de surveiller les systèmes SAP en temps réel et d'analyser les données passées pour détecter des anomalies, prévoir des incidents et améliorer les décisions.
@@ -208,15 +220,16 @@ En ce qui concerne les solutions existantes proposées par SAP, telles que SAP L
 
 Ainsi, ces éléments mettent en évidence certaines limites des approches existantes, tant au niveau des méthodes traditionnelles que des solutions avancées, notamment en termes de temps, de coût et d’adaptation aux besoins spécifiques
 \label{sec:solution}
-\subsubsection{la solution proposée}
-A fin de traiter les limites repérées dans les solutions existantes, notre proposition consiste à réaliser un assistant intelligent de surveillance du Système SAP qui s’appuie sur des techniques d’intelligence artificielle ainsi qu’une approche moderne de l’analyse des données afin d’améliorer la compréhension et le suivi de l’évènement système. Car, à partir du moment où tous les outils de surveillance classiques reposent sur des traces fixes ou sur une détection par seuils ou niveaux, la mise au point des solutions de surveillance de ce Système ne s’envisage que sur la base de deux techniques : la recherche d’information et la mise à disposition de documents présentant l’avantage d’apporter des explications contextualisées d’incidents et de suggestion d’explications de résolution de ceux-ci. Le cadre théorique sur lequel s’appuie notre solution est bien le cadre hybride Retrieval-Augmented Generation (RAG) couplé à un mécanisme de cache (CAG).La solution, conçue pour interpréter une grande diversité de problèmes du domaine des systèmes SAP, même lorsqu'ils ne sont pas exprimés de la même manière, s’appuie sur des techniques de recherche sémantique pour établir des relations pertinentes entre les incidents rencontrés et les connaissances disponibles pour la réponse. À ce sujet, les réponses, issues de documents fiables, devraient permettre de réduire le nombre de faux positifs et d’améliorer la pertinence des réponses issues des analyses.
+\subsection{Solution proposée}
+La solution proposée repose sur l'utilisation de l'intelligence artificielle pour analyser les événements et les messages générés par les environnements SAP. Grâce à cette approche, le système peut identifier les anomalies, fournir des explications contextualisées et suggérer des pistes de résolution adaptées aux incidents rencontrés.
 
-Cette approche hybride permet une large couverture de l’ensemble des cas possibles tout en garantissant un haut degré de précision pour la réponse. Elle s’inscrit dans la volonté d’améliorer le processus décisionnel du consultant SAP BASIS en lui fournissant des données significatives, pouvant contribuer à sa prise de décision, en un temps raisonnable, tout en réduisant les tâches de validation à mener.
+Pour améliorer la pertinence des réponses proposées, la solution utilise une approche hybride basée sur le modèle RAG (Retrieval-Augmented Generation) et un mécanisme de cache (CAG). Cela permet au système de rechercher des informations utiles à partir de documents fiables et d'utiliser ces connaissances pour générer des réponses plus précises et mieux adaptées au contexte de l'incident détecté.
 
-Afin de remédier aux limites constatées dans le système actuel, un système de surveillance
-intelligent des environnements SAP est proposé. Cette solution a pour objectif d’automatiser
-la détection des anomalies, de fournir des alertes enrichies en contexte et de centraliser
-l’accès à la documentation SAP.
+L'utilisation de la recherche sémantique aide également à reconnaître des incidents similaires même lorsqu'ils sont formulés différemment. Ainsi, le consultant peut rapidement accéder à des explications, des recommandations ou des solutions déjà connues sans avoir à effectuer de longues recherches manuelles.
+
+Cette solution vise également à réduire le temps consacré aux tâches répétitives de surveillance, à améliorer la réactivité face aux incidents et à faciliter le travail des consultants moins expérimentés en leur fournissant une assistance intelligente et contextualisée.
+
+Enfin, la mise en place de cet assistant intelligent va améliorer le processus de surveillance des environnements SAP en offrant une surveillance plus centralisée, plus rapide et plus efficace. Cela aidera également les consultants SAP BASIS dans leur prise de décision quotidienne.
 
 \begin{itemize}[leftmargin=*, label=\textbullet]
 
