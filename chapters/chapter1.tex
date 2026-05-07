@@ -114,7 +114,6 @@ La durée de surveillance varie selon l'état du système et le nombre d'alertes
 Cependant, cette approche a ses limites. La multiplicité des systèmes et la répétition des tâches rendent le processus lourd et chronophage. Le consultant doit constamment naviguer entre plusieurs systèmes et transactions, ce qui augmente le risque d'oubli, de confusion ou de perte de temps dans le traitement des anomalies.
 
 
-\newpage
 \subsubsection*{Description de la surveillance des systèmes SAP}
 
 La surveillance quotidienne des systèmes SAP s’appuie sur l’utilisation de nombreux codes de transaction (T-codes), chacun offrant une visibilité sur un aspect spécifique du système. À titre illustratif, les T-codes suivants figurent parmi les plus couramment utilisés :
@@ -154,15 +153,48 @@ Ces transactions sont utilisées par les consultants BASIS\footnotemark[1] pour 
 \end{figure}
 
 
-\subsection*{Solutions existantes}
-SAP, en complément des dispositifs plus classiques de supervision des systèmes, dispose de solutions intégrant des capacités de Machine Learning comme :
+\subsection{Solutions existantes}
+SAP, en plus des outils de supervision classiques tels que les tableaux de bord et les alertes techniques, propose désormais des solutions qui utilisent le Machine Learning et l'intelligence artificielle. Ces solutions permettent de surveiller les systèmes SAP en temps réel et d'analyser les données passées pour détecter des anomalies, prévoir des incidents et améliorer les décisions.
+Parmi ces solutions, on peut citer SAP Leonardo ML et SAP Joule.Elles offrent des fonctionnalités avancées pour une meilleure gestion des systèmes SAP.
+
+Ces nouvelles solutions viennent compléter les outils traditionnels de supervision des systèmes, tels que les tableaux de bord et les alertes techniques. Elles permettent aux entreprises de tirer parti des dernières technologies pour améliorer leur gestion des systèmes SAP.
 \subsubsection*{SAP Leonardo ML}
-les solutions SAP Leonardo ML et qui permettent d’exploiter les données produites par les systèmes SAP pour détecter des comportements anormaux en identifiant des patterns. Il importe de relever que l’intégration native avec les systèmes ERP constitue un attribut majeur de ces solutions puisqu’elle offre un accès aux données issues des divers modules SAP et garantit une exploitation continue de ces dernières. En sus, ces solutions mettent à disposition des outils d’introduction d’une dimension prédictive dans la supervision des systèmes sur la base d’une analyse des données historiques.
+SAP Leonardo ML est une solution de Machine Learning développée par SAP qui permet d'utiliser les données provenant des systèmes SAP. Elle détecte les comportements inhabituels et identifie des modèles récurrents. Puisqu'elle fait partie intégrante des systèmes ERP SAP, SAP Leonardo ML peut accéder directement aux données issues de divers départements de l'entreprise, comme la finance, les ressources humaines ou la logistique.
+
+Cela signifie que les données peuvent être exploitées de manière continue et centralisée. De plus, les analyses sont plus cohérentes. SAP Leonardo ML propose également des fonctionnalités qui permettent de prédire certaines choses en analysant les données du passé. Cela aide à prévoir les incidents, à améliorer les processus de travail et à mieux surveiller les systèmes dans leur ensemble.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{images/leonardoML.png}
+    \caption{SAP Leonardo ML}
+    \label{fig:sap_leonardo}
+\end{figure}
 \subsubsection*{SAP JOULE}
+SAP intègre aussi des solutions récentes qui utilisent l'intelligence artificielle générative, comme SAP Joule. Cette solution est un copilote intelligent qui aide les utilisateurs à travailler avec les applications SAP. Elle permet de poser des questions ou de donner des instructions en langage naturel, sans avoir besoin de connaître des commandes techniques compliquées.
 
-SAP intègre aussi des solutions plus récentes d’intelligence artificielle génératives comme SAP Joule. Cette solution fait office de copilote intelligent embarqué dans les applications SAP, permettant de dialoguer avec les systèmes grâce au langage naturel et d’utiliser tant les données métiers que techniques afin de fournir des informations, d’automatiser des tâches disparates et d’assister les utilisateurs dans leurs analyses.
+SAP Joule utilise les données métier et les données techniques pour fournir des informations utiles.
 
+Elle aide aussi à automatiser certaines tâches et à analyser les données.
+
+Les utilisateurs peuvent ainsi trouver rapidement les informations dont ils ont besoin.
+
+Ils peuvent aussi améliorer leur productivité et comprendre plus facilement les données des systèmes SAP.
+
+Grâce à cette approche conversationnelle, les utilisateurs peuvent interagir plus facilement avec les systèmes SAP.
+
+Ils n'ont plus besoin de rechercher des informations dans des menus complexes ou de longues listes.
+
+SAP Joule est conçu pour aider les utilisateurs à tirer le meilleur parti des applications SAP.
+
+Elle leur permet de se concentrer sur leur travail, plutôt que de passer du temps à chercher des informations.
+
+En résumé, SAP Joule est une solution innovante qui utilise l'intelligence artificielle pour aider les utilisateurs à travailler plus efficacement avec les applications SAP.
 % ============================================================
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\linewidth]{images/joule.png}
+    \caption{joule dans les système SAP}
+    \label{fig:joule dans les système SAP}
+\end{figure}
 % ============================================================
 \subsection{Critique de l'existant}
 \label{sec:critique}
