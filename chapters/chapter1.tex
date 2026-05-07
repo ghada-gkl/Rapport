@@ -90,22 +90,32 @@ RAG.
 
 % ============================================================
 % ============================================================
-\section{Étude de l'existant}
+\section{Analyse de l'existant}
 \label{sec:existant}
+\subsection{Etude de l'existant}
 
-Dans le cadre du développement d’un système intelligent de surveillance des systèmes SAP au sein d’Avaxia Group, une analyse de l’existant a été réalisée pour comprendre les pratiques actuelles mises en œuvre par l’équipe SAP BASIS.
+Dans le cadre du développement d'un système intelligent de surveillance au sein d'Avaxia Group, une étude de l'existant a été réalisée pour comprendre le processus actuel de monitoring de l'équipe SAP BASIS.
+
+Le processus de surveillance commence généralement par la consultation des alertes ou incidents signalés durant le shift précédent. Cela assure la continuité du suivi. Ensuite, des vérifications générales liées à l'infrastructure et à l'état des environnements sont faites rapidement avant de commencer les opérations de monitoring principales.
+
+L'activité principale du consultant SAP BASIS consiste à surveiller les environnements SAP à travers plusieurs transactions SAP (T-codes). Cette surveillance permet de contrôler l’état des systèmes, d'identifier les anomalies éventuelles et d'assurer le bon fonctionnement des environnements de production.
+
+Pour le client Quadient, l'équipe BASIS supervise environ dix systèmes SAP sur différents serveurs comme P01, PWD et PW1…
+
+Chaque système doit être vérifié individuellement, ce qui rend le processus de surveillance long et répétitif.
+Pour chaque environnement, le consultant exécute plusieurs T-codes pour analyser les informations liées au fonctionnement du système. Après cette phase d’analyse, il interprète les résultats pour déterminer si une intervention est nécessaire.
+
+Selon les anomalies détectées, il peut relancer certaines opérations échouées, suivre les incidents et collaborer avec les équipes concernées. 
+
+Par exemple, lorsque des traitements lourds ou des jobs affectant les performances sont identifiés dans le système SAP de production, le consultant BASIS discute avec les développeurs ABAP (langage de programmation propriétaire de SAP) pour apporter les corrections nécessaires. De même, certaines anomalies peuvent nécessiter l’intervention des consultants fonctionnels, notamment dans les domaines financiers, lorsque des changements liés aux règles de l’entreprise ou aux exigences du client doivent être pris en compte, comme des modifications de timbres fiscaux ou d’autres paramètres de gestion.
+La durée de surveillance varie selon l'état du système et le nombre d'alertes détectées. En moyenne, l'analyse complète d'un système peut prendre 30 minutes au plus cadepant des système production qui a. Étant donné que le client a environ dix systèmes, le monitoring global nécessite plusieurs heures de travail par shift.
 
 
-
-Le consultant SAP BASIS joue un rôle central dans l’administration technique des systèmes SAP. Il est chargé d’assurer le bon fonctionnement des environnements en prenant en charge plusieurs activités essentielles, notamment la surveillance des systèmes SAP, la gestion des performances des systèmes SAP, le traitement des incidents techniques ainsi que la maintenance quotidienne des systèmes SAP.
-
-Dans ses activités de surveillance des systèmes SAP, le consultant BASIS effectue un suivi régulier de l’état global du système SAP. Cette surveillance s’appuie sur l’utilisation de différentes transactions SAP, appelées T-codes, permettant d’accéder à des informations détaillées sur le fonctionnement du système SAP. Il examine notamment les jobs en arrière-plan afin de vérifier leur exécution correcte, analyse les erreurs système SAP susceptibles d’impacter les performances des systèmes SAP, contrôle les demandes d’impression en attente et observe l’activité des processus en cours.
-
-La surveillance des systèmes SAP repose ainsi sur un ensemble de transactions spécifiques, appelées T-codes, chacune étant dédiée à un aspect précis du système SAP. Toutefois, dans un contexte professionnel réel, un consultant SAP BASIS est souvent amené à intervenir simultanément sur plusieurs systèmes de production appartenant à des clients différents. Cette multiplicité d’environnements complexifie les activités de monitoring des systèmes SAP, en raison de la dispersion des informations et de la nécessité de naviguer entre plusieurs T-codes et systèmes SAP. Cela peut engendrer des difficultés de suivi des systèmes SAP, des risques de confusion et une perte d’efficacité dans la détection et le traitement des anomalies des systèmes SAP.
+Cependant, cette approche a ses limites. La multiplicité des systèmes et la répétition des tâches rendent le processus lourd et chronophage. Le consultant doit constamment naviguer entre plusieurs systèmes et transactions, ce qui augmente le risque d'oubli, de confusion ou de perte de temps dans le traitement des anomalies.
 
 
 \newpage
-\subsection*{Surveillance des systèmes SAP}
+\subsubsection*{Description de la surveillance des systèmes SAP}
 
 La surveillance quotidienne des systèmes SAP s’appuie sur l’utilisation de nombreux codes de transaction (T-codes), chacun offrant une visibilité sur un aspect spécifique du système. À titre illustratif, les T-codes suivants figurent parmi les plus couramment utilisés :
 
@@ -143,108 +153,7 @@ Ces transactions sont utilisées par les consultants BASIS\footnotemark[1] pour 
 \label{fig:surveillance-manuelle}
 \end{figure}
 
-\subsection*{Structure des données SAP}
 
-Les systèmes SAP génèrent quotidiennement un volume important de données sous forme de logs.
-Chaque transaction produit des informations selon une structure spécifique.
-
-Par exemple :
-\begin{itemize}
-    \item \texttt{SM37} expose des champs tels que \textit{Job\_Name}, \textit{Job\_ID},
-    \textit{Status}, \textit{Start\_Date} et \textit{End\_Date}.
-    \item \texttt{ST22} fournit des informations comme \textit{Error\_Name},
-    \textit{Server}, \textit{Date}, \textit{Time}, \textit{User} et \textit{Client}.
-    \item \texttt{SP01} contient des données telles que \textit{Spool\_Number},
-    \textit{Owner}, \textit{Created\_On} et \textit{Status}.
-\end{itemize}
-
-Ces données sont utilisées par les consultants pour analyser l’état du système et suivre
-les différentes activités en cours.
-% ============================================================
-% Schema 2 : Surcharge et hétérogénéité des données
-% ============================================================
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-    node distance=0.8cm,
-    every node/.style={font=\small},
-    mainbox/.style={draw, rounded corners=4pt, minimum height=0.9cm, text centered, font=\small\bfseries},
-    fieldbox/.style={draw=#1!40, fill=#1!4, rounded corners=4pt, minimum width=3.8cm, minimum height=3.5cm, text centered, align=center},
-    resultbox/.style={draw=red!35, fill=red!3, rounded corners=4pt, minimum height=1.1cm, text centered, align=center, minimum width=3.8cm},
-    arr/.style={-{Stealth[length=5pt]}, color=gray!50},
-]
- 
-% SAP System
-\node[mainbox, draw=gray!35, fill=gray!4, minimum width=12cm] (sap) {Système SAP --- volume important de logs quotidiens};
- 
-% SM37
-\node[fieldbox=blue, below=1cm of sap, xshift=-4.5cm] (sm37) {};
-\node[font=\small\bfseries, text=blue!45!black] at ($(sm37.north)+(0,-0.4)$) {SM37};
-\node[font=\scriptsize\itshape, text=gray!55] at ($(sm37.north)+(0,-0.75)$) {Jobs en arrière-plan};
-\node[font=\scriptsize\ttfamily, text=gray!60, anchor=west, align=left] at ($(sm37.west)+(0.3,-0.3)$) {
-    Job\_Name\\Job\_ID\\Status\\Start\_Date\\End\_Date
-};
- 
-% ST22
-\node[fieldbox=teal, below=1cm of sap] (st22) {};
-\node[font=\small\bfseries, text=teal!45!black] at ($(st22.north)+(0,-0.4)$) {ST22};
-\node[font=\scriptsize\itshape, text=gray!55] at ($(st22.north)+(0,-0.75)$) {Dumps ABAP};
-\node[font=\scriptsize\ttfamily, text=gray!60, anchor=west, align=left] at ($(st22.west)+(0.3,-0.3)$) {
-    Error\_Name\\Server\\Date, Time\\User\\Client
-};
- 
-% SP01
-\node[fieldbox=orange, below=1cm of sap, xshift=4.5cm] (sp01) {};
-\node[font=\small\bfseries, text=orange!45!black] at ($(sp01.north)+(0,-0.4)$) {SP01};
-\node[font=\scriptsize\itshape, text=gray!55] at ($(sp01.north)+(0,-0.75)$) {Spools d'impression};
-\node[font=\scriptsize\ttfamily, text=gray!60, anchor=west, align=left] at ($(sp01.west)+(0.3,-0.3)$) {
-    Spool\_Number\\Type\\Owner\\Created\_On\\Status
-};
- 
-% Arrows from SAP to T-codes
-\foreach \n in {sm37, st22, sp01} {
-    \draw[arr] (sap.south) ++(0,0) -- ++(0,-0.2) -| (\n.north);
-}
- 
-% Dashed warning zone
-\node[draw=red!35, dashed, rounded corners=6pt, fill=red!2,
-      minimum width=13cm, minimum height=1.3cm,
-      below=0.8cm of st22.south, align=center] (noagg) {
-    {\bfseries\color{red!45!black} Aucun mécanisme d'agrégation unifié}\\[-1pt]
-    {\scriptsize\itshape\color{red!35!black} Structures variables traitées séparément}
-};
- 
-\foreach \n in {sm37, st22, sp01} {
-    \draw[arr] (\n.south) -- (\n.south |- noagg.north);
-}
- 
-% Consequences
-\node[resultbox, below=0.8cm of noagg, xshift=-3cm] (frag) {
-    {\bfseries\color{red!45!black} Analyse fragmentée}\\[-1pt]
-    {\scriptsize\itshape\color{gray!60} Corrélation impossible}
-};
-\node[resultbox, below=0.8cm of noagg, xshift=3cm] (surcharge) {
-    {\bfseries\color{red!45!black} Surcharge cognitive}\\[-1pt]
-    {\scriptsize\itshape\color{gray!60} Risque d'erreur humaine}
-};
- 
-\draw[arr] (noagg.south) ++(0,0) -- ++(0,-0.15) -| (frag.north);
-\draw[arr] (noagg.south) ++(0,0) -- ++(0,-0.15) -| (surcharge.north);
- 
-\end{tikzpicture}
-\caption{Surcharge et hétérogénéité des données issues des T-codes SAP}
-\label{fig:heterogeneite-donnees}
-\end{figure}
-
-
-\subsubsection*{Gestion de la connaissance SAP}
-
-La connaissance SAP au sein de l'équipe est répartie entre plusieurs sources : le portail
-SAP Help, qui organise la documentation de manière hiérarchique sur des milliers de
-pages, des livres techniques au format PDF, des SAP Notes référencées par numéro, et
-l'expérience individuelle des consultants. Chaque consultant accède à ces sources de
-manière indépendante selon ses besoins, sans système centralisé de partage ou de
-capitalisation des connaissances.
 \subsection*{Solutions existantes}
 SAP, en complément des dispositifs plus classiques de supervision des systèmes, dispose de solutions intégrant des capacités de Machine Learning comme :
 \subsubsection*{SAP Leonardo ML}
@@ -270,14 +179,12 @@ Ainsi, ces éléments mettent en évidence certaines limites des approches exist
 \subsubsection{la solution proposée}
 A fin de traiter les limites repérées dans les solutions existantes, notre proposition consiste à réaliser un assistant intelligent de surveillance du Système SAP qui s’appuie sur des techniques d’intelligence artificielle ainsi qu’une approche moderne de l’analyse des données afin d’améliorer la compréhension et le suivi de l’évènement système. Car, à partir du moment où tous les outils de surveillance classiques reposent sur des traces fixes ou sur une détection par seuils ou niveaux, la mise au point des solutions de surveillance de ce Système ne s’envisage que sur la base de deux techniques : la recherche d’information et la mise à disposition de documents présentant l’avantage d’apporter des explications contextualisées d’incidents et de suggestion d’explications de résolution de ceux-ci. Le cadre théorique sur lequel s’appuie notre solution est bien le cadre hybride Retrieval-Augmented Generation (RAG) couplé à un mécanisme de cache (CAG).La solution, conçue pour interpréter une grande diversité de problèmes du domaine des systèmes SAP, même lorsqu'ils ne sont pas exprimés de la même manière, s’appuie sur des techniques de recherche sémantique pour établir des relations pertinentes entre les incidents rencontrés et les connaissances disponibles pour la réponse. À ce sujet, les réponses, issues de documents fiables, devraient permettre de réduire le nombre de faux positifs et d’améliorer la pertinence des réponses issues des analyses.
 
-<<<<<<< Updated upstream
-Cette approche hybride permet une large couverture de l’ensemble des cas possibles tout en garantissant un haut degré de précision pour la réponse. Elle s'inscrit dans la volonté d’améliorer le processus décisionnel du consultant SAP BASIS en lui fournissant des données significatives, pouvant contribuer à sa prise de décision, en un temps raisonnable, tout en réduisant les tâches de validation à mener.
-=======
-Afin de remédier aux limites constatées dans le système actuel, un système de surveillance
-intelligent des environnements SAP est proposé. Cette solution a pour objectif d'automatiser
-la détection des anomalies, de fournir des alertes enrichies en contexte et de centraliser
-l'accès à la documentation SAP.
+Cette approche hybride permet une large couverture de l’ensemble des cas possibles tout en garantissant un haut degré de précision pour la réponse. Elle s’inscrit dans la volonté d’améliorer le processus décisionnel du consultant SAP BASIS en lui fournissant des données significatives, pouvant contribuer à sa prise de décision, en un temps raisonnable, tout en réduisant les tâches de validation à mener.
 
+Afin de remédier aux limites constatées dans le système actuel, un système de surveillance
+intelligent des environnements SAP est proposé. Cette solution a pour objectif d’automatiser
+la détection des anomalies, de fournir des alertes enrichies en contexte et de centraliser
+l’accès à la documentation SAP.
 
 \begin{itemize}[leftmargin=*, label=\textbullet]
 
@@ -287,28 +194,24 @@ préservant leur structure et leur contenu. Les données collectées sont ensuit
 organisées et enrichies avec des informations contextuelles pour faciliter leur
 exploitation ultérieure.
 
-  \item \textbf{Base de connaissances centralisée :} L'ensemble de la documentation traitée est
-stocké dans une base de connaissances unifiée, permettant aux consultants d'interroger
+  \item \textbf{Base de connaissances centralisée :} L’ensemble de la documentation traitée est
+stocké dans une base de connaissances unifiée, permettant aux consultants d’interroger
 directement le système en langage naturel pour retrouver une information pertinente, sans
 avoir à naviguer manuellement entre plusieurs sources.
 
-
-
-  \item \textbf{Recherche et génération de réponses :} Lorsqu'un consultant pose une question,
+  \item \textbf{Recherche et génération de réponses :} Lorsqu’un consultant pose une question,
 le système identifie les documents les plus pertinents dans la base de connaissances et
 génère automatiquement une réponse argumentée et sourcée, adaptée au contexte de la
 requête.
+
   \item \textbf{Prévention des erreurs :} Des mécanismes de validation sont intégrés pour
-s'assurer que les réponses générées sont bien fondées sur la documentation disponible
+s’assurer que les réponses générées sont bien fondées sur la documentation disponible
 et non sur des informations incorrectes.
+
   \item \textbf{Interface et déploiement :} La solution est accessible via une interface web
 intuitive comprenant un chatbot de support, un tableau de bord de surveillance en temps
-réel et un panneau d'administration. Elle est également connectée à Microsoft Teams afin
-de notifier automatiquement les équipes lors de la survenue d'incidents critiques.
-
-
-
->>>>>>> Stashed changes
+réel et un panneau d’administration. Elle est également connectée à Microsoft Teams afin
+de notifier automatiquement les équipes lors de la survenue d’incidents critiques.
 
 \end{itemize}
 
