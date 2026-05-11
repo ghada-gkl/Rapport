@@ -281,7 +281,7 @@ Ainsi, le RAG peut être comparé à un assistant intelligent capable de consult
 (query) -- node[above]{stockage} (vectordb);
 
 \draw[arrow, color=SAPRed] 
-(vectordb) -- node[right]{sim} (retrieval);
+(vectordb) -- node[right]{} (retrieval);
 
 \draw[arrow] (query) -- (llm);
 
@@ -307,15 +307,18 @@ Dans le cadre de ce projet, l’architecture RAG a été retenue pour plusieurs 
   Dans des environnements tels que les systèmes ERP et SAP, les informations évoluent fréquemment. Le RAG permet d’intégrer des données actualisées au moment de la génération des réponses.
 
   \item[\textbf{Amélioration de la fiabilité}]
-  En s’appuyant sur des documents externes, le RAG réduit significativement les hallucinations et améliore la précision des réponses \cite{ref20}.
+  En s’appuyant sur des documents externes, le RAG réduit significativement les hallucinations et améliore la précision des réponses .
 
   \item[\textbf{Optimisation des coûts}]
-  Contrairement à d’autres approches, le RAG ne nécessite pas de réentraînement du modèle, ce qui permet de limiter les coûts tout en conservant ses capacités \cite{ref21}.
+  Contrairement à d’autres approches, le RAG ne nécessite pas de réentraînement du modèle, ce qui permet de limiter les coûts tout en conservant ses capacités .
 
 \end{description}
 
 En outre, en l’absence de jeux de données annotés par des experts et compte tenu de la complexité des \textit{SAP Notes}, l’utilisation d’approches telles que la distillation de connaissances n’est pas adaptée. Le RAG constitue ainsi un compromis efficace entre flexibilité, précision et scalabilité, particulièrement pertinent pour les applications en entreprise.
+\subsection{Critères de succès}
+Pour évaluer l’efficacité de la solution proposée basée sur les approches RAG et CAG, une matrice de succès a été définie. Cette matrice permet de mesurer la qualité des réponses générées, la rapidité d’exécution et la pertinence des informations récupérées depuis les documents techniques SAP.
 
+Les critères retenus ont été choisis en fonction des objectifs fonctionnels et techniques du projet. Ils permettent d’évaluer les performances du système, ainsi que l’expérience utilisateur et la fiabilité des réponses produites. Cela implique notamment l’examen des faux positifs, c’est-à-dire les cas où le résultat est prédit correctement mais s’avère faux en réalité.
 % ------------------------------------------------------------
 
 \section*{Conclusion}
