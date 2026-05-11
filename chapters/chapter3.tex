@@ -306,6 +306,75 @@ Pour répondre à ces contraintes, une évolution appelée \textit{CAG (Cache-Au
 Ainsi, lorsqu’une requête similaire est posée, le système peut réutiliser directement les informations déjà calculées sans solliciter à nouveau la base vectorielle ou les modèles d’embedding. Cela permet de réduire le temps de réponse et d’améliorer l’efficacité globale du système.
 
 En comparaison avec le RAG classique, le CAG optimise le processus de génération en réduisant les redondances de calcul tout en conservant la pertinence des informations fournies. Cette approche est particulièrement utile dans les systèmes à forte charge ou dans les applications nécessitant une réponse en temps réel.
+\subsubsection*{Fine-Tuning : personnalisation des modèles IA}
+
+En plus des approches RAG et CAG, le \textit{Fine-Tuning} est une autre méthode souvent utilisée pour améliorer les performances des modèles d'intelligence artificielle. Cette technique consiste à ré-entraîner un modèle de langage préexistant sur des données propres à un domaine ou à une organisation.
+
+Le Fine-Tuning permet au modèle d’acquérir le vocabulaire métier, les structures de données et les connaissances spécifiques à une entreprise. Le Fine-Tuning, à la différence du RAG qui récupère des informations externes dynamiquement au moment de la requête, intègre directement ces connaissances dans les paramètres internes du modèle.
+
+Cette approche a plusieurs avantages, notamment une meilleure spécialisation du modèle, une génération de réponses plus cohérente et une réduction de la dépendance aux bases documentaires externes. Mais, elle demande beaucoup de ressources lors de l’entraînement, des mises à jour fréquentes des données et un coût de calcul plus lourd.
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|p{3.2cm}|p{3.8cm}|p{3.8cm}|p{4cm}|}
+\hline
+\textbf{Critère} & \textbf{Fine-Tuning} & \textbf{RAG} & \textbf{RAG + CAG (RAG avancé)} \\
+\hline
+
+Principe &
+Réentraîner le modèle sur des données spécifiques &
+Récupération dynamique de documents pertinents &
+RAG avec mécanisme de cache intelligent \\
+\hline
+
+Accès aux données récentes &
+Limité après l’entraînement &
+Oui &
+Oui avec optimisation du cache \\
+\hline
+
+Temps de réponse &
+Rapide &
+Moyen &
+Très rapide \\
+\hline
+
+Coût de calcul &
+Élevé lors de l’entraînement &
+Modéré &
+Optimisé grâce au cache \\
+\hline
+
+Mise à jour des connaissances &
+Nécessite un nouvel entraînement &
+Automatique via la base documentaire &
+Automatique avec réutilisation des résultats \\
+\hline
+
+Précision métier &
+Très élevée &
+Élevée &
+Très élevée \\
+\hline
+
+Dépendance à une base vectorielle &
+Non &
+Oui &
+Oui \\
+\hline
+
+Cas d’utilisation &
+Modèles spécialisés métier &
+Assistants documentaires intelligents &
+Applications temps réel et systèmes à forte charge \\
+\hline
+
+\end{tabular}
+}
+\caption{Comparaison entre Fine-Tuning, RAG et RAG+CAG}
+\label{tab:comparaison_rag_cag_finetuning}
+\end{table}
 \subsection{Le choix du RAG pour ce projet}
 
 Dans le cadre de ce projet, l’architecture RAG avec le CAGa été retenue pour plusieurs raisons essentielles :
