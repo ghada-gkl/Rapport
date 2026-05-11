@@ -263,10 +263,15 @@ de notifier automatiquement les équipes lors de la survenue d’incidents criti
 % ============================================================
 \section{Méthodologie de développement}
 \label{sec:methodologie}
-
+L’adoption d’une méthodologie bien structurée permet d’assurer une meilleure organisation du projet, d’améliorer la qualité des évaluations et de garantir la fiabilité des systèmes développés. Elle facilite aussi la communication avec le client. Elle offre une vision claire des objectifs à atteindre et permet d’anticiper les difficultés. Cela aide à faire les ajustements nécessaires au bon moment. Dans cette section, nous présenterons différentes méthodologies de travail, ainsi que leurs avantages et leurs limites. Nous expliquerons ensuite le choix de l’approche sélectionnée pour ce projet.
 
 \subsection{Présentation des méthodologies candidates}
+\subsubsection{SCRUM}
+Scrum est une méthode agile pour gérer des projets. Elle repose sur le travail collaboratif et itératif. Le projet se divise en cycles courts, appelés sprints. Cela permet de livrer rapidement des fonctionnalités et de s'ajuster aux changements des besoins.
+\subsubsection{Limites de Scrum en Data Science}
+Malgré sa flexibilité, Scrum a des limites dans les projets de data science. 
 
+Il est difficile d'estimer la durée des tâches expérimentales. Les résultats liés aux analyses et aux modèles d'IA sont imprévisibles. De plus, les sprints courts ne conviennent pas toujours aux phases de recherche et d'entraînement des modèles. La préparation et le nettoyage des données prennent souvent plus de temps que prévu. Enfin, il est difficile de mesurer la progression du projet avec des fonctions classiques.
 \subsubsection{CRISP-DM}
 
 CRISP-DM (\textit{Cross-Industry Standard Process for Data Mining}) est une méthodologie
@@ -418,39 +423,83 @@ similaires à celles de CRISP-DM (voir Figure 1.6).
         parfaitement cohérente.
 \end{itemize}
 
+\subsubsection{Scrum}
+
+Scrum est un framework agile de gestion de projet conçu pour livrer des produits
+de manière incrémentale via des sprints courts (1 à 4 semaines). Il repose sur
+des rôles définis (Product Owner, Scrum Master, équipe) et des cérémonies
+régulières (sprint planning, daily stand-up, rétrospective).
+
+\paragraph{Avantages}
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{Livraisons fréquentes :} Incréments fonctionnels à chaque sprint,
+        favorisant un retour rapide des parties prenantes.
+  \item \textbf{Adaptabilité :} Le backlog produit peut être réordonné à tout moment
+        selon l'évolution des besoins.
+  \item \textbf{Transparence :} Les cérémonies Scrum favorisent la communication et
+        la visibilité sur l'avancement.
+\end{itemize}
+
+\paragraph{Limites}
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{Inadapté à la Data Science pure :} Scrum ne prévoit pas de phases
+        dédiées à l'exploration des données, à la modélisation ou à l'évaluation
+        des modèles.
+  \item \textbf{Planification difficile :} La nature exploratoire de la data science
+        rend difficile la définition d'un backlog et d'une vélocité prévisible.
+\end{itemize}
+
 \subsection{Comparaison des méthodologies}
 
 \begin{table}[htbp]
   \centering
-  \caption{Comparaison des méthodologies CRISP-DM, TDSP et KDD}
+  \small
+  \caption{Comparaison des méthodologies CRISP-DM, TDSP, KDD et Scrum}
   \label{tab:methodo_comparison}
-  \begin{tabularx}{\textwidth}{>{\bfseries}p{3.2cm} X X X}
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{>{\bfseries}p{2.8cm} p{3.4cm} p{3.4cm} p{3.4cm} p{3.4cm}}
     \toprule
-    \textbf{Aspect} & \textbf{CRISP-DM} & \textbf{TDSP} & \textbf{KDD} \\
+    \textbf{Critère} & \textbf{CRISP-DM} & \textbf{TDSP} & \textbf{KDD} & \textbf{Scrum} \\
     \midrule
-    Objectif principal & Processus structuré et itératif pour la fouille de données orientée métier & Cycle de vie agile pour projets ML scalables & Extraction de patterns et connaissances depuis des données brutes \\
+    Objectif principal
+      & Processus structuré et itératif pour la fouille de données orientée métier
+      & Cycle de vie agile pour projets ML scalables en équipe
+      & Extraction de patterns et connaissances depuis des données brutes
+      & Livraison incrémentale de produits via des sprints courts et itératifs \\
     \midrule
-    Intégration métier & Forte : la compréhension métier est le point de départ & Forte : phase d'alignement intégré & Limitée : orientée données et patterns \\
+    Intégration métier
+      & Forte : la compréhension métier est le point de départ du cycle
+      & Forte : phase d'alignement métier intégrée dès le départ
+      & Limitée : centrée sur les données et les patterns
+      & Modérée : assurée par le Product Owner, sans phase dédiée \\
     \midrule
-    Préparation des données & Extensive et itérative & Forte, souvent automatisée & Phase centrale \\
+    Gestion itérative
+      & Itérations libres entre les phases, sans cadre temporel imposé
+      & Sprints définis avec livrables et métriques de performance clairs
+      & Processus globalement séquentiel, peu itératif
+      & Sprints fixes (1--4 semaines) avec cérémonies Scrum structurées \\
     \midrule
-    Support à la modélisation & Sélection et ajustement de modèles inclus & Fort avec suivi de performance & Présent mais moins structuré \\
-    \midrule
-    Support au déploiement & Modéré : inclus mais peu prescriptif & Fort : accent sur la production et DevOps & Minimal \\
-    \midrule
-    Interprétabilité & Soulignée lors de l'évaluation & Modérée : axée sur la reproductibilité & Haute : les patterns doivent être compréhensibles \\
-    \midrule
-    Meilleur cas d'usage & Fouille de données avec contexte métier fort & Flux ML collaboratifs et itératifs & Découverte de connaissances dans des données brutes non étiquetées \\
+    Meilleur cas d'usage
+      & Projets data science avec fort contexte métier et phases exploratoires
+      & Flux ML collaboratifs nécessitant reproductibilité et traçabilité
+      & Découverte de connaissances dans de larges volumes de données brutes
+      & Développement logiciel agile avec livraisons fréquentes et besoins évolutifs \\
     \bottomrule
-  \end{tabularx}
+  \end{tabular}%
+  }
 \end{table}
+\begin{figure}[htbp]
+  \centering
+   \includegraphics[width=0.65\textwidth]{comparaison.png}
+
+  \caption{le processus utilisé le plus fréquemment dans les projets de data science}
+  \label{fig:tdsp}
+\end{figure}
+
 
 \subsection{Méthodologie retenue : CRISP-DM}
 
-\textbf{CRISP-DM} a été adoptée comme méthodologie principale de ce projet en raison de
-son alignement métier, de sa neutralité technologique et de son accent sur l'amélioration
-itérative — une exigence clé pour la construction d'un assistant de surveillance SAP
-utilisable et adaptable.
+\textbf{CRISP-DM} a été choisie comme méthodologie principale pour ce projet car elle met l’accent sur les besoins métier, reste indépendante des technologies utilisées et adopte une approche itérative. Cette méthodologie permet de mieux comprendre les exigences métier liées à la surveillance des systèmes SAP tout en offrant une grande flexibilité dans le choix des outils et des technologies. De plus, son processus d’amélioration continue, ainsi que ses différentes phases d’analyse, de préparation des données, de modélisation et d’évaluation, correspondent parfaitement aux besoins d’un assistant intelligent de surveillance SAP. Dans ce contexte, les modèles et les analyses doivent être régulièrement ajustés et optimisés afin de garantir des résultats fiables capables de s’adapter aux évolutions du système.
 
 % ============================================================
 \section*{Conclusion}
