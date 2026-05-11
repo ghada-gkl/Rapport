@@ -296,10 +296,18 @@ Ainsi, le RAG peut être comparé à un assistant intelligent capable de consult
 \caption{Architecture du système RAG }
 \label{fig:rag_compact}
 \end{figure}
+\subsubsection*{CAG (Cache-Augmented Generation) : une amélioration du RAG}
 
+Bien que l’architecture RAG améliore significativement la génération de réponses en intégrant des documents externes, elle présente encore certaines limites, notamment en termes de latence et de coût de calcul, dues aux requêtes répétées vers la base vectorielle.
+
+Pour répondre à ces contraintes, une évolution appelée \textit{CAG (Cache-Augmented Generation)} a été proposée. Le principe de cette approche repose sur l’introduction d’un mécanisme de cache intelligent permettant de stocker les résultats des requêtes précédentes ainsi que les documents fréquemment récupérés.
+
+Ainsi, lorsqu’une requête similaire est posée, le système peut réutiliser directement les informations déjà calculées sans solliciter à nouveau la base vectorielle ou les modèles d’embedding. Cela permet de réduire le temps de réponse et d’améliorer l’efficacité globale du système.
+
+En comparaison avec le RAG classique, le CAG optimise le processus de génération en réduisant les redondances de calcul tout en conservant la pertinence des informations fournies. Cette approche est particulièrement utile dans les systèmes à forte charge ou dans les applications nécessitant une réponse en temps réel.
 \subsection{Le choix du RAG pour ce projet}
 
-Dans le cadre de ce projet, l’architecture RAG a été retenue pour plusieurs raisons essentielles :
+Dans le cadre de ce projet, l’architecture RAG avec le CAGa été retenue pour plusieurs raisons essentielles :
 
 \begin{description}[leftmargin=0pt, labelindent=0pt, style=nextline]
 
@@ -310,7 +318,7 @@ Dans le cadre de ce projet, l’architecture RAG a été retenue pour plusieurs 
   En s’appuyant sur des documents externes, le RAG réduit significativement les hallucinations et améliore la précision des réponses .
 
   \item[\textbf{Optimisation des coûts}]
-  Contrairement à d’autres approches, le RAG ne nécessite pas de réentraînement du modèle, ce qui permet de limiter les coûts tout en conservant ses capacités .
+  Contrairement à d’autres approches, le RAG et spécifiquement le CAG ne nécessite pas de réentraînement du modèle, ce qui permet de limiter les coûts tout en conservant ses capacités en utilisant le cache.
 
 \end{description}
 
@@ -319,8 +327,50 @@ En outre, en l’absence de jeux de données annotés par des experts et compte 
 Pour évaluer l’efficacité de la solution proposée basée sur les approches RAG et CAG, une matrice de succès a été définie. Cette matrice permet de mesurer la qualité des réponses générées, la rapidité d’exécution et la pertinence des informations récupérées depuis les documents techniques SAP.
 
 Les critères retenus ont été choisis en fonction des objectifs fonctionnels et techniques du projet. Ils permettent d’évaluer les performances du système, ainsi que l’expérience utilisateur et la fiabilité des réponses produites. Cela implique notamment l’examen des faux positifs, c’est-à-dire les cas où le résultat est prédit correctement mais s’avère faux en réalité.
-% ------------------------------------------------------------
 
+\subsection{Matrice de confusion}
+
+La matrice de confusion est un outil utilisé pour évaluer les performances d’un modèle de classification en comparant les valeurs prédites aux valeurs réelles. Elle permet d’identifier les bonnes prédictions ainsi que les erreurs effectuées par le modèle.
+
+La structure de base d’une matrice de confusion repose sur quatre éléments principaux :
+
+\begin{itemize}
+    \item \textbf{Vrai Positif (TP)} : le modèle prédit correctement la classe positive. Par exemple, un courriel de spam correctement identifié comme spam.
+    
+    \item \textbf{Vrai Négatif (TN)} : le modèle prédit correctement la classe négative. Par exemple, un courriel normal correctement identifié comme non spam.
+    
+    \item \textbf{Faux Positif (FP)} : le modèle prédit incorrectement la classe positive. Par exemple, un courriel normal identifié à tort comme spam.
+    
+    \item \textbf{Faux Négatif (FN)} : le modèle prédit incorrectement la classe négative. Par exemple, un courriel de spam identifié comme un courriel normal.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\renewcommand{\arraystretch}{1.5}
+
+\begin{tabular}{|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{Valeurs réelles}} & \multicolumn{2}{c|}{\textbf{Valeurs prédites}} \\
+\cline{2-3}
+ & Positif & Négatif \\
+\hline
+Positif & Vrai Positif (TP) & Faux Négatif (FN) \\
+\hline
+Négatif & Faux Positif (FP) & Vrai Négatif (TN) \\
+\hline
+\end{tabular}
+
+\caption{Structure d’une matrice de confusion}
+\label{fig:confusion_matrix}
+\end{figure}
+
+La matrice de confusion permet également de calculer plusieurs métriques importantes comme la précision (\textit{Precision}), le rappel (\textit{Recall}), l’exactitude (\textit{Accuracy}) et le score F1, qui sont utilisées pour mesurer la qualité des performances du modèle de Machine Learning.
+
+\vspace{0.3cm}
+
+\textbf{Source :} 
+\href{https://www.datacamp.com/fr/tutorial/what-is-a-confusion-matrix-in-machine-learning}
+{DataCamp – What is a Confusion Matrix in Machine Learning?}
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 
