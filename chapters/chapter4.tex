@@ -1,6 +1,8 @@
 \chapter{Compréhension des Données}
 
-Ce chapitre correspond à la phase de compréhension des données du cycle CRISP-DM. Elle couvre quatre tâches : la collecte des données, leur description structurelle, leur exploration statistique et la vérification de leur qualité. Le projet mobilise deux corpus distincts : des données de surveillance opérationnelle SAP extraites en temps réel et stockées dans MongoDB, et une base de connaissances documentaire construite à partir de 297 livres de formation SAP et du portail d'aide en ligne, indexée dans PostgreSQL avec pgvector.
+Ce chapitre correspond à la phase de compréhension des données du cycle CRISP-DM. Elle couvre la tache de comprendre les données spécifiquement et elle contient  certain  tâches : la collecte des données, leur description structurelle, vérification des donnés.  
+
+
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Collecte des Données}
@@ -8,19 +10,37 @@ Ce chapitre correspond à la phase de compréhension des données du cycle CRISP
 
 \subsection{Données de Surveillance SAP — Extraction via PyRFC}
 
-Les données de surveillance opérationnelle sont extraites automatiquement des systèmes SAP de production par la couche \textbf{PyRFC}, le connecteur Python pour les Remote Function Calls SAP. PyRFC permet d'appeler directement les modules de fonction SAP depuis Python sans passer par la SAP GUI, rendant l'extraction répétable, planifiable et traçable.
+Les données de surveillance opérationnelle sont extraites automatiquement des systèmes SAP de production par la couche PyRFC, le connecteur Python pour les Remote Function Calls SAP. Cela nous permet d'appeler directement les modules de fonction SAP, rendant l'extraction répétable, planifiable et traçable.
 
-Chaque extraction produit des enregistrements horodatés portant un champ \texttt{SID} qui identifie le système SAP source et un champ \texttt{Extraction\_Timestamp} qui permet l'historisation. Dix-huit transactions SAP sont couvertes : journaux d'erreurs ABAP (ST22), statuts de jobs (SM37), espace base de données (DB02), entrées de verrouillage (SM12), processus de travail (SM50, SM66), files qRFC (SMQ1, SMQ2), messagerie (SOST), ainsi que les métriques système CPU, mémoire et système de fichiers.
+Chaque extraction produit des enregistrements des serveurs des clients, et chaque TCode a une structure de données bien définie. Voici quelques exemples de transactions couvertes : journaux d'erreurs ABAP (ST22), statuts de jobs (SM37), espace de base de données (DB02), entrées de verrouillage (SM12), processus de travail (SM50, SM66), files qRFC (SMQ1, SMQ2), messagerie (SOST), ainsi que les métriques système comme le CPU, la mémoire et le système de fichiers.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[
+        width=0.9\textwidth,
+        height=0.7\textheight,
+        keepaspectratio
+    ]{images/St22_structure.png}
+    \caption{Structure des données extraites depuis la transaction ST22}
+    \label{fig:st22_structure}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[
+        width=0.9\textwidth,
+        height=0.7\textheight,
+        keepaspectratio
+    ]{images/Sm37_structure.png}
+    \caption{Structure des données extraites depuis la transaction SM37}
+    \label{fig:sm37_structure}
+\end{figure}
 \subsection{Base de Connaissances RAG — Extraction Multi-Agent}
 
-La base de connaissances du chatbot est construite à partir de deux sous-sources documentaires.
+La base de connaissances de l'assistant IA (RAG) est construite à partir de deux sous-sources documentaires principales.
 
-La première est constituée de \textbf{297 supports de cours SAP au format PDF} : administration Basis (ADM100, ADM505), développement ABAP (BC100, BC400), modules fonctionnels MM, SD, FI, et formations spécialisées NetWeaver, HANA, Fiori, sécurité. Ces documents issus du programme de formation accrédité SAP constituent la référence pédagogique la plus complète pour un technicien SAP.
+La première est constituée de \textbf{297 supports de cours SAP au format PDF} : administration Basis (ADM100, ADM505), développement ABAP (BC100, BC400), modules fonctionnels MM, SD, FI, ainsi que des formations spécialisées sur NetWeaver, S/4HANA, Fiori et la sécurité. Ces documents proviennent du programme de formation accrédité SAP et constituent la référence pédagogique la plus complète pour les techniciens SAP.
 
-La seconde est le \textbf{portail d'aide en ligne SAP} (help.sap.com), dont des sections thématiques ont été extraites par web scraping. Ce portail fournit une documentation orientée configuration, codes d'erreur, paramètres système et notes de correction (SAP Notes), complémentaire aux livres de formation.
-
-\paragraph{Extraction PDF par agents parallèles.}
+La seconde source est le \textbf{portail d'aide en ligne SAP} (\texttt{help.sap.com}), dont plusieurs sections thématiques ont été extraites par web scraping, par exemple : \texttt{https://help.sap.com/crawler/PRODUCTION/SAP\_NETWEAVER\_740/7.4.27/en-US}. Ce portail fournit une documentation orientée configuration, codes d'erreur, paramètres système et notes de correction (SAP Notes), complémentaire aux supports de formation des systèmes SAP.\paragraph{Extraction PDF par agents parallèles.}
 Le script \texttt{Sap\_batch\_extractor.py} orchestre un ensemble d'agents d'extraction, chacun responsable d'un sous-ensemble de livres. Chaque agent opère de façon autonome : il charge le PDF avec \textbf{pdfplumber}, détecte la hiérarchie des sections à partir de la taille et de la graisse de police, extrait le texte de chaque section, isole les figures et produit un fichier \texttt{structured\_content.json}. Le traitement en parallèle réduit le temps total d'extraction de plusieurs heures à quelques dizaines de minutes.
 
 \paragraph{Web scraping du portail SAP.}
