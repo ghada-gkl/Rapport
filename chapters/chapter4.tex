@@ -1,6 +1,8 @@
 \chapter{Compréhension des Données}
 
+
 Ce chapitre correspond à la phase de compréhension des données du cycle CRISP-DM. Elle couvre la tache de comprendre les données spécifiquement et elle contient  certain  tâches : la collecte des données, leur description structurelle, vérification des donnés.  
+
 
 
 
@@ -10,9 +12,9 @@ Ce chapitre correspond à la phase de compréhension des données du cycle CRISP
 
 \subsection{Données de Surveillance SAP — Extraction via PyRFC}
 
-Les données de surveillance opérationnelle sont extraites automatiquement des systèmes SAP de production par la couche PyRFC, le connecteur Python pour les Remote Function Calls SAP. Cela nous permet d'appeler directement les modules de fonction SAP, rendant l'extraction répétable, planifiable et traçable.
+Les données de surveillance opérationnelle sont collectées automatiquement à partir des systèmes SAP de production en utilisant PyRFC, le connecteur Python pour les appels de fonctions distantes SAP. Cette bibliothèque permet d’interagir directement avec les modules de fonction ABAP exposés par le serveur d’application, sans avoir besoin de l’interface SAP GUI. Cette méthode facilite l’automatisation, la planification et la répétabilité du processus d’extraction des données.
 
-Chaque extraction produit des enregistrements des serveurs des clients, et chaque TCode a une structure de données bien définie. Voici quelques exemples de transactions couvertes : journaux d'erreurs ABAP (ST22), statuts de jobs (SM37), espace de base de données (DB02), entrées de verrouillage (SM12), processus de travail (SM50, SM66), files qRFC (SMQ1, SMQ2), messagerie (SOST), ainsi que les métriques système comme le CPU, la mémoire et le système de fichiers.
+Chaque enregistrement extrait contient deux attributs essentiels pour garantir la traçabilité des informations collectées. Le champ \texttt{SID} identifie le système SAP source et permet de surveiller plusieurs environnements dans la même base de données. Le champ \texttt{Extraction\_Timestamp} enregistre la date et l’heure de la collecte des données, ce qui permet de garder un historique des événements et des métriques observées. L’extraction comprend plusieurs transactions SAP pour la surveillance opérationnelle, notamment les journaux d’erreurs, les traitements en arrière-plan, les verrouillages, les processus actifs, les files qRFC et la messagerie système. Des métriques concernant le processeur, la mémoire et le système de fichiers sont également collectées pour assurer une surveillance complète de l’environnement SAP.
 
 \begin{figure}[H]
     \centering
@@ -34,37 +36,65 @@ Chaque extraction produit des enregistrements des serveurs des clients, et chaqu
     \caption{Structure des données extraites depuis la transaction SM37}
     \label{fig:sm37_structure}
 \end{figure}
-\subsection{Base de Connaissances RAG — Extraction Multi-Agent}
 
-La base de connaissances de l'assistant IA (RAG) est construite à partir de deux sous-sources documentaires principales.
 
-La première est constituée de \textbf{297 supports de cours SAP au format PDF} : administration Basis (ADM100, ADM505), développement ABAP (BC100, BC400), modules fonctionnels MM, SD, FI, ainsi que des formations spécialisées sur NetWeaver, S/4HANA, Fiori et la sécurité. Ces documents proviennent du programme de formation accrédité SAP et constituent la référence pédagogique la plus complète pour les techniciens SAP.
+\subsection{Base de Connaissances RAG — Extraction Documentaire}
 
-La seconde source est le \textbf{portail d'aide en ligne SAP} (\texttt{help.sap.com}), dont plusieurs sections thématiques ont été extraites par web scraping, par exemple : \texttt{https://help.sap.com/crawler/PRODUCTION/SAP\_NETWEAVER\_740/7.4.27/en-US}. Ce portail fournit une documentation orientée configuration, codes d'erreur, paramètres système et notes de correction (SAP Notes), complémentaire aux supports de formation des systèmes SAP.\paragraph{Extraction PDF par agents parallèles.}
-Le script \texttt{Sap\_batch\_extractor.py} orchestre un ensemble d'agents d'extraction, chacun responsable d'un sous-ensemble de livres. Chaque agent opère de façon autonome : il charge le PDF avec \textbf{pdfplumber}, détecte la hiérarchie des sections à partir de la taille et de la graisse de police, extrait le texte de chaque section, isole les figures et produit un fichier \texttt{structured\_content.json}. Le traitement en parallèle réduit le temps total d'extraction de plusieurs heures à quelques dizaines de minutes.
+La base de connaissances documentaire utilisée par le chatbot RAG repose sur deux sources complémentaires. La première comprend plus de 300 documents de formation SAP au format PDF. Ces documents couvrent différents domaines comme l’administration Basis, le développement ABAP, les modules fonctionnels, ainsi que les technologies NetWeaver, HANA, Fiori et la sécurité. Ils servent de référence complète pour comprendre les concepts, les architectures et les procédures SAP. 
 
-\paragraph{Web scraping du portail SAP.}
-L'extraction des pages d'aide utilise une chaîne de trois outils : \textbf{Scrapy} pour la navigation et le téléchargement des pages statiques, \textbf{Playwright} pour les composants dynamiques chargés en JavaScript, et \textbf{BeautifulSoup} pour le parsing et le nettoyage du HTML brut.
+La seconde source est le portail officiel d’aide SAP (help.sap.com). Certaines sections de ce portail ont été extraites par web scraping. Cette documentation offre des informations techniques sur la configuration système, les codes d’erreur, les paramètres de fonctionnement et les notes de correction SAP. Elle complète donc de manière pratique les supports de formation.
+\subsubsection*{Extraction des livres PDF}
 
-\paragraph{Résilience SSL lors de l'ingestion.}
-L'ingestion des vecteurs dans la base PostgreSQL distante hébergée sur Supabase expose le pipeline à des interruptions de connexion SSL sur des sessions de longue durée. Deux mécanismes ont été implémentés : des TCP keepalives (\texttt{keepalives\_idle=30\,s, keepalives\_interval=10\,s}) pour maintenir la connexion active, et une boucle de retry automatique en cas de drop SSL.
+L'extraction du contenu des 297 livres est orchestrée par le script \texttt{Sap\_batch\_extractor.py}, qui instancie un agent d'extraction par livre et les exécute en parallèle. Chaque agent opère de façon autonome : il ouvre le fichier PDF avec la bibliothèque \textbf{pdfplumber}, analyse la taille et la graisse des polices pour reconstituer la hiérarchie des sections (unité → leçon → section → corps), extrait le texte de chaque segment, isole les figures avec leurs légendes, et produit un fichier \texttt{structured\_content.json} structuré. Le traitement parallèle réduit la durée totale d'extraction de plusieurs heures à quelques dizaines de minutes pour l'ensemble du corpus.
 
-\begin{lstlisting}[language=Python, caption={Boucle de retry SSL dans ingest\_to\_db.py}]
+\subsubsection*{Scraping du portail SAP Help — difficultés et solutions}
+
+L'accès au portail \texttt{help.sap.com} repose sur deux points d'entrée distincts. Le premier, \texttt{https://help.sap.com/crawler/}, est l'index de crawl mis à disposition par SAP : il expose la liste structurée des URLs de documentation disponibles, ce qui évite de devoir parcourir manuellement l'arborescence du portail. Le second, \texttt{https://help.sap.com/}, est l'URL de base utilisée pour télécharger le contenu effectif de chaque page identifiée.
+
+Dès les premières exécutions, SAP a refusé les requêtes émises avec l'identifiant de navigateur par défaut de la bibliothèque Python \texttt{requests} (entête \texttt{python-requests/x.x.x}), en retournant des codes HTTP 403 (Forbidden) ou 429 (Too Many Requests). Deux mesures ont été mises en œuvre pour contourner ces blocages.
+
+La première mesure est la \textbf{rotation d'identifiants de navigateur}. Cinq chaînes \textit{User-Agent} correspondant à des navigateurs réels et courants ont été définies dans le scraper et tirées aléatoirement à chaque requête, de sorte que le flux de collecte imite le comportement d'utilisateurs humains utilisant des navigateurs différents.
+
+\begin{lstlisting}[language=Python, caption={Pool de User-Agents défini dans le scraper SAP Help}]
+USER_AGENTS = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+    '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) '
+    'Gecko/20100101 Firefox/121.0',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+    'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
+    '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+    '(KHTML, like Gecko) Edge/120.0.0.0',
+]
+\end{lstlisting}
+
+La seconde mesure est une \textbf{parallélisation contrôlée} avec exactement 10 threads concurrents (\texttt{NUM\_THREADS = 10}). Un flux séquentiel serait trop lent pour collecter plusieurs centaines de pages ; un parallélisme excessif déclencherait la limitation de débit côté SAP. La valeur de 10 threads constitue un compromis : elle maintient un débit de collecte satisfaisant tout en restant sous le seuil de détection. Aucun proxy n'a été nécessaire (\texttt{PROXY = None}) — la combinaison rotation d'User-Agent et parallélisme modéré a suffi à rétablir l'accès au portail.
+
+\subsubsection*{Ingestion en base PostgreSQL locale}
+
+Par exigence de confidentialité — les données documentaires SAP de l'entreprise ne doivent pas transiter par des services cloud tiers — la base de connaissances est hébergée sur un \textbf{serveur PostgreSQL local}. L'ingestion des 76\,463 vecteurs s'effectue par batches successifs au cours de sessions qui peuvent durer plusieurs heures. Pour garantir la robustesse du processus face aux interruptions réseau, une boucle de retry avec temporisation croissante a été mise en place.
+
+\begin{lstlisting}[language=Python, caption={Boucle de retry dans ingest\_to\_db.py}]
 for attempt in range(3):
     try:
         conn = psycopg2.connect(
-            DB_URL, keepalives=1,
-            keepalives_idle=30, keepalives_interval=10
+            DB_URL,
+            keepalives=1,
+            keepalives_idle=30,
+            keepalives_interval=10
         )
-        # ingestion du batch
+        # ingestion du batch courant
         break
     except Exception as exc:
-        if "SSL" in str(exc):
-            print(f"[WARN] SSL drop, retry {attempt+1}/3")
-            time.sleep(2)
-        else:
+        print(f"[WARN] connexion perdue, tentative {attempt+1}/3")
+        time.sleep(2 ** attempt)   # 1 s, puis 2 s, puis 4 s
+        if attempt == 2:
             raise
 \end{lstlisting}
+
+Les TCP keepalives (\texttt{keepalives\_idle=30\,s}, \texttt{keepalives\_interval=10\,s}) maintiennent la connexion active entre deux batches et évitent les fermetures silencieuses côté serveur. La temporisation exponentielle (1 s, 2 s, 4 s) laisse au serveur le temps de récupérer en cas de surcharge momentanée avant de tenter une nouvelle connexion.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Description des Données}
