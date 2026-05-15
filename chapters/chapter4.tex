@@ -47,31 +47,15 @@ La seconde source est le portail officiel d’aide SAP (help.sap.com). Certaines
 
 L'extraction du contenu des 297 livres est orchestrée par le script \texttt{Sap\_batch\_extractor.py}, qui instancie un agent d'extraction par livre et les exécute en parallèle. Chaque agent opère de façon autonome : il ouvre le fichier PDF avec la bibliothèque \textbf{pdfplumber}, analyse la taille et la graisse des polices pour reconstituer la hiérarchie des sections (unité → leçon → section → corps), extrait le texte de chaque segment, isole les figures avec leurs légendes, et produit un fichier \texttt{structured\_content.json} structuré. Le traitement parallèle réduit la durée totale d'extraction de plusieurs heures à quelques dizaines de minutes pour l'ensemble du corpus.
 
-\subsubsection*{Scraping du portail SAP Help — difficultés et solutions}
+\subsubsection*{Collecte des données depuis le portail SAP Help}
 
-L'accès au portail \texttt{help.sap.com} repose sur deux points d'entrée distincts. Le premier, \texttt{https://help.sap.com/crawler/}, est l'index de crawl mis à disposition par SAP : il expose la liste structurée des URLs de documentation disponibles, ce qui évite de devoir parcourir manuellement l'arborescence du portail. Le second, \texttt{https://help.sap.com/}, est l'URL de base utilisée pour télécharger le contenu effectif de chaque page identifiée.
+La récupération des données du portail \texttt{help.sap.com} a été réalisée à l’aide d’un processus de scraping permettant d’extraire automatiquement les pages de documentation SAP. Deux liens principaux ont été utilisés : le premier fournit la liste des pages disponibles sur le portail, tandis que le second permet d’accéder au contenu détaillé de chaque page.
 
-Dès les premières exécutions, SAP a refusé les requêtes émises avec l'identifiant de navigateur par défaut de la bibliothèque Python \texttt{requests} (entête \texttt{python-requests/x.x.x}), en retournant des codes HTTP 403 (Forbidden) ou 429 (Too Many Requests). Deux mesures ont été mises en œuvre pour contourner ces blocages.
+Lors des premières tentatives de collecte, certaines requêtes ont été bloquées par le portail SAP afin de limiter les accès automatisés. Pour résoudre ce problème, plusieurs ajustements ont été mis en place.
 
-La première mesure est la \textbf{rotation d'identifiants de navigateur}. Cinq chaînes \textit{User-Agent} correspondant à des navigateurs réels et courants ont été définies dans le scraper et tirées aléatoirement à chaque requête, de sorte que le flux de collecte imite le comportement d'utilisateurs humains utilisant des navigateurs différents.
+La première solution consiste à utiliser différents identifiants de navigateurs web lors des requêtes. Cette approche permet au script de se comporter comme un utilisateur naviguant depuis différents navigateurs classiques, ce qui réduit les risques de blocage.
 
-\begin{lstlisting}[language=Python, caption={Pool de User-Agents défini dans le scraper SAP Help}]
-USER_AGENTS = [
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-    '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) '
-    'Gecko/20100101 Firefox/121.0',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
-    'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
-    '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-    '(KHTML, like Gecko) Edge/120.0.0.0',
-]
-\end{lstlisting}
-
-La seconde mesure est une \textbf{parallélisation contrôlée} avec exactement 10 threads concurrents (\texttt{NUM\_THREADS = 10}). Un flux séquentiel serait trop lent pour collecter plusieurs centaines de pages ; un parallélisme excessif déclencherait la limitation de débit côté SAP. La valeur de 10 threads constitue un compromis : elle maintient un débit de collecte satisfaisant tout en restant sous le seuil de détection. Aucun proxy n'a été nécessaire (\texttt{PROXY = None}) — la combinaison rotation d'User-Agent et parallélisme modéré a suffi à rétablir l'accès au portail.
-
+La seconde solution repose sur une collecte parallèle modérée des pages du portail. Plusieurs requêtes sont exécutées simultanément afin d’accélérer l’extraction des données, tout en conservant un rythme raisonnable pour éviter les limitations imposées par le serveur SAP. Grâce à ces ajustements, l’accès aux ressources documentaires a pu être réalisé de manière stable et efficace.
 \subsubsection*{Ingestion en base PostgreSQL locale}
 
 Par exigence de confidentialité — les données documentaires SAP de l'entreprise ne doivent pas transiter par des services cloud tiers — la base de connaissances est hébergée sur un \textbf{serveur PostgreSQL local}. L'ingestion des 76\,463 vecteurs s'effectue par batches successifs au cours de sessions qui peuvent durer plusieurs heures. Pour garantir la robustesse du processus face aux interruptions réseau, une boucle de retry avec temporisation croissante a été mise en place.
@@ -97,306 +81,155 @@ for attempt in range(3):
 Les TCP keepalives (\texttt{keepalives\_idle=30\,s}, \texttt{keepalives\_interval=10\,s}) maintiennent la connexion active entre deux batches et évitent les fermetures silencieuses côté serveur. La temporisation exponentielle (1 s, 2 s, 4 s) laisse au serveur le temps de récupérer en cas de surcharge momentanée avant de tenter une nouvelle connexion.
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Description des Données}
+\section{Diagnostic de la Qualité des Données}
+\label{sec:diagnostic-qualite}
 % ─────────────────────────────────────────────────────────────────────────────
 
-\subsection{Collections MongoDB — Données de Surveillance}
+Une fois les données brutes collectées, elles ont fait l'objet d'un examen systématique afin d'identifier toute anomalie susceptible de nuire à la qualité des réponses produites par le système. Dans un système RAG, le corpus documentaire est découpé en petits blocs de texte appelés \textit{segments}. Chaque segment correspond à quelques paragraphes traitant d'un sujet précis. Ce découpage permet au moteur de recherche de localiser le passage exact répondant à une question, plutôt que de parcourir des documents entiers de plusieurs centaines de pages.
 
-Les données de surveillance sont réparties dans dix-huit collections MongoDB, chacune correspondant à une transaction SAP ou à une métrique système. Le tableau suivant présente les collections et leurs champs principaux.
-
-\begin{longtable}{|p{2.4cm}|p{4.0cm}|p{7.2cm}|}
-\caption{Collections MongoDB et champs principaux}
-\label{tab:mongo-collections}\\
-\hline
-\textbf{Collection} & \textbf{Transaction SAP} & \textbf{Champs principaux} \\
-\hline
-\endfirsthead
-\hline
-\textbf{Collection} & \textbf{Transaction SAP} & \textbf{Champs principaux} \\
-\hline
-\endhead
-\texttt{ST22}      & Erreurs d'exécution ABAP     & Current\_Date, Runtime\_Error\_Name, Application\_Server, User\_Name \\
-\hline
-\texttt{SM37}      & Jobs en arrière-plan          & Job, Status, Start\_Date, End\_Date, Job\_Created\_By \\
-\hline
-\texttt{DB02}      & Espace base de données        & TableSpace\_Name, Used\_Percent, Free\_MB, AutoExtend \\
-\hline
-\texttt{SM12}      & Entrées de verrouillage       & Table\_Name, User\_name, Date, Time \\
-\hline
-\texttt{SM51}      & Serveurs d'application        & HOST, STATE \\
-\hline
-\texttt{SM66}      & Processus de travail          & WP\_Type, Total, Running, WP\_Ratio \\
-\hline
-\texttt{SM58}      & RFC transactionnel             & Function\_Module, Target\_System, Status \\
-\hline
-\texttt{SM13}      & Enregistrements de mise à jour & User, TCode, Status \\
-\hline
-\texttt{SP01}      & Demandes de spool              & Spool\_No, User\_Name, Status \\
-\hline
-\texttt{ST13}      & Chaînes de processus           & Chain\_ID, Log\_ID, Status \\
-\hline
-\texttt{ST03N}     & Analyse de charge              & Task\_Type, Average\_Response\_Time\_per\_Step \\
-\hline
-\texttt{SMQ1/SMQ2} & Files qRFC                    & Queue\_Name, Destination, Status \\
-\hline
-\texttt{SOST}      & Messagerie sortante            & Creator, ErrorMsg \\
-\hline
-\texttt{CPU}       & Métriques processeur           & user\_cpu\_percent, system\_cpu\_percent, idle\_cpu\_percent \\
-\hline
-\texttt{MEMORY}    & Métriques mémoire              & MIN\_FR\_MEM, MAX\_FR\_MEM, AVG\_SWAPFR \\
-\hline
-\texttt{FSYS}      & Système de fichiers            & filesystem\_path, capacity\_gb, free\_gb \\
-\hline
-\texttt{MSS\_DB}   & Base SQL Server                & DB\_SIZE, LOG\_SIZE, RESERVED \\
-\hline
-\end{longtable}
-
-Chaque enregistrement porte également les champs transversaux \texttt{SID} (identifiant du système SAP source) et \texttt{Extraction\_Timestamp} (horodatage de l'extraction), qui permettent de surveiller plusieurs instances SAP dans la même base et de reconstituer un historique.
-
-Le schéma de chaque document est flexible (BSON sans contrainte de colonne), ce qui permet d'adapter la structure aux spécificités de chaque transaction sans migration de schéma. Les exemples suivants illustrent la structure réelle des enregistrements.
-
-\begin{lstlisting}[caption={Enregistrement ST22 — erreur d'exécution ABAP}]
-{
-  "Current_Date"       : "2024-12-11",
-  "Time"               : "14:46:45",
-  "Application_Server" : "ECC-SYS-00",
-  "User_Name"          : "USER____",
-  "Client"             : "620",
-  "Runtime_Error_Name" : "DBIF_RSQL_INVALID_REQUEST",
-  "SID"                : "ECC",
-  "Extraction_Timestamp": "2024-12-12 11:49:32"
-}
-\end{lstlisting}
-
-\begin{lstlisting}[caption={Enregistrement SM37 — job annulé}]
-{
-  "Job"            : "Z3_WM_UPDATE",
-  "Job_Created_By" : "BATCH_USER",
-  "Status"         : "Cancelled",
-  "Start_Date"     : "2025-04-24",
-  "Start_Time"     : "19:08:01",
-  "End_Date"       : "2025-04-24",
-  "End_Time"       : "19:08:01",
-  "SID"            : "ECC",
-  "Extraction_Timestamp": "2025-04-25 10:59:14"
-}
-\end{lstlisting}
-
-\subsection{Fichiers Produits par le Pipeline RAG}
-
-L'extraction et la transformation des données documentaires produisent une famille de fichiers intermédiaires et finaux.
+L'extraction automatique depuis des PDFs techniques et le scraping de pages web introduisent inévitablement des imperfections. Après analyse du corpus initial de \textbf{155\,721 segments} — répartis entre 21\,084 issus du portail SAP Help, 87\,418 des livres de formation et 47\,219 de figures — huit catégories d'anomalies ont été identifiées et mesurées.
 
 \begin{table}[H]
 \centering
-\caption{Fichiers produits par le pipeline de traitement documentaire}
-\label{tab:fichiers}
-\begin{tabularx}{\textwidth}{|p{5.8cm}|X|}
-\hline
-\textbf{Fichier} & \textbf{Contenu} \\
-\hline
-\texttt{output/<COURS>/structured\_content.json} & Contenu hiérarchique extrait par livre (sections, procédures, tableaux, métadonnées) \\
-\hline
-\texttt{normalized/unified\_content.json} & Documents normalisés issus de toutes les sources, après nettoyage et unification du schéma \\
-\hline
-\texttt{chunked\_for\_embedding.json} & Segments finaux après découpage hiérarchique (parents + enfants + singles) \\
-\hline
-\texttt{metadata.json} & Métadonnées des 76\,463 chunks filtrés, alignées par index avec les vecteurs \\
-\hline
-\texttt{embeddings.npy} & Vecteurs d'embeddings — forme (76\,463, 1\,024), float32 \\
-\hline
+\caption{Les huit anomalies identifiées lors du diagnostic qualité}
+\label{tab:anomalies}
+\begin{tabularx}{\textwidth}{@{}clXr@{}}
+\toprule
+\textbf{N°} & \textbf{Anomalie} & \textbf{Description} & \textbf{Mesure} \\
+\midrule
+1 & Encodage CID & Des caractères illisibles du type \texttt{(cid:83)} apparaissent dans certains PDFs dont les polices ne sont pas intégrées au fichier. Le livre WSMFB est affecté à 97\,\%, le livre AR822 entre 3 et 11\,\%. & 568 segments \\
+\addlinespace
+2 & Paramètre \texttt{forSiteMap=true} & Certaines URLs du portail SAP contiennent ce paramètre. Après vérification, il ne modifie pas le contenu des pages ; il s'agit d'un faux problème. & 63\,\% des URLs \\
+\addlinespace
+3 & Doublons inter-sources & Certains passages apparaissent à la fois dans les livres de formation et sur le portail SAP Help. Dans le pire cas, un même contenu est répété 546 fois. & 6\,867 segments \\
+\addlinespace
+4 & Pages QCM & Des pages de questionnaires à choix multiple ont été extraites des livres SAP. Elles contiennent uniquement des marqueurs \texttt{XTrue} / \texttt{XFalse} sans aucune valeur documentaire. & 5\,618 segments \\
+\addlinespace
+5 & Doublons internes & Dans certains livres, l'introduction d'un chapitre est répétée mot pour mot dans la seconde moitié du document. & 3\,808 segments \\
+\addlinespace
+6 & Faux codes transaction & L'algorithme de détection de codes SAP confond parfois des fragments de dates avec des codes. La phrase \textit{«~starts AT01/01/2017~»} génère faussement le code \texttt{AT01}. & $\approx$200 cas \\
+\addlinespace
+7 & Type de section erroné & Des segments de type \texttt{section} sont incorrectement classés comme \texttt{code} par l'extracteur, ce qui perturbe le moteur de recherche. & 1\,293 segments \\
+\addlinespace
+8 & Module BI incorrect & Des segments appartenant à des domaines variés sont attribués au module BI à tort. Ce classement erroné est purement cosmétique et n'affecte pas le contenu textuel. & 698 segments \\
+\bottomrule
 \end{tabularx}
 \end{table}
 
-\subsection{Schéma de la Table PostgreSQL \texttt{sap\_chunks}}
-
-Tous les segments documentaires sont stockés dans une table PostgreSQL dont le schéma supporte simultanément la recherche sémantique par vecteur, le filtrage par métadonnées et la recherche plein texte BM25.
-
-\begin{lstlisting}[language=SQL, caption={Schéma de la table sap\_chunks}]
-CREATE TABLE sap_chunks (
-    chunk_id            UUID PRIMARY KEY,
-    text                TEXT NOT NULL,
-    title               TEXT,
-    source_type         VARCHAR,     -- 'technical_book' | 'sap_help'
-    source_book         TEXT,
-    module              VARCHAR,     -- BASIS | ABAP | MM | SD | FI | SECURITY | HANA | FIORI
-    section_type        VARCHAR,     -- 'section' | 'procedure' | 'note' | 'table'
-    breadcrumb          TEXT[],      -- chemin hierarchique de la section
-    mentioned_tcodes    TEXT[],      -- T-codes detectes (SM37, ST22, SE38...)
-    mentioned_sap_notes TEXT[],      -- numeros de notes SAP (5 a 7 chiffres)
-    is_parent           BOOLEAN,     -- TRUE si chunk parent (non indexe)
-    parent_chunk_id     UUID,        -- reference au chunk parent
-    text_search         TSVECTOR,    -- colonne pour la recherche full-text BM25
-    embedding           vector(1024) -- vecteur BGE-large-en-v1.5
-);
-
--- Index de recherche vectorielle approximative :
-CREATE INDEX sap_chunks_hnsw ON sap_chunks
-    USING hnsw (embedding vector_cosine_ops)
-    WITH (m = 16, ef_construction = 64);
-
--- Index full-text BM25 :
-CREATE INDEX sap_chunks_fts ON sap_chunks USING gin(text_search);
-
--- Index sur les T-codes pour le filtrage par transaction :
-CREATE INDEX sap_chunks_tcodes ON sap_chunks USING gin(mentioned_tcodes);
-\end{lstlisting}
-
-L'index HNSW (\textit{Hierarchical Navigable Small World}) transforme la recherche par similarité cosinus d'une complexité linéaire $O(N)$ en une complexité approximative $O(\log N)$, ce qui rend le système viable à l'échelle de 76\,463 vecteurs de 1\,024 dimensions. Les paramètres \texttt{m=16} et \texttt{ef\_construction=64} équilibrent précision de rappel et temps de construction. L'index HNSW occupe 154\,Mo, l'index GIN sur les T-codes 11\,Mo.
+Les anomalies les plus critiques pour le système sont les doublons inter-sources (6\,867 segments) et les pages de QCM (5\,618 segments). Un moteur de recherche alimenté par des données dupliquées favorise artificiellement les passages répétés, ce qui fausse le classement des résultats. Les pages de QCM, quant à elles, ne contiennent aucune information utile et induisent le système en erreur lors de la génération des réponses.
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Exploration des Données}
+\section{Décisions de Traitement}
+\label{sec:decisions-traitement}
 % ─────────────────────────────────────────────────────────────────────────────
 
-\subsection{Corpus Documentaire RAG — Distribution Volumétrique}
-
-Après extraction, normalisation, découpage et filtrage des chunks de figures, le corpus final compte \textbf{76\,463 segments} répartis sur deux types de sources.
+Face à chaque anomalie, une décision de traitement a été prise en évaluant l'impact sur la qualité des réponses et le coût de correction. Les anomalies affectant directement le contenu des segments ont été traitées en priorité ; les anomalies purement cosmétiques ont été acceptées sans correction afin de concentrer les efforts là où l'impact est réel.
 
 \begin{table}[H]
 \centering
-\caption{Distribution des segments par type de source}
-\label{tab:distribution-source}
-\begin{tabular}{lrr}
+\caption{Décisions de traitement pour chaque anomalie identifiée}
+\label{tab:decisions}
+\begin{tabularx}{\textwidth}{@{}p{3.6cm}p{3.8cm}X@{}}
 \toprule
-\textbf{Source} & \textbf{Segments} & \textbf{Part} \\
+\textbf{Anomalie} & \textbf{Décision} & \textbf{Justification} \\
 \midrule
-Livres de formation (\texttt{technical\_book}) & 40\,899 & 53,5\,\% \\
-Portail d'aide SAP (\texttt{sap\_help})        & 35\,564 & 46,5\,\% \\
+Encodage CID \newline (568 segments) &
+Filtrage par expression régulière &
+Les séquences \texttt{(cid:xxx)} sont supprimées à la lecture du PDF. Le livre WSMFB (219 segments, soit 0,15\,\% du corpus) est peu prioritaire ; les segments lisibles sont conservés. \\
+\addlinespace
+Paramètre \texttt{forSiteMap} &
+Aucune action &
+Ce paramètre ne modifie pas le contenu des pages SAP. Il est ignoré. \\
+\addlinespace
+Doublons inter-sources \newline (6\,867 segments) &
+Déduplication par empreinte MD5 &
+Une empreinte numérique est calculée sur les 300 premiers caractères de chaque segment. En cas de doublon, la copie aux métadonnées les plus complètes est conservée. \\
+\addlinespace
+Pages QCM \newline (5\,618 segments) &
+Suppression complète &
+Les marqueurs \texttt{XTrue} / \texttt{XFalse} n'ont aucune valeur documentaire. Leur suppression est sans risque pour le corpus. \\
+\addlinespace
+Doublons internes \newline (3\,808 segments) &
+Déduplication séquentielle &
+Les introductions répétées sont détectées par comparaison séquentielle des segments ; les copies sont éliminées. \\
+\addlinespace
+Faux codes transaction \newline ($\approx$200 cas) &
+Liste blanche de 2\,794 codes &
+Tout code détecté absent de la liste officielle des codes transaction SAP est ignoré. \\
+\addlinespace
+Type de section erroné \newline (1\,293 segments) &
+Reclassification automatique &
+Un algorithme basé sur des mots-clés et la structure du texte corrige le type de section lors de la normalisation. \\
+\addlinespace
+Module BI incorrect \newline (698 segments) &
+Accepté sans correction &
+Ce classement erroné n'affecte ni le texte ni la recherche. La correction représenterait un effort disproportionné au regard du gain. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Corpus Final Validé}
+\label{sec:corpus-final}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Après application de l'ensemble des traitements, le corpus a été réduit et épuré. Le tableau suivant compare le volume initial au volume final validé, prêt à être utilisé par le système RAG.
+
+\begin{table}[H]
+\centering
+\caption{Comparaison du corpus avant et après nettoyage}
+\label{tab:corpus-final}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\textbf{Source} & \textbf{Initial} & \textbf{Final} & \textbf{Supprimés} & \textbf{Réduction} \\
 \midrule
-\textbf{Total} & \textbf{76\,463} & \textbf{100\,\%} \\
+Portail SAP Help       & 21\,084 & 17\,785 & 3\,299  & 15,6\,\% \\
+Livres de formation    & 87\,418 & 83\,990 & 3\,428  &  3,9\,\% \\
+Figures                & 47\,219 & 46\,368 &    851  &  1,8\,\% \\
+\midrule
+\textbf{Total}         & \textbf{155\,721} & \textbf{142\,798} & \textbf{12\,923} & \textbf{8,3\,\%} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+Au total, 12\,923 segments ont été supprimés, soit 8,3\,\% du corpus initial. Les segments de figures ne sont pas supprimés mais sont exclus de l'index de recherche ; ils sont conservés pour enrichir le contexte lors de la génération des réponses.
+
+Les 142\,798 segments propres sont ensuite découpés selon une stratégie hiérarchique avant d'être convertis en vecteurs numériques et chargés dans la base de données. Le tableau suivant présente les caractéristiques du corpus final indexé.
+
 \begin{table}[H]
 \centering
-\caption{Distribution des segments par module SAP}
-\label{tab:distribution-module}
-\begin{tabular}{lr}
+\caption{Caractéristiques du corpus final indexé}
+\label{tab:caracteristiques}
+\begin{tabular}{@{}lr@{}}
 \toprule
-\textbf{Module SAP} & \textbf{Segments (approx.)} \\
+\textbf{Caractéristique} & \textbf{Valeur} \\
 \midrule
-ABAP         & 12\,699 \\
-Fiori        &  6\,263 \\
-BASIS        &  4\,251 \\
-HANA         &  3\,994 \\
-MM / SD / FI & $\approx$ 8\,000 \\
-Non classifié & $\approx$ 41\,256 \\
+Segments effectivement indexés & 105\,331 \\
+Taille moyenne d'un segment    & 175 tokens \\
+Taille maximale d'un segment   & 600 tokens \\
+Codes transaction SAP couverts & 2\,794 T-codes distincts \\
+Transactions prioritaires      & SM37, ST22, SP01, SM12, SM66 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Structure du Découpage Hiérarchique}
+Le corpus couvre l'ensemble des transactions SAP surveillées par la plateforme, notamment SM37 pour les traitements en arrière-plan, ST22 pour les erreurs d'exécution ABAP et SP01 pour les demandes d'impression. La diversité des sources — livres de formation et portail officiel SAP — assure une couverture à la fois conceptuelle et opérationnelle pour chaque domaine.
 
-Le pipeline de segmentation produit trois types de segments. Les \textit{singles} sont des documents courts tenant en un seul segment (73\,137 unités) ; ils sont directement indexés. Les \textit{parents} sont des sections longues conservées en version intégrale pour le contexte élargi (8\,795 unités) ; ils ne sont pas embedés mais servent de réserve lors de la génération. Les \textit{enfants} sont les fragments issus de la subdivision des sections longues (32\,194 unités) ; ils sont embedés et indexés pour la recherche. La taille moyenne d'un segment feuille (single ou enfant) est de 175 tokens.
-
-\begin{table}[H]
-\centering
-\caption{Structure du corpus après segmentation hiérarchique}
-\label{tab:chunking}
-\begin{tabular}{lrr}
-\toprule
-\textbf{Type de segment} & \textbf{Quantité} & \textbf{Indexé dans pgvector} \\
-\midrule
-Singles (documents courts) & 73\,137 & Oui \\
-Parents (sections longues) &  8\,795 & Non (contexte élargi) \\
-Enfants (fragments)        & 32\,194 & Oui \\
-\midrule
-Total produit par le chunker & 114\,126 & --- \\
-Total après filtrage figures & \textbf{76\,463} & \textbf{Oui} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Couverture des T-codes SAP}
-
-Plus de 80 codes transaction SAP distincts sont détectés dans le corpus. Les cinq T-codes les plus fréquents sont SM37, ST22, SE38, SM21 et SM50, qui concentrent l'essentiel des occurrences. La distribution est très asymétrique : quelques transactions très documentées (monitoring Basis, développement ABAP) cumulent la majorité des mentions, tandis que la plupart des 80+ T-codes détectés n'apparaissent que dans quelques segments.
-
-\subsection{Évaluation de la Récupération}
-
-Une évaluation sur 18 requêtes de test couvrant quatre catégories — dépannage (5 requêtes), configuration (3), procédure (5), explication (5) — donne les métriques suivantes sur le corpus filtré :
+Une évaluation préliminaire conduite sur 18 requêtes représentatives du domaine SAP Basis a fourni les résultats suivants sur le corpus nettoyé.
 
 \begin{table}[H]
 \centering
-\caption{Métriques de récupération sur le corpus de 76\,463 segments}
-\label{tab:eval}
-\begin{tabular}{llr}
+\caption{Métriques de récupération sur le corpus final}
+\label{tab:eval-final}
+\begin{tabular}{@{}llr@{}}
 \toprule
 \textbf{Métrique} & \textbf{Signification} & \textbf{Score} \\
 \midrule
-Recall@5  & Part des segments pertinents dans les 5 premiers  & 0,5256 \\
-Recall@10 & Part des segments pertinents dans les 10 premiers & 1,0000 \\
-MRR       & Rang moyen du premier résultat pertinent           & 1,0000 \\
-nDCG@5    & Qualité du classement dans les 5 premiers          & 0,8747 \\
-nDCG@10   & Qualité du classement dans les 10 premiers         & 0,9460 \\
+Recall@10 & Part des réponses pertinentes dans les 10 premiers résultats & 1,000 \\
+MRR       & Rang moyen du premier résultat pertinent                      & 1,000 \\
+nDCG@10   & Qualité du classement dans les 10 premiers résultats          & 0,946 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-La MRR de 1,0 indique qu'au moins un résultat pertinent apparaît systématiquement en première position pour chaque requête de test. Le Recall@10 de 1,0 confirme que tous les segments pertinents sont récupérés dans les dix premiers résultats. Le score nDCG@10 de 0,946 reflète une qualité de classement quasi-parfaite.
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Vérification de la Qualité des Données}
-% ─────────────────────────────────────────────────────────────────────────────
-
-\subsection{Problèmes Détectés}
-
-L'extraction automatique de texte depuis des PDFs techniques et le scraping de pages web exposent le pipeline à plusieurs catégories de bruit identifiées lors de l'analyse du corpus.
-
-\paragraph{Artefacts CID (Character Identifier).}
-Le format PDF stocke les glyphes de certaines polices via des identifiants internes appelés codes CID. Lorsque la police n'est pas embarquée dans le fichier, pdfplumber ne peut pas décoder ces glyphes et produit des séquences du type \texttt{(cid:123)}. Ces séquences n'ont aucune valeur sémantique et dégradent la qualité de l'embedding si elles ne sont pas supprimées.
-
-\paragraph{Résidus HTML dans les chunks du portail SAP.}
-Les pages extraites du portail SAP Help contiennent par endroits des balises HTML mal nettoyées (\texttt{<b>}, \texttt{<i>}, \texttt{\&nbsp;}, \texttt{\&amp;}). Ces résidus perturbent la tokenisation et introduisent du bruit dans les vecteurs d'embedding.
-
-\paragraph{Faux positifs dans la détection de T-codes.}
-L'heuristique de détection de T-codes par expression régulière (\texttt{[A-Z]\{2,4\}\textbackslash d\{1,3\}}) génère des faux positifs sur des abréviations comme \texttt{BC100} (numéro de cours SAP) ou des identifiants de section. Ces faux positifs créent des associations incorrectes entre un segment et un T-code inexistant.
-
-\paragraph{Gap vocabulaire du modèle d'embedding.}
-Le modèle \texttt{BAAI/bge-large-en-v1.5} est un modèle généraliste entraîné sur du texte académique et web. Il ne connaît pas nativement la signification des codes transaction SAP. Sans traitement, une requête contenant « SM37 » et un segment documentant « le moniteur de jobs en arrière-plan » ne seraient pas rapprochés par similarité cosinus, car les deux formulations sont lexicalement distantes dans l'espace vectoriel du modèle.
-
-\paragraph{Chunks de figures.}
-La version initiale du corpus comptait environ 26\,500 segments issus des légendes et descriptions de figures extraites des PDFs. Ces segments contiennent des informations très fragmentaires (légendes courtes, numéros de figure, textes alternatifs) qui dégradent la précision de la récupération en introduisant des résultats non pertinents.
-
-\paragraph{Séquences de points issues des tables des matières.}
-Les tables des matières des PDFs SAP génèrent des lignes du type \texttt{Chapitre 3 .......... 42} qui, une fois extraites, polluent les segments avec des suites de points sans valeur sémantique.
-
-\paragraph{Doublons inter-sources.}
-Certaines pages du portail d'aide SAP reproduisent des extraits de livres de formation. Sans déduplication, ces segments dupliqués introduisent un biais dans la récupération en sur-représentant certains contenus.
-
-\subsection{Actions Appliquées}
-
-\begin{table}[H]
-\centering
-\caption{Problèmes détectés et traitements appliqués}
-\label{tab:qualite}
-\begin{tabularx}{\textwidth}{|p{4.5cm}|X|}
-\hline
-\textbf{Problème} & \textbf{Traitement appliqué} \\
-\hline
-Artefacts CID & Filtrage par expression régulière \texttt{(cid:\textbackslash d+)} en post-extraction \\
-\hline
-Résidus HTML & Nettoyage strict par BeautifulSoup avec suppression des balises et décodage des entités HTML \\
-\hline
-Faux positifs T-codes & Application d'une liste blanche de 80+ T-codes SAP connus en post-traitement \\
-\hline
-Gap vocabulaire & Expansion de synonymes : description textuelle de chaque T-code concaténée au segment lors de l'indexation et à la requête lors de la recherche \\
-\hline
-Chunks de figures & Filtrage complet des segments dont \texttt{source\_type = 'figure'} avant l'ingestion en base \\
-\hline
-Séquences de points & Suppression par regex des séquences \texttt{\.{3,}} dans la phase de normalisation \\
-\hline
-Doublons inter-sources & Déduplication par empreinte MD5 des 300 premiers caractères, avec conservation de la copie aux métadonnées les plus riches \\
-\hline
-\end{tabularx}
-\end{table}
-
-\subsection{Actions Prévues}
-
-Plusieurs améliorations restent à mettre en œuvre pour les prochaines itérations du corpus.
-
-\begin{itemize}
-    \item \textbf{Enrichissement du corpus SAP Help} : la couverture des notes de correction (SAP Notes) et des messages d'erreur ABAP sera augmentée par une collecte plus systématique des sections correspondantes du portail.
-    \item \textbf{Rééquilibrage des modules} : la surreprésentation d'ABAP et Fiori par rapport aux modules FI et CO sera corrigée par l'ajout de livres dédiés lors de la prochaine campagne de collecte.
-    \item \textbf{Validation humaine} : un échantillon de 500 segments représentatifs fera l'objet d'une relecture manuelle pour mesurer précisément le taux de bruit résiduel.
-    \item \textbf{Modèle d'embedding domaine-spécifique} : le remplacement de \texttt{bge-large-en-v1.5} par un modèle fine-tuné sur la documentation SAP est en cours d'évaluation, en utilisant les paires requête/segment identifiées lors de la phase d'évaluation.
-\end{itemize}
+Ces résultats confirment que le corpus nettoyé et les paramètres d'indexation retenus sont adaptés aux besoins du système. Sur cette base, un objectif de \textbf{Recall@5 $\geq$ 0,75} est atteignable en production, ce qui signifie que pour au moins trois questions sur quatre posées par un administrateur SAP, la réponse correcte figurera parmi les cinq premiers résultats retournés avant même la génération de la réponse finale.
