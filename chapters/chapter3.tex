@@ -242,60 +242,92 @@ Lorsqu’une requête utilisateur est soumise, le système identifie les fragmen
 Ainsi, le RAG peut être comparé à un assistant intelligent capable de consulter une base documentaire avant de formuler une réponse, garantissant ainsi une meilleure fiabilité.
 \begin{figure}[H]
 \centering
-\resizebox{\textwidth}{!}{ % <-- ajuste automatiquement à la largeur A4
+\resizebox{\textwidth}{!}{
 \begin{tikzpicture}[
-    node distance=2.2cm and 1.6cm,
+    node distance=1.8cm and 2.2cm,
     every node/.style={font=\footnotesize},
     box/.style={
-        draw,
+        rectangle,
         rounded corners=8pt,
-        minimum width=2.6cm,
-        minimum height=0.9cm,
+        draw,
+        minimum width=3cm,
+        minimum height=1cm,
         align=center,
         line width=0.8pt,
         drop shadow={opacity=0.15}
     },
-    arrow/.style={->, line width=0.9pt}
+    arrow/.style={-Latex, line width=0.9pt}
 ]
 
-% ---- NODES ----
-\node[box, fill=SAPLightOrange, draw=SAPOrange] (docs) {Documents};
+% =========================
+% SOURCES (gris / SAP Gray)
+% =========================
+\node[box, fill=SAPLightGray, draw=SAPGray] (sap) {Système SAP};
+\node[box, fill=SAPLightGray, draw=SAPGray, below=of sap] (help) {Portail SAP Help};
+\node[box, fill=SAPLightGray, draw=SAPGray, below=of help] (notes) {Notes SAP};
 
-\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of docs] (chunk) {Chunking};
+% =========================
+% INGESTION / PIPELINES (bleu)
+% =========================
+\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of sap] (pyrfc) {Extraction temps réel\\PyRFC};
+\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of help] (scraping) {Pipeline de scraping web};
+\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of notes] (manual) {Téléversement manuel};
 
-\node[box, fill=gray!10, draw=black!50, right=of chunk] (query) {User Query};
+\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of pyrfc] (ingestion) {Ingestion temps réel};
+\node[box, fill=SAPLightOrange, draw=SAPOrange, right=of scraping] (batch1) {Traitement par lots};
+\node[box, fill=SAPLightOrange, draw=SAPOrange, right=of manual] (batch2) {Traitement par lots};
 
-\node[box, fill=SAPLightGreen, draw=SAPGreen, right=of query] (vectordb) {Vector DB};
+% =========================
+% PROCESSING (vert + orange mix)
+% =========================
+\node[box, fill=SAPLightGreen, draw=SAPGreen, right=of ingestion] (clean) 
+{Nettoyage, normalisation\\et segmentation};
 
-\node[box, fill=SAPLightOrange, draw=SAPRed, below=1.8cm of vectordb] (retrieval) {Top-K\\Retrieval};
+\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of batch1] (docs) 
+{Documentation\\Guides de configuration\\Spécifications techniques};
 
-\node[box, fill=SAPLightOrange, draw=SAPOrange, left=of retrieval] (llm) {LLM};
+\node[box, fill=SAPLightOrange, draw=SAPOrange, right=of batch2] (trouble) 
+{Dépannage\\Versions composants\\Problèmes connus\\Solutions};
 
-\node[box, fill=SAPLightBlue, draw=SAPBlue, left=of llm] (response) {Response};
+% =========================
+% OUTPUTS (mix bleu/vert)
+% =========================
+\node[box, fill=SAPLightGray, draw=SAPGray, right=of clean, yshift=1.5cm] (logs)
+{Logs\\Erreurs\\Métriques};
 
-% ---- FLUX ----
-\draw[arrow] (docs) -- node[above]{découpage} (chunk);
+\node[box, fill=SAPLightGreen, draw=SAPGreen, right=of clean, yshift=-1.5cm] (graph)
+{Construction de graphe\\Base vectorielle};
 
-\draw[arrow] (chunk) -- node[above]{vectorisation} (query);
+% =========================
+% FLUX PRINCIPAL
+% =========================
+\draw[arrow] (sap) -- (pyrfc);
+\draw[arrow] (help) -- (scraping);
+\draw[arrow] (notes) -- (manual);
 
-\draw[arrow, dashed, color=SAPGreen] 
-(query) -- node[above]{stockage} (vectordb);
+\draw[arrow] (pyrfc) -- (ingestion);
+\draw[arrow] (scraping) -- (batch1);
+\draw[arrow] (manual) -- (batch2);
 
-\draw[arrow, color=SAPRed] 
-(vectordb) -- node[right]{} (retrieval);
+\draw[arrow] (ingestion) -- (clean);
+\draw[arrow] (batch1) -- (docs);
+\draw[arrow] (batch2) -- (trouble);
 
-\draw[arrow] (query) -- (llm);
+\draw[arrow] (batch1) -- (clean);
+\draw[arrow] (batch2) -- (clean);
 
-\draw[arrow, color=SAPOrange] 
-(retrieval) -- node[above]{contexte} (llm);
+\draw[arrow] (clean) -- (graph);
 
-\draw[arrow, color=SAPBlue] 
-(llm) -- node[above]{génération} (response);
+% =========================
+% FLUX SECONDAIRE (pointillés)
+% =========================
+\draw[dashed, arrow, color=SAPGray] (ingestion) -- (logs);
+\draw[dashed, arrow, color=SAPBlue] (ingestion) -- (graph);
 
 \end{tikzpicture}
 }
-\caption{Architecture du système RAG }
-\label{fig:rag_compact}
+\caption{Architecture du pipeline de collecte et de traitement des données SAP}
+\label{fig:sap_pipeline_colored}
 \end{figure}
 \subsubsection*{CAG (Cache-Augmented Generation) : une amélioration du RAG}
 

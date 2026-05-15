@@ -11,10 +11,9 @@ Ce chapitre correspond à la phase de compréhension des données du cycle CRISP
 % ─────────────────────────────────────────────────────────────────────────────
 
 \subsection{Données de Surveillance SAP — Extraction via PyRFC}
+Les données de surveillance opérationnelle sont collectées automatiquement à partir des systèmes SAP de production en utilisant PyRFC, le connecteur Python pour les appels de fonctions distantes SAP. Cette bibliothèque permet d’interagir directement avec les modules de fonction ABAP( le langage de programmation), exposés par le serveur d’application, sans avoir besoin de l’interface SAP GUI. Cette méthode facilite l’automatisation, la planification et la répétabilité du processus d’extraction des données.
 
-Les données de surveillance opérationnelle sont collectées automatiquement à partir des systèmes SAP de production en utilisant PyRFC, le connecteur Python pour les appels de fonctions distantes SAP. Cette bibliothèque permet d’interagir directement avec les modules de fonction ABAP exposés par le serveur d’application, sans avoir besoin de l’interface SAP GUI. Cette méthode facilite l’automatisation, la planification et la répétabilité du processus d’extraction des données.
-
-Chaque enregistrement extrait contient deux attributs essentiels pour garantir la traçabilité des informations collectées. Le champ \texttt{SID} identifie le système SAP source et permet de surveiller plusieurs environnements dans la même base de données. Le champ \texttt{Extraction\_Timestamp} enregistre la date et l’heure de la collecte des données, ce qui permet de garder un historique des événements et des métriques observées. L’extraction comprend plusieurs transactions SAP pour la surveillance opérationnelle, notamment les journaux d’erreurs, les traitements en arrière-plan, les verrouillages, les processus actifs, les files qRFC et la messagerie système. Des métriques concernant le processeur, la mémoire et le système de fichiers sont également collectées pour assurer une surveillance complète de l’environnement SAP.
+Chaque enregistrement extrait contient deux attributs essentiels pour garantir la traçabilité des informations collectées. Chaque tcode a une structure bien définie, mais il y a des champs existants comme  le champ \texttt{Extraction\_Timestamp} enregistre la date et l’heure de la collecte des données, ce qui permet de garder un historique des événements et des métriques observées. L’extraction comprend plusieurs transactions SAP pour la surveillance opérationnelle, notamment les journaux d’erreurs, les traitements en arrière-plan, les verrouillages, les processus actifs et la messagerie système.
 
 \begin{figure}[H]
     \centering
@@ -40,12 +39,18 @@ Chaque enregistrement extrait contient deux attributs essentiels pour garantir l
 
 \subsection{Base de Connaissances RAG — Extraction Documentaire}
 
-La base de connaissances documentaire utilisée par le chatbot RAG repose sur deux sources complémentaires. La première comprend plus de 300 documents de formation SAP au format PDF. Ces documents couvrent différents domaines comme l’administration Basis, le développement ABAP, les modules fonctionnels, ainsi que les technologies NetWeaver, HANA, Fiori et la sécurité. Ils servent de référence complète pour comprendre les concepts, les architectures et les procédures SAP. 
+Les données de notre projet se basent sur deux sources documentaires.
 
-La seconde source est le portail officiel d’aide SAP (help.sap.com). Certaines sections de ce portail ont été extraites par web scraping. Cette documentation offre des informations techniques sur la configuration système, les codes d’erreur, les paramètres de fonctionnement et les notes de correction SAP. Elle complète donc de manière pratique les supports de formation.
-\subsubsection*{Extraction des livres PDF}
+La première source se compose de plus de 300 documents de formation en SAP sous format pdf. Ceux-ci traitent de divers sujets allant de l'administration Basis, à l'écriture de code en ABAP jusqu'à la formation fonctionnelle. Ils constituent une documentation complète concernant les concepts et architectures SAP.
+ 
+La deuxième source consiste dans le site Web d'aide SAP (help.sap.com). Certaines de ses parties ont été extraites via le processus de web scraping. Cette documentation contient des informations techniques relatives à la configuration système SAP, à l'interprétation des codes d'erreurs SAP, à la configuration des paramètres de SAP ainsi que des notes de corrections.
+\subsubsection*{Extraction des livres PDF} 
+La tâche d'extraction du contenu des 297 livres SAP   est coordonnée par un script qui lance un agent d'extraction par livre, traitant donc tous ces processus simultanément. Un tel agent agit indépendamment : ouvre le PDF en utilisant la librairie \textbf{pdfplumber} et procède au recensement des propriétés typographiques du document (taille et style des polices), ce qui lui permet de générer automatiquement la structure du document (unité, leçon,  sections et contenu principal). 
 
-L'extraction du contenu des 297 livres est orchestrée par le script \texttt{Sap\_batch\_extractor.py}, qui instancie un agent d'extraction par livre et les exécute en parallèle. Chaque agent opère de façon autonome : il ouvre le fichier PDF avec la bibliothèque \textbf{pdfplumber}, analyse la taille et la graisse des polices pour reconstituer la hiérarchie des sections (unité → leçon → section → corps), extrait le texte de chaque segment, isole les figures avec leurs légendes, et produit un fichier \texttt{structured\_content.json} structuré. Le traitement parallèle réduit la durée totale d'extraction de plusieurs heures à quelques dizaines de minutes pour l'ensemble du corpus.
+Ensuite, le système effectue l'extraction des différents fragments textuels, détection des figures et leur légende, des tableaux et identification des éléments SAP pertinents, notamment des  transactions (\textit{T-codes}) et des notes SAP. Toute information structurée est ensuite sauvegardée dans un fichier JSON.
+
+En raison d'une telle approche à la résolution de la tâche d'information extraction, la durée globale de traitement de l'ensemble du corpus a été réduite à plusieurs dizaines de minutes par rapport à plusieurs heures.
+
 
 \subsubsection*{Collecte des données depuis le portail SAP Help}
 
@@ -56,180 +61,187 @@ Lors des premières tentatives de collecte, certaines requêtes ont été bloqu�
 La première solution consiste à utiliser différents identifiants de navigateurs web lors des requêtes. Cette approche permet au script de se comporter comme un utilisateur naviguant depuis différents navigateurs classiques, ce qui réduit les risques de blocage.
 
 La seconde solution repose sur une collecte parallèle modérée des pages du portail. Plusieurs requêtes sont exécutées simultanément afin d’accélérer l’extraction des données, tout en conservant un rythme raisonnable pour éviter les limitations imposées par le serveur SAP. Grâce à ces ajustements, l’accès aux ressources documentaires a pu être réalisé de manière stable et efficace.
-\subsubsection*{Ingestion en base PostgreSQL locale}
-
-Par exigence de confidentialité — les données documentaires SAP de l'entreprise ne doivent pas transiter par des services cloud tiers — la base de connaissances est hébergée sur un \textbf{serveur PostgreSQL local}. L'ingestion des 76\,463 vecteurs s'effectue par batches successifs au cours de sessions qui peuvent durer plusieurs heures. Pour garantir la robustesse du processus face aux interruptions réseau, une boucle de retry avec temporisation croissante a été mise en place.
-
-\begin{lstlisting}[language=Python, caption={Boucle de retry dans ingest\_to\_db.py}]
-for attempt in range(3):
-    try:
-        conn = psycopg2.connect(
-            DB_URL,
-            keepalives=1,
-            keepalives_idle=30,
-            keepalives_interval=10
-        )
-        # ingestion du batch courant
-        break
-    except Exception as exc:
-        print(f"[WARN] connexion perdue, tentative {attempt+1}/3")
-        time.sleep(2 ** attempt)   # 1 s, puis 2 s, puis 4 s
-        if attempt == 2:
-            raise
-\end{lstlisting}
-
-Les TCP keepalives (\texttt{keepalives\_idle=30\,s}, \texttt{keepalives\_interval=10\,s}) maintiennent la connexion active entre deux batches et évitent les fermetures silencieuses côté serveur. La temporisation exponentielle (1 s, 2 s, 4 s) laisse au serveur le temps de récupérer en cas de surcharge momentanée avant de tenter une nouvelle connexion.
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Diagnostic de la Qualité des Données}
-\label{sec:diagnostic-qualite}
-% ─────────────────────────────────────────────────────────────────────────────
-
-Une fois les données brutes collectées, elles ont fait l'objet d'un examen systématique afin d'identifier toute anomalie susceptible de nuire à la qualité des réponses produites par le système. Dans un système RAG, le corpus documentaire est découpé en petits blocs de texte appelés \textit{segments}. Chaque segment correspond à quelques paragraphes traitant d'un sujet précis. Ce découpage permet au moteur de recherche de localiser le passage exact répondant à une question, plutôt que de parcourir des documents entiers de plusieurs centaines de pages.
-
-L'extraction automatique depuis des PDFs techniques et le scraping de pages web introduisent inévitablement des imperfections. Après analyse du corpus initial de \textbf{155\,721 segments} — répartis entre 21\,084 issus du portail SAP Help, 87\,418 des livres de formation et 47\,219 de figures — huit catégories d'anomalies ont été identifiées et mesurées.
-
-\begin{table}[H]
+\begin{figure}[H]
+    \centering
+    \includegraphics[
+        width=0.9\textwidth,
+        height=0.7\textheight,
+        keepaspectratio
+    ]{images/help.png}
+    \caption{les sites de SAP Help}
+    \label{fig:les sites de SAP Help}
+\end{figure}
+\subsubsection*{Ingestion des données}
+L’ingestion de données provenant de diverses sources est cruciale pour appréhender et préparer les données en vue de leur utilisation dans un système RAG. Les données extraites des livres au format PDF, du portail d'aide SAP et de la surveillance en temps réel des codes de transaction sont organisées de manière hiérarchique. Cette structure hiérarchique vise à représenter fidèlement l'organisation logique des documents SAP.
+\begin{figure}[H]
 \centering
-\caption{Les huit anomalies identifiées lors du diagnostic qualité}
-\label{tab:anomalies}
-\begin{tabularx}{\textwidth}{@{}clXr@{}}
-\toprule
-\textbf{N°} & \textbf{Anomalie} & \textbf{Description} & \textbf{Mesure} \\
-\midrule
-1 & Encodage CID & Des caractères illisibles du type \texttt{(cid:83)} apparaissent dans certains PDFs dont les polices ne sont pas intégrées au fichier. Le livre WSMFB est affecté à 97\,\%, le livre AR822 entre 3 et 11\,\%. & 568 segments \\
-\addlinespace
-2 & Paramètre \texttt{forSiteMap=true} & Certaines URLs du portail SAP contiennent ce paramètre. Après vérification, il ne modifie pas le contenu des pages ; il s'agit d'un faux problème. & 63\,\% des URLs \\
-\addlinespace
-3 & Doublons inter-sources & Certains passages apparaissent à la fois dans les livres de formation et sur le portail SAP Help. Dans le pire cas, un même contenu est répété 546 fois. & 6\,867 segments \\
-\addlinespace
-4 & Pages QCM & Des pages de questionnaires à choix multiple ont été extraites des livres SAP. Elles contiennent uniquement des marqueurs \texttt{XTrue} / \texttt{XFalse} sans aucune valeur documentaire. & 5\,618 segments \\
-\addlinespace
-5 & Doublons internes & Dans certains livres, l'introduction d'un chapitre est répétée mot pour mot dans la seconde moitié du document. & 3\,808 segments \\
-\addlinespace
-6 & Faux codes transaction & L'algorithme de détection de codes SAP confond parfois des fragments de dates avec des codes. La phrase \textit{«~starts AT01/01/2017~»} génère faussement le code \texttt{AT01}. & $\approx$200 cas \\
-\addlinespace
-7 & Type de section erroné & Des segments de type \texttt{section} sont incorrectement classés comme \texttt{code} par l'extracteur, ce qui perturbe le moteur de recherche. & 1\,293 segments \\
-\addlinespace
-8 & Module BI incorrect & Des segments appartenant à des domaines variés sont attribués au module BI à tort. Ce classement erroné est purement cosmétique et n'affecte pas le contenu textuel. & 698 segments \\
-\bottomrule
-\end{tabularx}
-\end{table}
+\resizebox{\textwidth}{!}{
+\begin{tikzpicture}[
+    node distance=1.6cm and 2.0cm,
+    every node/.style={font=\footnotesize},
+    box/.style={
+        rectangle,
+        rounded corners=8pt,
+        draw,
+        align=center,
+        minimum width=3cm,
+        minimum height=1cm,
+        line width=0.8pt,
+        drop shadow={opacity=0.15}
+    },
+    arrow/.style={-Latex, thick}
+]
 
-Les anomalies les plus critiques pour le système sont les doublons inter-sources (6\,867 segments) et les pages de QCM (5\,618 segments). Un moteur de recherche alimenté par des données dupliquées favorise artificiellement les passages répétés, ce qui fausse le classement des résultats. Les pages de QCM, quant à elles, ne contiennent aucune information utile et induisent le système en erreur lors de la génération des réponses.
+% =========================
+% SOURCES (GRIS)
+% =========================
+\node[box, fill=SAPLightGray, draw=SAPGray] (sap) {Système SAP};
+\node[box, fill=SAPLightGray, draw=SAPGray, below=of sap] (help) {Portail SAP Help};
+\node[box, fill=SAPLightGray, draw=SAPGray, below=of help] (notes) {Notes SAP};
 
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Décisions de Traitement}
-\label{sec:decisions-traitement}
-% ─────────────────────────────────────────────────────────────────────────────
+% =========================
+% INGESTION (BLEU)
+% =========================
+\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of sap] (pyrfc) {Extraction temps réel\\PyRFC};
+\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of help] (scraping) {Pipeline scraping web};
+\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of notes] (manual) {Téléversement manuel};
 
-Face à chaque anomalie, une décision de traitement a été prise en évaluant l'impact sur la qualité des réponses et le coût de correction. Les anomalies affectant directement le contenu des segments ont été traitées en priorité ; les anomalies purement cosmétiques ont été acceptées sans correction afin de concentrer les efforts là où l'impact est réel.
+\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of pyrfc] (ingestion) {Ingestion temps réel};
 
-\begin{table}[H]
-\centering
-\caption{Décisions de traitement pour chaque anomalie identifiée}
-\label{tab:decisions}
-\begin{tabularx}{\textwidth}{@{}p{3.6cm}p{3.8cm}X@{}}
-\toprule
-\textbf{Anomalie} & \textbf{Décision} & \textbf{Justification} \\
-\midrule
-Encodage CID \newline (568 segments) &
-Filtrage par expression régulière &
-Les séquences \texttt{(cid:xxx)} sont supprimées à la lecture du PDF. Le livre WSMFB (219 segments, soit 0,15\,\% du corpus) est peu prioritaire ; les segments lisibles sont conservés. \\
-\addlinespace
-Paramètre \texttt{forSiteMap} &
-Aucune action &
-Ce paramètre ne modifie pas le contenu des pages SAP. Il est ignoré. \\
-\addlinespace
-Doublons inter-sources \newline (6\,867 segments) &
-Déduplication par empreinte MD5 &
-Une empreinte numérique est calculée sur les 300 premiers caractères de chaque segment. En cas de doublon, la copie aux métadonnées les plus complètes est conservée. \\
-\addlinespace
-Pages QCM \newline (5\,618 segments) &
-Suppression complète &
-Les marqueurs \texttt{XTrue} / \texttt{XFalse} n'ont aucune valeur documentaire. Leur suppression est sans risque pour le corpus. \\
-\addlinespace
-Doublons internes \newline (3\,808 segments) &
-Déduplication séquentielle &
-Les introductions répétées sont détectées par comparaison séquentielle des segments ; les copies sont éliminées. \\
-\addlinespace
-Faux codes transaction \newline ($\approx$200 cas) &
-Liste blanche de 2\,794 codes &
-Tout code détecté absent de la liste officielle des codes transaction SAP est ignoré. \\
-\addlinespace
-Type de section erroné \newline (1\,293 segments) &
-Reclassification automatique &
-Un algorithme basé sur des mots-clés et la structure du texte corrige le type de section lors de la normalisation. \\
-\addlinespace
-Module BI incorrect \newline (698 segments) &
-Accepté sans correction &
-Ce classement erroné n'affecte ni le texte ni la recherche. La correction représenterait un effort disproportionné au regard du gain. \\
-\bottomrule
-\end{tabularx}
-\end{table}
+% =========================
+% BATCH (ORANGE)
+% =========================
+\node[box, fill=SAPLightOrange, draw=SAPOrange, right=of scraping] (batch1) {Traitement par lots};
+\node[box, fill=SAPLightOrange, draw=SAPOrange, right=of manual] (batch2) {Traitement par lots};
 
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Corpus Final Validé}
-\label{sec:corpus-final}
-% ─────────────────────────────────────────────────────────────────────────────
+% =========================
+% PROCESSING (VERT)
+% =========================
+\node[box, fill=SAPLightGreen, draw=SAPGreen, right=of ingestion] (clean) 
+{Nettoyage\\Normalisation\\Segmentation};
 
-Après application de l'ensemble des traitements, le corpus a été réduit et épuré. Le tableau suivant compare le volume initial au volume final validé, prêt à être utilisé par le système RAG.
+\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of batch1] (docs) 
+{Documentation\\Guides SAP\\Spécifications};
 
-\begin{table}[H]
-\centering
-\caption{Comparaison du corpus avant et après nettoyage}
-\label{tab:corpus-final}
-\begin{tabular}{@{}lrrrr@{}}
-\toprule
-\textbf{Source} & \textbf{Initial} & \textbf{Final} & \textbf{Supprimés} & \textbf{Réduction} \\
-\midrule
-Portail SAP Help       & 21\,084 & 17\,785 & 3\,299  & 15,6\,\% \\
-Livres de formation    & 87\,418 & 83\,990 & 3\,428  &  3,9\,\% \\
-Figures                & 47\,219 & 46\,368 &    851  &  1,8\,\% \\
-\midrule
-\textbf{Total}         & \textbf{155\,721} & \textbf{142\,798} & \textbf{12\,923} & \textbf{8,3\,\%} \\
-\bottomrule
-\end{tabular}
-\end{table}
+\node[box, fill=SAPLightOrange, draw=SAPOrange, right=of batch2] (trouble) 
+{Dépannage\\Versions\\Problèmes\\Solutions};
 
-Au total, 12\,923 segments ont été supprimés, soit 8,3\,\% du corpus initial. Les segments de figures ne sont pas supprimés mais sont exclus de l'index de recherche ; ils sont conservés pour enrichir le contexte lors de la génération des réponses.
+% =========================
+% OUTPUTS
+% =========================
+\node[box, fill=SAPLightGray, draw=SAPGray, right=of clean, yshift=1.5cm] (logs)
+{Logs\\Erreurs\\Métriques};
 
-Les 142\,798 segments propres sont ensuite découpés selon une stratégie hiérarchique avant d'être convertis en vecteurs numériques et chargés dans la base de données. Le tableau suivant présente les caractéristiques du corpus final indexé.
+\node[box, fill=SAPLightGreen, draw=SAPGreen, right=of clean, yshift=-1.5cm] (graph)
+{Graphe\\Base vectorielle};
 
-\begin{table}[H]
-\centering
-\caption{Caractéristiques du corpus final indexé}
-\label{tab:caracteristiques}
-\begin{tabular}{@{}lr@{}}
-\toprule
-\textbf{Caractéristique} & \textbf{Valeur} \\
-\midrule
-Segments effectivement indexés & 105\,331 \\
-Taille moyenne d'un segment    & 175 tokens \\
-Taille maximale d'un segment   & 600 tokens \\
-Codes transaction SAP couverts & 2\,794 T-codes distincts \\
-Transactions prioritaires      & SM37, ST22, SP01, SM12, SM66 \\
-\bottomrule
-\end{tabular}
-\end{table}
+% =========================
+% FLUX PRINCIPAL
+% =========================
+\draw[arrow] (sap) -- (pyrfc);
+\draw[arrow] (help) -- (scraping);
+\draw[arrow] (notes) -- (manual);
 
-Le corpus couvre l'ensemble des transactions SAP surveillées par la plateforme, notamment SM37 pour les traitements en arrière-plan, ST22 pour les erreurs d'exécution ABAP et SP01 pour les demandes d'impression. La diversité des sources — livres de formation et portail officiel SAP — assure une couverture à la fois conceptuelle et opérationnelle pour chaque domaine.
+\draw[arrow] (pyrfc) -- (ingestion);
+\draw[arrow] (scraping) -- (batch1);
+\draw[arrow] (manual) -- (batch2);
 
-Une évaluation préliminaire conduite sur 18 requêtes représentatives du domaine SAP Basis a fourni les résultats suivants sur le corpus nettoyé.
+\draw[arrow] (ingestion) -- (clean);
 
-\begin{table}[H]
-\centering
-\caption{Métriques de récupération sur le corpus final}
-\label{tab:eval-final}
-\begin{tabular}{@{}llr@{}}
-\toprule
-\textbf{Métrique} & \textbf{Signification} & \textbf{Score} \\
-\midrule
-Recall@10 & Part des réponses pertinentes dans les 10 premiers résultats & 1,000 \\
-MRR       & Rang moyen du premier résultat pertinent                      & 1,000 \\
-nDCG@10   & Qualité du classement dans les 10 premiers résultats          & 0,946 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\draw[arrow] (batch1) -- (docs);
+\draw[arrow] (batch2) -- (trouble);
 
-Ces résultats confirment que le corpus nettoyé et les paramètres d'indexation retenus sont adaptés aux besoins du système. Sur cette base, un objectif de \textbf{Recall@5 $\geq$ 0,75} est atteignable en production, ce qui signifie que pour au moins trois questions sur quatre posées par un administrateur SAP, la réponse correcte figurera parmi les cinq premiers résultats retournés avant même la génération de la réponse finale.
+\draw[arrow] (batch1) -- (clean);
+\draw[arrow] (batch2) -- (clean);
+
+\draw[arrow] (clean) -- (graph);
+
+% =========================
+% FLUX SECONDAIRE (POINTILLÉS)
+% =========================
+\draw[dashed, arrow, color=SAPGray] (ingestion) -- (logs);
+\draw[dashed, arrow, color=SAPBlue] (ingestion) -- (graph);
+
+\end{tikzpicture}
+}
+\caption{Architecture du pipeline de collecte et de traitement des données SAP}
+\label{fig:sap_pipeline}
+\end{figure}
+\section{Description des données }
+Le corpus documentaire issu des livres de formation et du portail SAP Help est composé de segments textuels structurés. Chaque segment représente une unité d’information cohérente, généralement constituée de plusieurs paragraphes, centrés sur un thème précis lié aux différents domaines SAP.
+
+Ces segments permettent d’organiser le contenu de manière logique et exploitable, en regroupant les informations par sujet afin de faciliter leur traitement et leur utilisation dans des tâches d’analyse ou de recherche.
+\subsection{Nature des données} 
+les données varient selon les documents, qu'il s'agisse de pages Web (crawlé) ou de PDF (livres). Cependant, la plupart des données sont textuelles et fournissent des informations techniques sur SAP, notamment des descriptions de processus, des configurations système, des analyses de codes d'erreur et des notes de correction. Ces informations sont cruciales pour comprendre en profondeur les systèmes SAP et résoudre les problèmes qui peuvent survenir.
+\subsubsection{Nature des donnees de SAP Help}
+Les données utilisées dans ce projet viennent d’un processus automatisé de collecte sur le portail SAP Help (\url{https://help.sap.com}). Elles sont non structurées et semi-structurées, et concernent la documentation technique de SAP NetWeaver 7.03 et autre comme NetWeaver 7.4.
+
+Les informations recueillies incluent :
+\begin{itemize}
+    \item Des pages de documentation avec des descriptions des composants SAP et de conception des systèmes,
+    \item Des guides techniques qui détaillent les procédures à suivre,
+    \item Des informations sur la configuration du système,
+    \item Des renseignements sur les erreurs et les journaux SAP,
+    \item Des éléments qui structurent hiérarchiquement le contenu, comme les titres et les sections.
+\end{itemize}
+\subsubsection{Nature des donnes de livres PDF}
+Les données utilisées dans cette étape proviennent de documents techniques SAP au format PDF. Ces documents sont considérés comme le guide principal pour la certification de système SAP. Ils incluent des supports de formation tels que BC100, BC400, ainsi que d'autres modules SAP comme ABAP et d'autres.
+
+Ces documents contiennent des données non structurées, qui comprennent du texte technique, des éléments graphiques, des tableaux et des fragments de code ABAP. L'objectif principal du processus d'extraction est de transformer ces documents en une représentation structurée. Cette représentation structurée doit être exploitable dans un système RAG géré par des vecteurs, également appelés embeddings. Le but est de permettre au modèle LLM de comprendre ces données de manière efficace.
+\subsubsection{Nature des données de surveillance SAP en temps réel}
+les données de surveillance SAP en temps réel sont collectées à partir des systèmes de production SAP des clients Quadient en utilisant PyRFC. Ces données sont structurées et comprennent des informations sur les transactions SAP, selon les codes de transaction (T-codes) utilisés, avec des structures bien définies qui varient en fonction des T-codes.
+
+Chaque enregistrement contient des attributs tels que le code de transaction, la description de l'événement, la date et l'heure d'extraction, ainsi que d'autres détails pertinents pour la surveillance opérationnelle.
+
+Ces données sont très importantes pour analyser les performances du système et identifier les problèmes potentiels.
+\subsection{Exploration des données}
+Les données extraites des livres PDF et du portail SAP Help sont organisées selon une structure hiérarchique qui reproduit fidèlement l’architecture logique des documents SAP. Chaque document PDF est ainsi converti en un ensemble de sections imbriquées suivant les niveaux suivants : Book (document source), Unit, Lesson, Section et Body (contenu détaillé).
+
+L’ensemble de ces informations est ensuite enregistré dans des fichiers JSON. Chaque section est représentée sous la forme d’un objet JSON structuré contenant les différents champs nécessaires à sa description et à sa position dans la hiérarchie du document. Les champs principaux de chaque enregistrement comprennent :
+\begin{itemize}
+    \item \texttt{doc\_id} : identifiant unique généré (UUID)
+    \item \texttt{source\_book} : nom du document PDF
+    \item \texttt{title} : titre de la section
+    \item \texttt{content} : texte extrait et nettoyé
+    \item \texttt{heading\_level} : niveau hiérarchique (0 à 4)
+    \item \texttt{parent\_id} : relation hiérarchique avec la section parente
+    \item \texttt{position} : ordre d’apparition dans le document
+    \item \texttt{page\_start / page\_end} : localisation dans le PDF
+    \item \texttt{section\_type} : type de contenu (unit, lesson, section, body)
+\end{itemize}
+
+en outre les page extraite par le scraper est transformée en un objet structuré au format JSON. La structure d’un enregistrement est définie comme suit :
+
+\begin{itemize}
+    \item \texttt{id} : identifiant de la page
+    \item \texttt{doc\_id} : identifiant du document SAP (extrait de l’URL)
+    \item \texttt{title} : titre de la page
+    \item \texttt{url} : lien source de la page
+    \item \texttt{depth} : profondeur de navigation dans le crawler
+    \item \texttt{root\_title} : titre du document racine
+    \item \texttt{breadcrumb} : chemin hiérarchique de la page dans la documentation
+    \item \texttt{content} : contenu textuel principal nettoyé
+    \item \texttt{sections} : structure hiérarchique des sections du document
+    \item \texttt{scraped\_at} : horodatage de l’extraction
+\end{itemize}
+
+Cette structuration permet de transformer des pages HTML non structurées en documents exploitables pour un système RAG.
+
+D’autre part, les données de surveillance SAP en temps réel sont collectées directement depuis les systèmes de production des clients Quadient à l’aide de PyRFC. Ces données sont structurées et contiennent des informations relatives aux transactions SAP, identifiées par les codes de transaction (T-codes). Leur organisation varie en fonction du type de T-code, selon des structures prédéfinies adaptées à chaque cas d’usage.
+Chaque enregistrement contient des attributs tels que :
+\begin{itemize}
+    \item le code de transaction,
+    \item la description de l'événement,
+    \item la date et l'heure d'extraction,
+    \item ainsi que d'autres détails pertinents pour la surveillance opérationnelle.
+\end{itemize}
+
+Ces données sont essentielles pour analyser les performances du système et identifier les problèmes potentiels.
+\section{conclusion}
+Ce chapitre est consacré à la phase de compréhension des données, élément clé de la méthodologie CRISP-DM. L'objectif principal est d'identifier, de décrire et d'analyser les différentes sources de données utilisées dans le projet. Cela permet de bien se préparer pour les étapes suivantes, notamment la modélisation et l'exploitation des données.
+
+Dans ce cadre, trois grandes catégories de données ont été examinées. Premièrement, il y a les données de surveillance SAP en temps réel, extraites via PyRFC. Ensuite, nous avons les documents de formation SAP au format PDF. Enfin, il y a les contenus provenant du portail SAP Help. Chacune de ces sources présente des caractéristiques uniques en termes de structure, de format et de niveau de structuration. Les données peuvent être fortement structurées, comme les transactions SAP, ou non structurées et semi-structurées, comme les documents et les pages web.
+
+Ces données ont ensuite été organisées de manière hiérarchique et normalisée. Cela a permis leur ingestion dans un système de type RAG. Grâce à cette structuration, il est plus facile d'exploiter ces données à l'aide de modèles d'intelligence artificielle. La transformation en représentations exploitables sous forme de segments et d'embeddings est notamment facilitée.
+
+En résumé, cette phase a mis en lumière la richesse et la diversité du corpus de données. Elle a également souligné les défis liés à leur collecte, leur structuration et leur intégration. Elle constitue une base solide pour les phases suivantes du projet, notamment la préparation des données et la mise en place du système de recherche augmentée par génération.
