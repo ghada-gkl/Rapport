@@ -237,11 +237,27 @@ Chaque enregistrement contient des attributs tels que :
 \end{itemize}
 
 Ces données sont essentielles pour analyser les performances du système et identifier les problèmes potentiels.
+\section{Qualité des données}
+L’évaluation de la qualité des données est une étape essentielle dans la méthodologie CRISP-DM. Elle permet d’identifier les anomalies qui peuvent affecter les performances du système RAG et la pertinence des réponses données par le modèle LLM.
+Une analyse approfondie des données des livres PDF SAP et du portail SAP Help a révélé plusieurs problèmes de qualité. Cependant, les données de surveillance SAP ne nécessitent généralement pas de correction, car elles proviennent directement des systèmes SAP et sont déjà structurées.
+Dans les documents PDF SAP, certaines anomalies proviennent principalement du processus d’extraction automatique. Plusieurs documents contenaient des fragments de texte mal structurés et des caractères spéciaux, comme les points d’exclamation et les points de suspension, etc. Certains titres ou sections étaient également dupliqués à cause des différences de mise en page entre les livres de formation SAP.
+Pour les données extraites du portail SAP Help via le crawler web, des problèmes de duplication partielle de pages ont été remarqués en raison de liens redondants dans la documentation SAP, ainsi que de duplications de contenu.
+Afin d’améliorer la qualité globale du RAG, plusieurs opérations de nettoyage et de normalisation ont été appliquées durant la phase de préparation des données. Ces traitements comprennent :
+\begin{itemize}
+\item la suppression des doublons ;
+\item le nettoyage des caractères spéciaux et du bruit textuel ;
+\item la normalisation des formats de date et des métadonnées ;
+\item la suppression des contenus HTML inutiles ;
+\item la restructuration hiérarchique des documents extraits ;
+\item ainsi que la validation des champs obligatoires avant l’ingestion dans le système RAG.
+\end{itemize} 
+Ces étapes sont nécessaires pour que les données deviennent plus cohérentes et exploitables pour les démarches de vectorisation (\textit{embeddings}) et d’indexation (\textit{chunking}) pour l’assistant RAG.
+
 \section{conclusion}
-Ce chapitre est consacré à la phase de compréhension des données, élément clé de la méthodologie CRISP-DM. L'objectif principal est d'identifier, de décrire et d'analyser les différentes sources de données utilisées dans le projet. Cela permet de bien se préparer pour les étapes suivantes, notamment la modélisation et l'exploitation des données.
+Ce chapitre porte sur la phase de compréhension des données, qui est essentielle dans la méthodologie CRISP-DM. L'objectif principal est d'identifier, de décrire et d'analyser les différentes sources de données utilisées dans le projet. Cela permet de bien se préparer pour les étapes suivantes, comme la modélisation et l'exploitation des données.
 
-Dans ce cadre, trois grandes catégories de données ont été examinées. Premièrement, il y a les données de surveillance SAP en temps réel, extraites via PyRFC. Ensuite, nous avons les documents de formation SAP au format PDF. Enfin, il y a les contenus provenant du portail SAP Help. Chacune de ces sources présente des caractéristiques uniques en termes de structure, de format et de niveau de structuration. Les données peuvent être fortement structurées, comme les transactions SAP, ou non structurées et semi-structurées, comme les documents et les pages web.
+Trois grandes catégories de données ont été examinées. Tout d'abord, il y a les données de surveillance SAP en temps réel, extraites via PyRFC. Ensuite, nous avons les documents de formation SAP au format PDF. Enfin, il y a les contenus provenant du portail SAP Help. Chacune de ces sources a des caractéristiques uniques en termes de structure, de format et de niveau de structuration. Les données peuvent être très structurées, comme les transactions SAP, ou non structurées et semi-structurées, comme les documents et les pages web.
 
-Ces données ont ensuite été organisées de manière hiérarchique et normalisée. Cela a permis leur ingestion dans un système de type RAG. Grâce à cette structuration, il est plus facile d'exploiter ces données à l'aide de modèles d'intelligence artificielle. La transformation en représentations exploitables sous forme de segments et d'embeddings est notamment facilitée.
+Ces données ont ensuite été organisées de façon hiérarchique et normalisée. Cela a permis de les ingérer dans un système de type RAG. Grâce à cette structuration, il est plus facile d'exploiter ces données à l'aide de modèles d'intelligence artificielle. La transformation en représentations exploitables sous forme de segments et d'embeddings est ainsi facilitée.
 
-En résumé, cette phase a mis en lumière la richesse et la diversité du corpus de données. Elle a également souligné les défis liés à leur collecte, leur structuration et leur intégration. Elle constitue une base solide pour les phases suivantes du projet, notamment la préparation des données et la mise en place du système de recherche augmentée par génération.
+En résumé, cette phase a mis en évidence la richesse et la diversité du corpus de données. Elle a aussi souligné les défis liés à leur collecte, leur structuration et leur intégration. Elle crée une base solide pour les phases suivantes du projet, notamment la préparation des données et la mise en place du système de recherche augmentée par génération.
