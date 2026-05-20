@@ -1,10 +1,11 @@
-\chapter{Compréhension des Données}
 
+\chapter{Compréhension des données}
+\label{chap:business_understanding}
 
+\section*{Objectifs du chapitre}
 Ce chapitre correspond à la phase de compréhension des données du cycle CRISP-DM. Elle couvre la tache de comprendre les données spécifiquement et elle contient  certain  tâches : la collecte des données, leur description structurelle, vérification des donnés.  
-
-
-
+\section{Introduction}
+Dans la méthodologie CRISP-DM, la phase d'analyse des données est essentielle pour garantir le succès d'un projet d'analyse de données ou de machine learning. Cette étape permet de se familiariser avec les ensembles de données à disposition, de repérer d'éventuels problèmes et de définir les actions nécessaires pour préparer les données en vue de leur utilisation dans les étapes ultérieures du projet. Dans le cadre de ce projet, l'exploration des données implique l'examen des différentes sources.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Collecte des Données}
@@ -37,14 +38,14 @@ Chaque enregistrement extrait contient deux attributs essentiels pour garantir l
 \end{figure}
 
 
-\subsection{Base de Connaissances RAG — Extraction Documentaire}
+\subsection{Les données documentaires pour l'architecture de RAG}
 
 Les données de notre projet se basent sur deux sources documentaires.
 
 La première source se compose de plus de 300 documents de formation en SAP sous format pdf. Ceux-ci traitent de divers sujets allant de l'administration Basis, à l'écriture de code en ABAP jusqu'à la formation fonctionnelle. Ils constituent une documentation complète concernant les concepts et architectures SAP.
  
 La deuxième source consiste dans le site Web d'aide SAP (help.sap.com). Certaines de ses parties ont été extraites via le processus de web scraping. Cette documentation contient des informations techniques relatives à la configuration système SAP, à l'interprétation des codes d'erreurs SAP, à la configuration des paramètres de SAP ainsi que des notes de corrections.
-\subsubsection*{Extraction des livres PDF} 
+\subsubsection{Extraction des livres PDF}
 La tâche d'extraction du contenu des 297 livres SAP   est coordonnée par un script qui lance un agent d'extraction par livre, traitant donc tous ces processus simultanément. Un tel agent agit indépendamment : ouvre le PDF en utilisant la librairie \textbf{pdfplumber} et procède au recensement des propriétés typographiques du document (taille et style des polices), ce qui lui permet de générer automatiquement la structure du document (unité, leçon,  sections et contenu principal). 
 
 Ensuite, le système effectue l'extraction des différents fragments textuels, détection des figures et leur légende, des tableaux et identification des éléments SAP pertinents, notamment des  transactions (\textit{T-codes}) et des notes SAP. Toute information structurée est ensuite sauvegardée dans un fichier JSON.
@@ -52,7 +53,7 @@ Ensuite, le système effectue l'extraction des différents fragments textuels, d
 En raison d'une telle approche à la résolution de la tâche d'information extraction, la durée globale de traitement de l'ensemble du corpus a été réduite à plusieurs dizaines de minutes par rapport à plusieurs heures.
 
 
-\subsubsection*{Collecte des données depuis le portail SAP Help}
+\subsubsection{Collecte des données depuis le portail SAP Help}
 
 La récupération des données du portail \texttt{help.sap.com} a été réalisée à l’aide d’un processus de scraping permettant d’extraire automatiquement les pages de documentation SAP. Deux liens principaux ont été utilisés : le premier fournit la liste des pages disponibles sur le portail, tandis que le second permet d’accéder au contenu détaillé de chaque page.
 
@@ -71,7 +72,7 @@ La seconde solution repose sur une collecte parallèle modérée des pages du po
     \caption{les sites de SAP Help}
     \label{fig:les sites de SAP Help}
 \end{figure}
-\subsubsection*{Ingestion des données}
+\subsection{Ingestion des données}
 L’ingestion de données provenant de diverses sources est cruciale pour appréhender et préparer les données en vue de leur utilisation dans un système RAG. Les données extraites des livres au format PDF, du portail d'aide SAP et de la surveillance en temps réel des codes de transaction sont organisées de manière hiérarchique. Cette structure hiérarchique vise à représenter fidèlement l'organisation logique des documents SAP.
 \begin{figure}[H]
 \centering
@@ -86,8 +87,7 @@ L’ingestion de données provenant de diverses sources est cruciale pour appré
         align=center,
         minimum width=3cm,
         minimum height=1cm,
-        line width=0.8pt,
-        drop shadow={opacity=0.15}
+        line width=0.8pt
     },
     arrow/.style={-Latex, thick}
 ]
@@ -95,85 +95,96 @@ L’ingestion de données provenant de diverses sources est cruciale pour appré
 % =========================
 % SOURCES (GRIS)
 % =========================
-\node[box, fill=SAPLightGray, draw=SAPGray] (sap) {Système SAP};
-\node[box, fill=SAPLightGray, draw=SAPGray, below=of sap] (help) {Portail SAP Help};
-\node[box, fill=SAPLightGray, draw=SAPGray, below=of help] (notes) {Notes SAP};
+\node[box, fill=SAPLightGray, draw=SAPGray] (sap)
+{Système SAP};
+
+\node[box, fill=SAPLightGray, draw=SAPGray,
+below=of sap] (help)
+{Portail SAP Help};
 
 % =========================
 % INGESTION (BLEU)
 % =========================
-\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of sap] (pyrfc) {Extraction temps réel\\PyRFC};
-\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of help] (scraping) {Pipeline scraping web};
-\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of notes] (manual) {Téléversement manuel};
+\node[box, fill=SAPLightBlue, draw=SAPBlue,
+right=of sap] (pyrfc)
+{Extraction temps réel\\PyRFC};
 
-\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of pyrfc] (ingestion) {Ingestion temps réel};
+\node[box, fill=SAPLightBlue, draw=SAPBlue,
+right=of help] (scraping)
+{Pipeline scraping web};
+
+\node[box, fill=SAPLightBlue, draw=SAPBlue,
+right=of pyrfc] (ingestion)
+{Ingestion temps réel};
 
 % =========================
 % BATCH (ORANGE)
 % =========================
-\node[box, fill=SAPLightOrange, draw=SAPOrange, right=of scraping] (batch1) {Traitement par lots};
-\node[box, fill=SAPLightOrange, draw=SAPOrange, right=of manual] (batch2) {Traitement par lots};
+\node[box, fill=SAPLightOrange, draw=SAPOrange,
+right=of scraping] (batch1)
+{Traitement par lots};
 
 % =========================
 % PROCESSING (VERT)
 % =========================
-\node[box, fill=SAPLightGreen, draw=SAPGreen, right=of ingestion] (clean) 
+\node[box, fill=SAPLightGreen, draw=SAPGreen,
+right=of ingestion] (clean)
 {Nettoyage\\Normalisation\\Segmentation};
 
-\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of batch1] (docs) 
+\node[box, fill=SAPLightBlue, draw=SAPBlue,
+right=of batch1] (docs)
 {Documentation\\Guides SAP\\Spécifications};
-
-\node[box, fill=SAPLightOrange, draw=SAPOrange, right=of batch2] (trouble) 
-{Dépannage\\Versions\\Problèmes\\Solutions};
 
 % =========================
 % OUTPUTS
 % =========================
-\node[box, fill=SAPLightGray, draw=SAPGray, right=of clean, yshift=1.5cm] (logs)
+\node[box, fill=SAPLightGray, draw=SAPGray,
+right=of clean, yshift=1.5cm] (logs)
 {Logs\\Erreurs\\Métriques};
 
-\node[box, fill=SAPLightGreen, draw=SAPGreen, right=of clean, yshift=-1.5cm] (graph)
-{Graphe\\Base vectorielle};
+\node[box, fill=SAPLightGreen, draw=SAPGreen,
+right=of clean, yshift=-1.5cm] (graph)
+{Base vectorielle};
 
 % =========================
 % FLUX PRINCIPAL
 % =========================
 \draw[arrow] (sap) -- (pyrfc);
 \draw[arrow] (help) -- (scraping);
-\draw[arrow] (notes) -- (manual);
 
 \draw[arrow] (pyrfc) -- (ingestion);
+
 \draw[arrow] (scraping) -- (batch1);
-\draw[arrow] (manual) -- (batch2);
 
 \draw[arrow] (ingestion) -- (clean);
 
 \draw[arrow] (batch1) -- (docs);
-\draw[arrow] (batch2) -- (trouble);
 
 \draw[arrow] (batch1) -- (clean);
-\draw[arrow] (batch2) -- (clean);
 
 \draw[arrow] (clean) -- (graph);
 
 % =========================
 % FLUX SECONDAIRE (POINTILLÉS)
 % =========================
-\draw[dashed, arrow, color=SAPGray] (ingestion) -- (logs);
-\draw[dashed, arrow, color=SAPBlue] (ingestion) -- (graph);
+\draw[dashed, arrow, color=SAPGray]
+(ingestion) -- (logs);
+
+\draw[dashed, arrow, color=SAPBlue]
+(ingestion) -- (graph);
 
 \end{tikzpicture}
 }
-\caption{Architecture du pipeline de collecte et de traitement des données SAP}
-\label{fig:sap_pipeline}
+\caption{Pipeline d’ingestion et de traitement des données SAP}
+\label{fig:data_pipeline}
 \end{figure}
-\section{Description des données }
+\section{Description des données à exploiter }
 Le corpus documentaire issu des livres de formation et du portail SAP Help est composé de segments textuels structurés. Chaque segment représente une unité d’information cohérente, généralement constituée de plusieurs paragraphes, centrés sur un thème précis lié aux différents domaines SAP.
 
 Ces segments permettent d’organiser le contenu de manière logique et exploitable, en regroupant les informations par sujet afin de faciliter leur traitement et leur utilisation dans des tâches d’analyse ou de recherche.
-\subsection{Nature des données} 
+\subsection{Nature des données résultatantes de l’extraction} 
 les données varient selon les documents, qu'il s'agisse de pages Web (crawlé) ou de PDF (livres). Cependant, la plupart des données sont textuelles et fournissent des informations techniques sur SAP, notamment des descriptions de processus, des configurations système, des analyses de codes d'erreur et des notes de correction. Ces informations sont cruciales pour comprendre en profondeur les systèmes SAP et résoudre les problèmes qui peuvent survenir.
-\subsubsection{Nature des donnees de SAP Help}
+\subsubsection{Nature des donnees de SAP Help résultatantes de l’extraction}
 Les données utilisées dans ce projet viennent d’un processus automatisé de collecte sur le portail SAP Help (\url{https://help.sap.com}). Elles sont non structurées et semi-structurées, et concernent la documentation technique de SAP NetWeaver 7.03 et autre comme NetWeaver 7.4.
 
 Les informations recueillies incluent :
@@ -184,17 +195,8 @@ Les informations recueillies incluent :
     \item Des renseignements sur les erreurs et les journaux SAP,
     \item Des éléments qui structurent hiérarchiquement le contenu, comme les titres et les sections.
 \end{itemize}
-\begin{figure}[H]
-    \centering
-    \includegraphics[
-        width=0.9\textwidth,
-        height=0.7\textheight,
-        keepaspectratio
-    ]{images/Structurededonnees.png}
-    \caption{Données de SAP Help}
-    \label{fig:Données de SAP Help}
-\end{figure}
-\subsubsection{Nature des donnes de livres PDF}
+
+\subsubsection{Nature des donnes de livres PDF résultatantes de l’extraction}
 Les données utilisées dans cette étape proviennent de documents techniques SAP au format PDF. Ces documents sont considérés comme le guide principal pour la certification de système SAP. Ils incluent des supports de formation tels que BC100, BC400, ainsi que d'autres modules SAP comme ABAP et d'autres.
 
 Ces documents contiennent des données non structurées, qui comprennent du texte technique, des éléments graphiques, des tableaux et des fragments de code ABAP. L'objectif principal du processus d'extraction est de transformer ces documents en une représentation structurée. Cette représentation structurée doit être exploitable dans un système RAG géré par des vecteurs, également appelés embeddings. Le but est de permettre au modèle LLM de comprendre ces données de manière efficace.
@@ -204,7 +206,7 @@ les données de surveillance SAP en temps réel sont collectées à partir des s
 Chaque enregistrement contient des attributs tels que le code de transaction, la description de l'événement, la date et l'heure d'extraction, ainsi que d'autres détails pertinents pour la surveillance opérationnelle.
 
 Ces données sont très importantes pour analyser les performances du système et identifier les problèmes potentiels.
-\subsection{Exploration des données}
+\subsection{Exploration des données resultantes de l’extraction}
 Les données extraites des livres PDF et du portail SAP Help sont organisées selon une structure hiérarchique qui reproduit fidèlement l’architecture logique des documents SAP. Chaque document PDF est ainsi converti en un ensemble de sections imbriquées suivant les niveaux suivants : Book (document source), Unit, Lesson, Section et Body (contenu détaillé).
 
 L’ensemble de ces informations est ensuite enregistré dans des fichiers JSON. Chaque section est représentée sous la forme d’un objet JSON structuré contenant les différents champs nécessaires à sa description et à sa position dans la hiérarchie du document. Les champs principaux de chaque enregistrement comprennent :
@@ -219,7 +221,16 @@ L’ensemble de ces informations est ensuite enregistré dans des fichiers JSON.
     \item \texttt{page\_start / page\_end} : localisation dans le PDF
     \item \texttt{section\_type} : type de contenu (unit, lesson, section, body)
 \end{itemize}
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[
+        width=0.9\textwidth,
+        height=0.7\textheight,
+        keepaspectratio
+    ]{images/bookpdf.png}
+    \caption{Données des livres PDF SAP}
+    \label{fig:Données des livres PDF SAP}
+\end{figure}
 en outre les page extraite par le scraper est transformée en un objet structuré au format JSON. La structure d’un enregistrement est définie comme suit :
 
 \begin{itemize}
@@ -234,6 +245,16 @@ en outre les page extraite par le scraper est transformée en un objet structur�
     \item \texttt{sections} : structure hiérarchique des sections du document
     \item \texttt{scraped\_at} : horodatage de l’extraction
 \end{itemize}
+\begin{figure}[H]
+    \centering
+    \includegraphics[
+        width=0.9\textwidth,
+        height=0.7\textheight,
+        keepaspectratio
+    ]{images/Structurededonnees.png}
+    \caption{Données de SAP Help}
+    \label{fig:Données de SAP Help}
+\end{figure}
 
 Cette structuration permet de transformer des pages HTML non structurées en documents exploitables pour un système RAG.
 
@@ -245,13 +266,25 @@ Chaque enregistrement contient des attributs tels que :
     \item la date et l'heure d'extraction,
     \item ainsi que d'autres détails pertinents pour la surveillance opérationnelle.
 \end{itemize}
-
+\begin{figure}[H]
+    \centering
+    \includegraphics[
+        width=0.9\textwidth,
+        height=0.7\textheight,
+        keepaspectratio
+    ]{images/Surveillance.png}
+    \caption{Données de surveillance SAP}
+    \label{fig:Données de surveillance SAP}
+\end{figure}
 Ces données sont essentielles pour analyser les performances du système et identifier les problèmes potentiels.
 \section{Qualité des données}
 L’évaluation de la qualité des données est une étape essentielle dans la méthodologie CRISP-DM. Elle permet d’identifier les anomalies qui peuvent affecter les performances du système RAG et la pertinence des réponses données par le modèle LLM.
-Une analyse approfondie des données des livres PDF SAP et du portail SAP Help a révélé plusieurs problèmes de qualité. Cependant, les données de surveillance SAP ne nécessitent généralement pas de correction, car elles proviennent directement des systèmes SAP et sont déjà structurées.
+Une analyse approfondie des données des livres PDF SAP et du portail SAP Help a révélé plusieurs problèmes de qualité.
+
+Cependant, les données de surveillance SAP ne nécessitent généralement pas de correction, car elles proviennent directement des systèmes SAP et sont déjà structurées.
 Dans les documents PDF SAP, certaines anomalies proviennent principalement du processus d’extraction automatique. Plusieurs documents contenaient des fragments de texte mal structurés et des caractères spéciaux, comme les points d’exclamation et les points de suspension, etc. Certains titres ou sections étaient également dupliqués à cause des différences de mise en page entre les livres de formation SAP.
 Pour les données extraites du portail SAP Help via le crawler web, des problèmes de duplication partielle de pages ont été remarqués en raison de liens redondants dans la documentation SAP, ainsi que de duplications de contenu.
+
 Afin d’améliorer la qualité globale du RAG, plusieurs opérations de nettoyage et de normalisation ont été appliquées durant la phase de préparation des données. Ces traitements comprennent :
 \begin{itemize}
 \item la suppression des doublons ;
@@ -263,11 +296,5 @@ Afin d’améliorer la qualité globale du RAG, plusieurs opérations de nettoya
 \end{itemize} 
 Ces étapes sont nécessaires pour que les données deviennent plus cohérentes et exploitables pour les démarches de vectorisation (\textit{embeddings}) et d’indexation (\textit{chunking}) pour l’assistant RAG.
 
-\section{conclusion}
-Ce chapitre porte sur la phase de compréhension des données, qui est essentielle dans la méthodologie CRISP-DM. L'objectif principal est d'identifier, de décrire et d'analyser les différentes sources de données utilisées dans le projet. Cela permet de bien se préparer pour les étapes suivantes, comme la modélisation et l'exploitation des données.
-
-Trois grandes catégories de données ont été examinées. Tout d'abord, il y a les données de surveillance SAP en temps réel, extraites via PyRFC. Ensuite, nous avons les documents de formation SAP au format PDF. Enfin, il y a les contenus provenant du portail SAP Help. Chacune de ces sources a des caractéristiques uniques en termes de structure, de format et de niveau de structuration. Les données peuvent être très structurées, comme les transactions SAP, ou non structurées et semi-structurées, comme les documents et les pages web.
-
-Ces données ont ensuite été organisées de façon hiérarchique et normalisée. Cela a permis de les ingérer dans un système de type RAG. Grâce à cette structuration, il est plus facile d'exploiter ces données à l'aide de modèles d'intelligence artificielle. La transformation en représentations exploitables sous forme de segments et d'embeddings est ainsi facilitée.
-
-En résumé, cette phase a mis en évidence la richesse et la diversité du corpus de données. Elle a aussi souligné les défis liés à leur collecte, leur structuration et leur intégration. Elle crée une base solide pour les phases suivantes du projet, notamment la préparation des données et la mise en place du système de recherche augmentée par génération.
+\section*{Conclusion}
+Ce chapitre aborde la phase d'analyse des données dans la méthodologie CRISP-DM. Cette étape vise à identifier, évaluer et décrire les diverses sources de données utilisées dans le projet afin de préparer au mieux les étapes suivantes, notamment la préparation et la modélisation des données.

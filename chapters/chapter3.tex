@@ -242,94 +242,62 @@ Lorsqu’une requête utilisateur est soumise, le système identifie les fragmen
 Ainsi, le RAG peut être comparé à un assistant intelligent capable de consulter une base documentaire avant de formuler une réponse, garantissant ainsi une meilleure fiabilité.
 \begin{figure}[H]
 \centering
-\resizebox{\textwidth}{!}{
+\resizebox{\textwidth}{!}{ % <-- ajuste automatiquement à la largeur A4
 \begin{tikzpicture}[
-    node distance=1.8cm and 2.2cm,
+    node distance=2.2cm and 1.6cm,
     every node/.style={font=\footnotesize},
     box/.style={
-        rectangle,
-        rounded corners=8pt,
         draw,
-        minimum width=3cm,
-        minimum height=1cm,
+        rounded corners=8pt,
+        minimum width=2.6cm,
+        minimum height=0.9cm,
         align=center,
         line width=0.8pt,
         drop shadow={opacity=0.15}
     },
-    arrow/.style={-Latex, line width=0.9pt}
+    arrow/.style={->, line width=0.9pt}
 ]
 
-% =========================
-% SOURCES (gris / SAP Gray)
-% =========================
-\node[box, fill=SAPLightGray, draw=SAPGray] (sap) {Système SAP};
-\node[box, fill=SAPLightGray, draw=SAPGray, below=of sap] (help) {Portail SAP Help};
-\node[box, fill=SAPLightGray, draw=SAPGray, below=of help] (notes) {Notes SAP};
+% ---- NODES ----
+\node[box, fill=SAPLightOrange, draw=SAPOrange] (docs) {Documents};
 
-% =========================
-% INGESTION / PIPELINES (bleu)
-% =========================
-\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of sap] (pyrfc) {Extraction temps réel\\PyRFC};
-\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of help] (scraping) {Pipeline de scraping web};
-\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of notes] (manual) {Téléversement manuel};
+\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of docs] (chunk) {Chunking};
 
-\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of pyrfc] (ingestion) {Ingestion temps réel};
-\node[box, fill=SAPLightOrange, draw=SAPOrange, right=of scraping] (batch1) {Traitement par lots};
-\node[box, fill=SAPLightOrange, draw=SAPOrange, right=of manual] (batch2) {Traitement par lots};
+\node[box, fill=gray!10, draw=black!50, right=of chunk] (query) {User Query};
 
-% =========================
-% PROCESSING (vert + orange mix)
-% =========================
-\node[box, fill=SAPLightGreen, draw=SAPGreen, right=of ingestion] (clean) 
-{Nettoyage, normalisation\\et segmentation};
+\node[box, fill=SAPLightGreen, draw=SAPGreen, right=of query] (vectordb) {Vector DB};
 
-\node[box, fill=SAPLightBlue, draw=SAPBlue, right=of batch1] (docs) 
-{Documentation\\Guides de configuration\\Spécifications techniques};
+\node[box, fill=SAPLightOrange, draw=SAPRed, below=1.8cm of vectordb] (retrieval) {Top-K\\Retrieval};
 
-\node[box, fill=SAPLightOrange, draw=SAPOrange, right=of batch2] (trouble) 
-{Dépannage\\Versions composants\\Problèmes connus\\Solutions};
+\node[box, fill=SAPLightOrange, draw=SAPOrange, left=of retrieval] (llm) {LLM};
 
-% =========================
-% OUTPUTS (mix bleu/vert)
-% =========================
-\node[box, fill=SAPLightGray, draw=SAPGray, right=of clean, yshift=1.5cm] (logs)
-{Logs\\Erreurs\\Métriques};
+\node[box, fill=SAPLightBlue, draw=SAPBlue, left=of llm] (response) {Response};
 
-\node[box, fill=SAPLightGreen, draw=SAPGreen, right=of clean, yshift=-1.5cm] (graph)
-{Construction de graphe\\Base vectorielle};
+% ---- FLUX ----
+\draw[arrow] (docs) -- node[above]{découpage} (chunk);
 
-% =========================
-% FLUX PRINCIPAL
-% =========================
-\draw[arrow] (sap) -- (pyrfc);
-\draw[arrow] (help) -- (scraping);
-\draw[arrow] (notes) -- (manual);
+\draw[arrow] (chunk) -- node[above]{vectorisation} (query);
 
-\draw[arrow] (pyrfc) -- (ingestion);
-\draw[arrow] (scraping) -- (batch1);
-\draw[arrow] (manual) -- (batch2);
+\draw[arrow, dashed, color=SAPGreen] 
+(query) -- node[above]{stockage} (vectordb);
 
-\draw[arrow] (ingestion) -- (clean);
-\draw[arrow] (batch1) -- (docs);
-\draw[arrow] (batch2) -- (trouble);
+\draw[arrow, color=SAPRed] 
+(vectordb) -- node[right]{} (retrieval);
 
-\draw[arrow] (batch1) -- (clean);
-\draw[arrow] (batch2) -- (clean);
+\draw[arrow] (query) -- (llm);
 
-\draw[arrow] (clean) -- (graph);
+\draw[arrow, color=SAPOrange] 
+(retrieval) -- node[above]{contexte} (llm);
 
-% =========================
-% FLUX SECONDAIRE (pointillés)
-% =========================
-\draw[dashed, arrow, color=SAPGray] (ingestion) -- (logs);
-\draw[dashed, arrow, color=SAPBlue] (ingestion) -- (graph);
+\draw[arrow, color=SAPBlue] 
+(llm) -- node[above]{génération} (response);
 
 \end{tikzpicture}
 }
-\caption{Architecture du pipeline de collecte et de traitement des données SAP}
-\label{fig:sap_pipeline_colored}
+\caption{Architecture du système RAG }
+\label{fig:rag_compact}
 \end{figure}
-\subsubsection*{CAG (Cache-Augmented Generation) : une amélioration du RAG}
+\subsection{L'architecture de CAG (Cache-Augmented Generation) : une amélioration du RAG}
 
 Bien que l’architecture RAG améliore significativement la génération de réponses en intégrant des documents externes, elle présente encore certaines limites, notamment en termes de latence et de coût de calcul, dues aux requêtes répétées vers la base vectorielle.
 
@@ -338,7 +306,7 @@ Pour répondre à ces contraintes, une évolution appelée \textit{CAG (Cache-Au
 Ainsi, lorsqu’une requête similaire est posée, le système peut réutiliser directement les informations déjà calculées sans solliciter à nouveau la base vectorielle ou les modèles d’embedding. Cela permet de réduire le temps de réponse et d’améliorer l’efficacité globale du système.
 
 En comparaison avec le RAG classique, le CAG optimise le processus de génération en réduisant les redondances de calcul tout en conservant la pertinence des informations fournies. Cette approche est particulièrement utile dans les systèmes à forte charge ou dans les applications nécessitant une réponse en temps réel.
-\subsubsection*{Fine-Tuning : personnalisation des modèles IA}
+\subsection{L'architecture de Fine-Tuning : personnalisation des modèles IA}
 
 En plus des approches RAG et CAG, le \textit{Fine-Tuning} est une autre méthode souvent utilisée pour améliorer les performances des modèles d'intelligence artificielle. Cette technique consiste à ré-entraîner un modèle de langage préexistant sur des données propres à un domaine ou à une organisation.
 
@@ -407,7 +375,7 @@ Applications temps réel et systèmes à forte charge \\
 \caption{Comparaison entre Fine-Tuning, RAG et RAG+CAG}
 \label{tab:comparaison_rag_cag_finetuning}
 \end{table}
-\subsection{Le choix du RAG pour ce projet}
+\section{Le choix du RAG pour ce projet}
 
 Dans le cadre de ce projet, l’architecture RAG avec le CAGa été retenue pour plusieurs raisons essentielles :
 
@@ -425,10 +393,6 @@ Dans le cadre de ce projet, l’architecture RAG avec le CAGa été retenue pour
 \end{description}
 
 En outre, en l’absence de jeux de données annotés par des experts et compte tenu de la complexité des \textit{SAP Notes}, l’utilisation d’approches telles que la distillation de connaissances n’est pas adaptée. Le RAG constitue ainsi un compromis efficace entre flexibilité, précision et scalabilité, particulièrement pertinent pour les applications en entreprise.
-\subsection{Critères de succès}
-Pour évaluer l’efficacité de la solution proposée basée sur les approches RAG et CAG, une matrice de succès a été définie. Cette matrice permet de mesurer la qualité des réponses générées, la rapidité d’exécution et la pertinence des informations récupérées depuis les documents techniques SAP.
-
-Les critères retenus ont été choisis en fonction des objectifs fonctionnels et techniques du projet. Ils permettent d’évaluer les performances du système, ainsi que l’expérience utilisateur et la fiabilité des réponses produites. Cela implique notamment l’examen des faux positifs, c’est-à-dire les cas où le résultat est prédit correctement mais s’avère faux en réalité.
 
 \subsection{Matrice de confusion}
 
@@ -467,6 +431,40 @@ Négatif & Faux Positif (FP) & Vrai Négatif (TN) \\
 \end{figure}
 
 La matrice de confusion permet également de calculer plusieurs métriques importantes comme la précision (\textit{Precision}), le rappel (\textit{Recall}), l’exactitude (\textit{Accuracy}) et le score F1, qui sont utilisées pour mesurer la qualité des performances du modèle de Machine Learning.
+\vspace{0.3cm}
+
+Les métriques utilisées sont définies par les formules suivantes :
+
+\begin{itemize}
+    \item \textbf{Précision (Precision)} : mesure la proportion des prédictions positives correctes parmi toutes les prédictions positives.
+    
+    \[
+    Precision = \frac{TP}{TP + FP}
+    \]
+
+    \item \textbf{Rappel (Recall)} : mesure la capacité du modèle à retrouver toutes les instances positives réelles.
+    
+    \[
+    Recall = \frac{TP}{TP + FN}
+    \]
+
+    \item \textbf{Exactitude (Accuracy)} : mesure la proportion des prédictions correctes parmi l’ensemble des prédictions réalisées.
+    
+    \[
+    Accuracy = \frac{TP + TN}{TP + TN + FP + FN}
+    \]
+
+    \item \textbf{Score F1} : représente la moyenne harmonique entre la précision et le rappel.
+    
+    \[
+    F1\text{-}Score = 2 \times \frac{Precision \times Recall}{Precision + Recall}
+    \]
+
+\end{itemize}
+
+Pour évaluer l’efficacité de la solution proposée basée sur les approches RAG et CAG, une matrice de succès a été définie. Cette matrice permet de mesurer la qualité des réponses générées, la rapidité d’exécution et la pertinence des informations récupérées depuis les documents techniques SAP.
+
+Les critères retenus ont été choisis en fonction des objectifs fonctionnels et techniques du projet. Ils permettent d’évaluer les performances du système, ainsi que l’expérience utilisateur et la fiabilité des réponses produites. Cela implique notamment l’examen des faux positifs, c’est-à-dire les cas où le résultat est prédit correctement mais s’avère faux en réalité.
 
 \vspace{0.3cm}
 
