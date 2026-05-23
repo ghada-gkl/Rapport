@@ -15,111 +15,146 @@ Ce chapitre décrit les étapes de préparation des données pour le pipeline RA
 % ─────────────────────────────────────────────────────────────────────────────
 
 Le pipeline de préparation des données se compose de cinq étapes. Il démarre avec les données brutes et se termine par l’intégration finale dans la base vectorielle. Chaque étape utilise les résultats de la précédente pour produire des données intermédiaires bien définies. Cela assure un processus de transformation structuré, traçable et reproductible.
-
 \begin{figure}[H]
 \centering
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
 \begin{tikzpicture}[
     font=\small,
     >={Stealth[length=7pt, width=5pt]},
-    endpoint/.style = {
-        rectangle, rounded corners=6pt,
-        minimum width=12cm, minimum height=1.3cm,
-        draw, line width=1pt,
-        text centered, align=center, inner sep=8pt
+    endpoint/.style={
+        rectangle, rounded corners=8pt,
+        minimum width=13.5cm, minimum height=1.55cm,
+        draw, line width=1.5pt,
+        text centered, align=center, inner sep=10pt
     },
-    procstep/.style = {
-        rectangle, rounded corners=6pt,
-        minimum width=12cm, minimum height=1.65cm,
-        draw=SAPBlue, line width=1pt, fill=SAPLightBlue,
-        inner xsep=6pt, inner ysep=8pt, align=left
+    procstep/.style={
+        rectangle, rounded corners=7pt,
+        minimum width=13.5cm, minimum height=2.05cm,
+        draw=SAPBlue, line width=1.2pt, fill=SAPLightBlue,
+        inner xsep=10pt, inner ysep=8pt, align=left
     },
-    finalprocstep/.style = {
-        rectangle, rounded corners=6pt,
-        minimum width=12cm, minimum height=1.65cm,
-        draw=SAPGreen, line width=1pt, fill=SAPLightGreen,
-        inner xsep=6pt, inner ysep=8pt, align=left
+    finalprocstep/.style={
+        rectangle, rounded corners=7pt,
+        minimum width=13.5cm, minimum height=2.05cm,
+        draw=SAPGreen, line width=1.2pt, fill=SAPLightGreen,
+        inner xsep=10pt, inner ysep=8pt, align=left
     },
-    badge/.style = {
-        circle, draw=SAPBlue, line width=1.2pt,
-        fill=white, text=SAPBlue,
-        minimum size=1cm, font=\bfseries, inner sep=0pt
+    % Filled badges (solid colour, white numeral)
+    badge/.style={
+        circle, draw=SAPBlue, line width=1.5pt,
+        fill=SAPBlue, text=white,
+        minimum size=1.1cm, font=\bfseries, inner sep=0pt
     },
-    finalbadge/.style = {
-        circle, draw=SAPGreen, line width=1.2pt,
-        fill=white, text=SAPGreen,
-        minimum size=1cm, font=\bfseries, inner sep=0pt
+    finalbadge/.style={
+        circle, draw=SAPGreen, line width=1.5pt,
+        fill=SAPGreen, text=white,
+        minimum size=1.1cm, font=\bfseries, inner sep=0pt
     },
-    artifact/.style = {
-        rectangle, rounded corners=3pt,
-        minimum width=7.5cm, minimum height=0.7cm,
-        draw=SAPGray!70, line width=0.6pt, dashed,
-        fill=white, font=\footnotesize\ttfamily,
-        text centered, inner sep=5pt
+    % Dashed artifact nodes with subtle tint
+    artifact/.style={
+        rectangle, rounded corners=4pt,
+        minimum width=9.5cm, minimum height=0.88cm,
+        draw=SAPGray!65, line width=0.7pt, dashed,
+        fill=SAPGray!7, font=\footnotesize\ttfamily,
+        text centered, inner sep=6pt
     },
-    arrow/.style = {->, thick, line width=1pt, color=SAPGray}
+    % Small category-label pill (blue steps)
+    tag/.style={
+        rectangle, rounded corners=2pt,
+        draw=SAPBlue!45, line width=0.6pt, fill=white,
+        font=\tiny\bfseries\sffamily, text=SAPBlue!90,
+        inner sep=2.5pt, outer sep=0pt
+    },
+    % Small category-label pill (green step)
+    ftag/.style={
+        rectangle, rounded corners=2pt,
+        draw=SAPGreen!45, line width=0.6pt, fill=white,
+        font=\tiny\bfseries\sffamily, text=SAPGreen!90,
+        inner sep=2.5pt, outer sep=0pt
+    },
+    arrow/.style={->, line width=1.2pt, color=SAPGray!75}
 ]
 
 % ===== SOURCE =====
 \node[endpoint, fill=SAPLightOrange, draw=SAPOrange] (raw) {%
-    \textbf{\textsc{Données brutes}} \\[1pt]
+    \textbf{\textsc{Données brutes}} \\[2pt]
     \footnotesize JSON de scraping SAP Help\,+\,\texttt{structured\_content.json} (PDF parsés)
 };
 
 % ===== STEP 1 =====
-\node[procstep, below=0.55cm of raw] (step1) {%
-    \begin{tabular}{@{\hspace{1.3cm}}l@{}}
-    \textbf{Nettoyage et normalisation} \\[1pt]
-    \footnotesize Correction de l'encodage CID, validation des T-codes, harmonisation des champs \\[1pt]
-    \footnotesize\textcolor{SAPGray}{Script : \texttt{sap\_normalizer.py}}
+\node[procstep, below=0.6cm of raw] (step1) {%
+    \begin{tabular}{@{\hspace{1.5cm}}l@{}}
+    \textbf{Nettoyage et normalisation} \\[3pt]
+    \footnotesize Correction de l'encodage CID, validation des T-codes, harmonisation des champs \\[3pt]
+    \footnotesize\textcolor{SAPGray}{Script\,: \texttt{sap\_normalizer.py}}
     \end{tabular}
 };
-\node[badge] at ([xshift=0.55cm]step1.west) {1};
+\node[badge] at ([xshift=0.65cm]step1.west) {1};
+\node[tag, anchor=north east, xshift=-0.3cm, yshift=-0.3cm] at (step1.north east)
+    {ENCODAGE\,/\,VALIDATION};
 
-\node[artifact, below=0.28cm of step1] (a1) {unified\_content.json};
+\node[artifact, below=0.32cm of step1] (a1) {\texttt{unified\_content.json}};
 
 % ===== STEP 2 =====
-\node[procstep, below=0.28cm of a1] (step2) {%
-    \begin{tabular}{@{\hspace{1.3cm}}l@{}}
-    \textbf{Suppression des doublons et du bruit} \\[1pt]
-    \footnotesize Élimination des chunks répétés, des pages QCM et du contenu non documentaire \\[1pt]
+\node[procstep, below=0.32cm of a1] (step2) {%
+    \begin{tabular}{@{\hspace{1.5cm}}l@{}}
+    \textbf{Suppression des doublons et du bruit} \\[3pt]
+    \footnotesize Élimination des chunks répétés, des pages QCM et du contenu non documentaire \\[3pt]
     \footnotesize\textcolor{SAPGray}{Filtres qualité multi-critères}
     \end{tabular}
 };
-\node[badge] at ([xshift=0.55cm]step2.west) {2};
+\node[badge] at ([xshift=0.65cm]step2.west) {2};
+\node[tag, anchor=north east, xshift=-0.3cm, yshift=-0.3cm] at (step2.north east)
+    {DÉDUPLICATION\,/\,FILTRAGE};
 
 % ===== STEP 3 =====
-\node[procstep, below=0.55cm of step2] (step3) {%
-    \begin{tabular}{@{\hspace{1.3cm}}l@{}}
-    \textbf{Découpage des documents en chunks} \\[1pt]
-    \footnotesize Segmentation sémantique avec préservation du contexte hiérarchique \\[1pt]
-    \footnotesize\textcolor{SAPGray}{Script : \texttt{chunker.py}}
+\node[procstep, below=0.6cm of step2] (step3) {%
+    \begin{tabular}{@{\hspace{1.5cm}}l@{}}
+    \textbf{Découpage des documents en chunks} \\[3pt]
+    \footnotesize Segmentation sémantique avec préservation du contexte hiérarchique \\[3pt]
+    \footnotesize\textcolor{SAPGray}{Script\,: \texttt{chunker.py}}
     \end{tabular}
 };
-\node[badge] at ([xshift=0.55cm]step3.west) {3};
+\node[badge] at ([xshift=0.65cm]step3.west) {3};
+\node[tag, anchor=north east, xshift=-0.3cm, yshift=-0.3cm] at (step3.north east)
+    {SEGMENTATION};
 
-\node[artifact, below=0.28cm of step3] (a3) {chunked\_for\_embedding.json};
+\node[artifact, below=0.32cm of step3] (a3) {\texttt{chunked\_for\_embedding.json}};
 
 % ===== STEP 4 =====
-\node[procstep, below=0.28cm of a3] (step4) {%
-    \begin{tabular}{@{\hspace{1.3cm}}l@{}}
-    \textbf{Génération des embeddings} \\[1pt]
-    \footnotesize Vectorisation dense des chunks pour la recherche sémantique \\[1pt]
-    \footnotesize\textcolor{SAPGray}{Script : \texttt{embedder.py}}
+\node[procstep, below=0.32cm of a3] (step4) {%
+    \begin{tabular}{@{\hspace{1.5cm}}l@{}}
+    \textbf{Génération des embeddings} \\[3pt]
+    \footnotesize Vectorisation dense des chunks pour la recherche sémantique \\[3pt]
+    \footnotesize\textcolor{SAPGray}{Script\,: \texttt{embedder.py}}
     \end{tabular}
 };
-\node[badge] at ([xshift=0.55cm]step4.west) {4};
+\node[badge] at ([xshift=0.65cm]step4.west) {4};
+\node[tag, anchor=north east, xshift=-0.3cm, yshift=-0.3cm] at (step4.north east)
+    {VECTORISATION};
 
-\node[artifact, below=0.28cm of step4] (a4) {embeddings.npy + metadata.json};
+\node[artifact, below=0.32cm of step4] (a4)
+    {\texttt{embeddings.npy}\,+\,\texttt{metadata.json}};
 
 % ===== STEP 5 (final, green) =====
-\node[finalprocstep, below=0.28cm of a4] (step5) {%
-    \begin{tabular}{@{\hspace{1.3cm}}l@{}}
-    \textbf{Ingestion en base vectorielle} \\[1pt]
-    \footnotesize Insertion des vecteurs et métadonnées dans PostgreSQL\,+\,pgvector \\[1pt]
-    \footnotesize\textcolor{SAPGray}{Script : \texttt{ingest\_to\_db.py}}
+\node[finalprocstep, below=0.32cm of a4] (step5) {%
+    \begin{tabular}{@{\hspace{1.5cm}}l@{}}
+    \textbf{Ingestion en base vectorielle} \\[3pt]
+    \footnotesize Insertion des vecteurs et métadonnées dans PostgreSQL\,+\,pgvector \\[3pt]
+    \footnotesize\textcolor{SAPGray}{Script\,: \texttt{ingest\_to\_db.py}}
     \end{tabular}
 };
-\node[finalbadge] at ([xshift=0.55cm]step5.west) {5};
+\node[finalbadge] at ([xshift=0.65cm]step5.west) {5};
+\node[ftag, anchor=north east, xshift=-0.3cm, yshift=-0.3cm] at (step5.north east)
+    {INDEXATION\,BD};
+
+% ===== BACKGROUND PANEL =====
+\begin{pgfonlayer}{background}
+    \node[rectangle, rounded corners=12pt,
+          fill=gray!4, draw=gray!22, line width=0.9pt,
+          fit=(raw)(step5), inner sep=16pt] {};
+\end{pgfonlayer}
 
 % ===== ARROWS =====
 \draw[arrow] (raw)   -- (step1);
@@ -130,10 +165,34 @@ Le pipeline de préparation des données se compose de cinq étapes. Il démarre
 \draw[arrow] (a3)    -- (step4);
 \draw[arrow] (step4) -- (a4);
 \draw[arrow] (a4)    -- (step5);
-\end{tikzpicture}
-\caption{Pipeline complet de préparation des données }
-\end{figure}
 
+% ===== PHASE BRACES (right margin) =====
+% Path goes bottom→top so "mirror" opens brace to the east
+\draw[decorate, decoration={brace, mirror, amplitude=6pt},
+      color=SAPBlue!55, line width=0.85pt]
+    ([xshift=0.55cm]step2.south east) -- ([xshift=0.55cm]step1.north east)
+    node[midway, right=11pt, font=\tiny\bfseries\sffamily,
+         text=SAPBlue!70, align=center]
+    {PHASE 1\\[1pt]Prétraitement};
+
+\draw[decorate, decoration={brace, mirror, amplitude=6pt},
+      color=SAPBlue!55, line width=0.85pt]
+    ([xshift=0.55cm]step3.south east) -- ([xshift=0.55cm]step3.north east)
+    node[midway, right=11pt, font=\tiny\bfseries\sffamily,
+         text=SAPBlue!70, align=center]
+    {PHASE 2\\[1pt]Structuration};
+
+\draw[decorate, decoration={brace, mirror, amplitude=6pt},
+      color=SAPGreen!60, line width=0.85pt]
+    ([xshift=0.55cm]step5.south east) -- ([xshift=0.55cm]step4.north east)
+    node[midway, right=11pt, font=\tiny\bfseries\sffamily,
+         text=SAPGreen!70, align=center]
+    {PHASE 3\\[1pt]Vectorisation};
+
+\end{tikzpicture}
+\caption{Pipeline complet de préparation des données}
+\label{fig:data-pipeline}
+\end{figure}
 
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -141,49 +200,157 @@ Le pipeline de préparation des données se compose de cinq étapes. Il démarre
 \label{sec:nettoyage}
 % ─────────────────────────────────────────────────────────────────────────────
 
-\subsection{Problèmes identifiés dans les données brutes}
+Avant de fusionner et de normaliser les données, les deux sources documentaires — le portail SAP Help et les manuels techniques en format PDF — ont été soumises à des processus de nettoyage distincts, chacun étant adapté aux particularités et aux problèmes spécifiques à chaque source. Ce n'est qu'après ces étapes de prétraitement spécifiques que les données ont été rassemblées pour commencer la phase de normalisation globale.
+% ── 2.1 ──────────────────────────────────────────────────────────────────────
+\subsection{Nettoyage des données du portail SAP Help}
+\label{subsec:nettoyage-saphelp}
 
-Les données collectées à partir du portail SAP Help et des fichiers PDF présentent plusieurs problèmes de qualité. Les pages web contiennent des balises HTML résiduelles, des entités HTML, des URLs intégrées dans le texte et des titres dupliqués. Les fichiers PDF, quant à eux, comportent des caractères incorrects dus à l’encodage, des symboles indésirables et du bruit provenant des tables des matières. Ces anomalies rendent les données difficiles à utiliser directement dans le pipeline RAG. Cela nécessite une phase de nettoyage préalable.
+Les pages extraites du portail \texttt{help.sap.com} présentent des anomalies spécifiques aux données issues du web. Les scripts appliquent donc un traitement dédié à ces fichiers sources de manière indépendante avant toute étape de fusion.
 
-Sans traitement, ces artefacts pollueraient les embeddings et dégraderaient la qualité de
-la recherche sémantique~: un vecteur calculé sur un texte contenant des centaines de codes
-CID ne représente plus le sens du document, mais le bruit de l'extraction.
+% ── Tag helper (reusable anywhere) ──────────────────────────────────────────
+\newcommand{\ptag}[2]{%
+  \tikz[baseline=-0.55ex]{%
+    \node[rectangle, rounded corners=2pt,
+          fill=#1!13, draw=#1!45, line width=0.45pt,
+          font=\tiny\bfseries\sffamily, text=#1!85!black,
+          inner xsep=3pt, inner ysep=1.8pt, outer sep=2pt]{#2};%
+  }%
+}
+% ────────────────────────────────────────────────────────────────────────────
 
-\subsection{Les  opérations de normalisation}
+\begin{tcolorbox}[
+  enhanced, breakable,
+  colback       = red!3!white,
+  colframe      = red!38!black,
+  colbacktitle  = red!38!black,
+  coltitle      = white,
+  fonttitle     = \small\bfseries\sffamily,
+  title         = {Problèmes identifiés},
+  arc           = 5pt,
+  boxrule       = 0.75pt,
+  toptitle      = 3.5pt, bottomtitle = 3.5pt,
+  left = 8pt, right = 8pt, top = 6pt, bottom = 6pt,
+]
+\begin{itemize}[
+  leftmargin = *,
+  label      = {\textcolor{red!45!black}{\small$\blacktriangleright$}},
+  itemsep    = 6pt,
+  topsep     = 0pt,
+  parsep     = 0pt
+]
 
-Le module \texttt{sap\_normalizer.py} applique six opérations de nettoyage sur chaque
-document, dans un ordre précis. Ces opérations sont les mêmes pour les documents issus du
-portail SAP et pour les livres PDF, garantissant un schéma unifié en sortie.
+  \item \ptag{orange!90!red}{HTML}\enspace
+    \textbf{Balises et entités HTML résiduelles} : malgré le traitement initial,
+    certaines pages conservent des fragments tels que \texttt{<b>}, \texttt{\&nbsp;}
+    ou \texttt{\&amp;} dans le texte extrait.
+
+
+
+  \item \ptag{blue!75}{NAVIGATION}\enspace
+    \textbf{Éléments de navigation} : les pages incluent des phrases standards comme \textit{«~Accepter les cookies~»}, \textit{«~Évaluez cette page~»}, \textit{«~Voir aussi~»}, qui n'offrent aucune information substantielle.
+  \item \ptag{violet!80}{TOKENS}\enspace
+    \textbf{Mots concaténés} : L'extraction HTML peut parfois générer des tokens combinés tels que \texttt{contentadministration} au lieu de \texttt{content administration}.
+  \item \ptag{teal!75}{DOUBLONS}\enspace
+    \textbf{Doublons par URL} : Une page donnée peut avoir été récupérée au cours de plusieurs sessions de scraping\,; l'URL agit comme clé de déduplication principale.
+  \item \ptag{red!70}{QUALITÉ}\enspace
+    \textbf{Pages insuffisamment longues} : certaines entrées se réfèrent à des pages de navigation vides ou comportant moins de 80~caractères, dépourvues de valeur informative.
+\end{itemize}
+\end{tcolorbox}
+
+\paragraph{Traitement appliqué}
+Pour chaque fichier JSON issu du scraping, le script identifie les doublons en utilisant l'URL comme clé d'unicité, puis écarte les entrées dont la longueur est inférieure au seuil minimal (\texttt{min\_chars = 80}).
+
+La fonction \texttt{normalize\_text} assure ensuite la normalisation du contenu textuel : elle supprime les balises HTML, les caractères invisibles, les sections non informatives de type \textit{«~for more information~»}, ainsi que les éléments de navigation bruités.
+
+À l'issue du nettoyage, des métadonnées sont extraites automatiquement — T-codes, SAP Notes, module SAP et fil d'Ariane — et associées à chaque document. Le résultat est sauvegardé dans un fichier \texttt{.cleaned.json} propre à la source.% ── 2.2 ──────────────────────────────────────────────────────────────────────
+\subsection{Nettoyage des données des livres techniques PDF}
+\label{subsec:nettoyage-pdf}
+
+Les livres SAP en format PDF sont soumis à une extraction structurée préalable (référez-vous au chapitre précédent), générant des fichiers \texttt{structured\_content.json} pour chaque livre. Le fichier \texttt{clean\_scraped\_content.py} gère ensuite ces documents sans tenir compte du portail SAP Help.
+% \ptag and tcolorbox style already defined from the previous block
+
+\begin{tcolorbox}[
+  enhanced, breakable,
+  colback       = red!3!white,
+  colframe      = red!38!black,
+  colbacktitle  = red!38!black,
+  coltitle      = white,
+  fonttitle     = \small\bfseries\sffamily,
+  title         = {Problèmes identifiés},
+  arc           = 5pt,
+  boxrule       = 0.75pt,
+  toptitle      = 3.5pt, bottomtitle = 3.5pt,
+  left = 8pt, right = 8pt, top = 6pt, bottom = 6pt,
+]
+\begin{itemize}[
+  leftmargin = *,
+  label      = {\textcolor{red!45!black}{\small$\blacktriangleright$}},
+  itemsep    = 6pt,
+  topsep     = 0pt,
+  parsep     = 0pt
+]
+
+  \item \ptag{orange!90!red}{CID}\enspace
+    \textbf{Caractères CID} : lorsqu'une police n'est pas embarquée dans le PDF,
+    \texttt{pdfplumber} ne peut pas décoder les glyphes et produit des séquences
+    du type \texttt{(cid:123)}, sans aucune valeur sémantique.
+
+  \item \ptag{blue!75}{TOC}\enspace
+  \textbf{Lignes de table des matières} : les tables des matières produisent des
+
+    lignes du format \texttt{Chapitre\,3\,.\,.\,.\,.\,42} qui viennent perturber les
+
+    segments contenant des séries de points.
+
+  \item \ptag{violet!80}{FIGURES}\enspace
+    \textbf{Légendes et textes de figures} : les légendes précises extraites des figures (\textit{«~Figure 3.2 --- overview~»}) ne représentent pas un contenu documentaire exploitable.
+
+  \item \ptag{teal!75}{DOUBLONS}\enspace
+\textbf{Contenu répété à la fin du document} : quelques PDFs contiennent des sommaires ou des synthèses qui reprennent textuellement des parties précédentes.
+
+\end{itemize}
+\end{tcolorbox}
+
+\paragraph{Traitement appliqué:}
+Le script reconstitue le contenu brut en concaténant le titre, le contenu principal, le fil d’Ariane (\textit{breadcrumb}) et les sections imbriquées de chaque entrée JSON. La fonction \texttt{remove\_duplicate\_content} détecte les répétitions en comparant la première et la seconde moitié du texte : si leur chevauchement lexical dépasse 80\,\%, seule la première moitié est conservée. Les entrées dont la longueur après nettoyage reste inférieure à 80 caractères sont éliminées. Chaque document retenu est enrichi des mêmes métadonnées que pour les données web (T-codes, modules, hiérarchie), puis sauvegardé dans \texttt{scraped\_content.cleaned.json}.
+
+% ── 2.3 ──────────────────────────────────────────────────────────────────────
+\subsection{Normalisation commune des deux sources}
+\label{subsec:normalisation-commune}
+
+Une fois nettoyées séparément, les données des deux sources sont fusionnées et soumises à un pipeline de normalisation textuelle unifié, implémenté dans \texttt{text\_utils.py}. Ce pipeline garantit un schéma de sortie homogène, indépendamment de l’origine des documents.
 
 \begin{table}[H]
 \centering
-\caption{Les six opérations de normalisation appliquées à chaque document}
+\caption{Les opérations de normalisation appliquées à chaque document}
 \label{tab:six-ops}
 \begin{tabularx}{\textwidth}{@{}clXl@{}}
 \toprule
 \textbf{N°} & \textbf{Opération} & \textbf{Description} & \textbf{Exemple} \\
 \midrule
-1 & Correction encodage & Supprime les codes CID des polices PDF, corrige le mojibake Unicode & \texttt{(cid:34)} → espace \\
+1 & Décodage HTML & Convertit les entités HTML en caractères réels & \texttt{\&nbsp;} → espace \\
 \addlinespace
-2 & Normalisation espaces & Réduit les espaces multiples, limite les sauts de ligne à deux maximum & \texttt{"SM  37"} → \texttt{"SM37"} \\
+
+3 & Suppression bruit & Élimine les motifs de navigation (\textit{«~See also~»}, \textit{«~Rate this page~»}, etc.) & motifs \texttt{RE\_NOISE} → supprimés \\
 \addlinespace
-3 & Suppression HTML & Retire les balises HTML réelles, préserve les placeholders SAP comme \texttt{<HOST>} & \texttt{<br/>}, \texttt{\&nbsp;} → supprimés \\
+4 & Segmentation lexicale & Redécoupe les mots concaténés issus de l’extraction web ou PDF & \texttt{contentadmin} → \texttt{content admin} \\
 \addlinespace
-4 & Normalisation T-codes & Fusionne les codes transactionnels mal formatés & \texttt{"SM 37"} → \texttt{"SM37"} \\
+5 & Normalisation T-codes & Fusionne les codes transactionnels mal formatés & \texttt{"SM 37"} → \texttt{"SM37"} \\
 \addlinespace
-5 & Formatage SAP Notes & Uniformise les références aux notes SAP & \texttt{"\#2031538"} → \texttt{"SAP Note 2031538"} \\
-\addlinespace
-6 & Casse acronymes SAP & Corrige la capitalisation des termes techniques & \texttt{"abap"} → \texttt{"ABAP"} \\
+6 & Normalisation Unicode & Applique NFC, supprime les caractères invisibles, met en minuscules & \texttt{(cid:34)} → espace \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
+\paragraph{Expansion sémantique des termes SAP}
+
+Les modèles d’embedding n’ont pas été entraînés sur de la documentation SAP et ne connaissent pas la signification des T-codes comme SM37 ou PFCG. Pour compenser ce manque, chaque document contenant des T-codes reconnus reçoit une extension textuelle à la fin. Cette extension associe chaque T-code à sa description en anglais courant.
+  
 
 
-\subsection{Expansion sémantique des termes SAP}
-Les modèles d'embedding n'ont pas été entraînés sur de la documentation SAP et ne connaissent pas la signification des T-codes comme SM37 ou PFCG. Pour compenser ce manque, chaque document contenant des T-codes reconnus reçoit une extension textuelle à la fin. Cette extension associe chaque T-code à sa description en anglais courant.
 
-\begin{lstlisting}[language=Python, caption={Exemple d'expansion sémantique pour SM37}]
+
+\begin{lstlisting}[language=Python, caption={Exemple d’expansion sémantique pour SM37}]
 # Texte original
 "La transaction SM37 permet de surveiller les jobs en arriere-plan."
 
@@ -587,14 +754,7 @@ l'extension \textbf{pgvector}, qui ajoute un type de données natif pour les vec
 denses et les opérateurs de similarité associés. L'ensemble des données est stocké dans
 une table unique \texttt{sap\_chunks}, dont le schéma est défini comme suit~:
 
-\begin{lstlisting}[language=SQL, caption={Schéma de la table \texttt{sap\_chunks}}]
-CREATE TABLE sap_chunks (
-    id        UUID           PRIMARY KEY,
-    content   TEXT           NOT NULL,
-    metadata  JSONB,
-    embedding vector(1024)
-);
-\end{lstlisting}
+
 
 Chaque enregistrement correspond à un chunk textuel identifié par un UUID, accompagné
 de son contenu brut, de ses métadonnées structurées et de son vecteur d'embedding de
@@ -628,47 +788,115 @@ approximative effectuée par l'index HNSW. Les chunks retenus sont ensuite enric
 remontée au chunk parent le cas échéant, avant d'être transmis au modèle de langage
 comme contexte de génération.
 
+% Additional libraries needed (alongside those already declared):
+% \usetikzlibrary{fit, backgrounds}   ← if not yet loaded
+
 \begin{figure}[H]
 \centering
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
 \begin{tikzpicture}[
-    node distance=0.55cm and 0.8cm,
-    box/.style={
-        rectangle, rounded corners=4pt, draw=SAPBlue, thick,
-        fill=SAPLightBlue, minimum width=5.8cm, minimum height=0.9cm,
-        text centered, font=\small
+    font=\small,
+    >={Stealth[length=6pt, width=4pt]},
+    % ── Endpoint nodes (query in / LLM out) ─────────────────────────────
+    endpoint/.style={
+        rectangle, rounded corners=7pt,
+        draw=black, line width=1.5pt,
+        minimum width=7.5cm, minimum height=1.1cm,
+        text centered, align=center, inner sep=8pt
     },
-    filt/.style={
-        rectangle, rounded corners=4pt, draw=SAPOrange, thick,
-        fill=SAPLightOrange, minimum width=5.8cm, minimum height=0.9cm,
-        text centered, font=\small
+    % ── Metadata filter (solid border, light fill) ───────────────────────
+    filtnode/.style={
+        rectangle, rounded corners=5pt,
+        draw=black, line width=1pt, fill=gray!10,
+        minimum width=7.5cm, minimum height=1.5cm,
+        align=left, inner xsep=10pt, inner ysep=7pt
     },
-    vect/.style={
-        rectangle, rounded corners=4pt, draw=SAPGreen, thick,
-        fill=SAPLightGreen, minimum width=5.8cm, minimum height=0.9cm,
-        text centered, font=\small
+    % ── Vector search (solid border, darker fill = more prominent) ───────
+    vectnode/.style={
+        rectangle, rounded corners=5pt,
+        draw=black, line width=1.2pt, fill=gray!22,
+        minimum width=7.5cm, minimum height=1.5cm,
+        align=left, inner xsep=10pt, inner ysep=7pt
     },
-    arr/.style={-{Stealth[length=5pt]}, thick, color=SAPGray}
+    % ── Retrieval / enrichment (dashed border, light fill) ───────────────
+    retrnode/.style={
+        rectangle, rounded corners=5pt,
+        draw=black, line width=1pt, fill=gray!10,
+        densely dashed,
+        minimum width=7.5cm, minimum height=1.5cm,
+        align=left, inner xsep=10pt, inner ysep=7pt
+    },
+    % ── Step badges ──────────────────────────────────────────────────────
+    badge/.style={
+        circle, fill=black, text=white,
+        minimum size=1.1em, font=\footnotesize\bfseries,
+        inner sep=0pt
+    },
+    % ── Technology tags (B&W equivalent of \ptag) ────────────────────────
+    bwtag/.style={
+        rectangle, rounded corners=2pt,
+        fill=gray!18, draw=gray!55, line width=0.5pt,
+        font=\tiny\bfseries\sffamily, text=black!80,
+        inner xsep=3pt, inner ysep=1.8pt, outer sep=0pt
+    },
+    arr/.style    = {->, line width=1.2pt, draw=black!65},
+    arrlbl/.style = {font=\scriptsize\itshape, fill=white, inner sep=2pt, outer sep=0pt}
 ]
 
-\node[box]  (query)  {Requête utilisateur};
+% ===== QUERY (input endpoint) =============================================
+\node[endpoint, fill=white] (query) {%
+    \textbf{\textsc{Requête utilisateur}}%
+};
 
-\node[filt, below=of query] (gin)
-    {Filtrage par métadonnées (index GIN)\\
-     \footnotesize\textit{module, source\_type, mentioned\_tcodes…}};
+% ===== STEP 1 — GIN metadata filter ======================================
+\node[filtnode, below=0.65cm of query] (gin) {%
+    \begin{tabular}{@{\hspace{1.4cm}}l}
+    \textbf{Filtrage par métadonnées} \\[3pt]
+    \footnotesize\textit{module, source\_type, mentioned\_tcodes\,…}
+    \end{tabular}
+};
+\node[badge] at ([xshift=0.65cm]gin.west) {1};
+\node[bwtag, anchor=north east, xshift=-0.3cm, yshift=-0.3cm]
+    at (gin.north east) {INDEX GIN};
 
-\node[vect, below=of gin] (hnsw)
-    {Recherche vectorielle approchée (index HNSW)\\
-     \footnotesize\textit{Top-$K$ voisins par similarité cosinus}};
+% ===== STEP 2 — HNSW approximate vector search ===========================
+\node[vectnode, below=0.65cm of gin] (hnsw) {%
+    \begin{tabular}{@{\hspace{1.4cm}}l}
+    \textbf{Recherche vectorielle approchée} \\[3pt]
+    \footnotesize\textit{Top-$K$ voisins par similarité cosinus}
+    \end{tabular}
+};
+\node[badge] at ([xshift=0.65cm]hnsw.west) {2};
+\node[bwtag, anchor=north east, xshift=-0.3cm, yshift=-0.3cm]
+    at (hnsw.north east) {INDEX HNSW};
 
-\node[box, below=of hnsw] (parent)
-    {Récupération du chunk parent\\
-     \footnotesize\textit{remontée via \texttt{parent\_chunk\_id} si applicable}};
+% ===== STEP 3 — Parent chunk retrieval ===================================
+\node[retrnode, below=0.65cm of hnsw] (parent) {%
+    \begin{tabular}{@{\hspace{1.4cm}}l}
+    \textbf{Récupération du chunk parent} \\[3pt]
+    \footnotesize\textit{remontée via \texttt{parent\_chunk\_id} si applicable}
+    \end{tabular}
+};
+\node[badge] at ([xshift=0.65cm]parent.west) {3};
+\node[bwtag, anchor=north east, xshift=-0.3cm, yshift=-0.3cm]
+    at (parent.north east) {ENRICHISSEMENT};
 
-\node[vect, below=of parent] (llm)
-    {Transmission du contexte au modèle de langage};
+% ===== LLM (output endpoint) =============================================
+\node[endpoint, fill=gray!18, below=0.65cm of parent] (llm) {%
+    \textbf{\textsc{Transmission du contexte au LLM}}%
+};
 
+% ===== BACKGROUND PANEL ==================================================
+\begin{pgfonlayer}{background}
+    \node[rectangle, rounded corners=10pt,
+          fill=gray!4, draw=gray!30, line width=0.8pt,
+          fit=(query)(llm), inner sep=14pt] {};
+\end{pgfonlayer}
+
+% ===== ARROWS ============================================================
 \draw[arr] (query)  -- (gin);
-\draw[arr] (gin)    -- node[right, font=\scriptsize] {espace candidat réduit} (hnsw);
+\draw[arr] (gin)    -- node[arrlbl, right=3pt] {espace candidat réduit} (hnsw);
 \draw[arr] (hnsw)   -- (parent);
 \draw[arr] (parent) -- (llm);
 

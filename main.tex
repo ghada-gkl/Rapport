@@ -78,7 +78,15 @@
   boxed title style={colback=SAPGreen, rounded corners},
   rounded corners, arc=3mm
 }
-
+% \ptag already defined previously
+\newcommand{\opnum}[1]{%
+  \tikz[baseline=-0.55ex]{%
+    \node[circle, fill=SAPBlue, text=white, font=\small\bfseries,
+          minimum size=1.5em, inner sep=0pt]{#1};%
+  }%
+}
+\newcommand{\exarrow}{\;\textcolor{SAPBlue!65}{$\to$}\;}
+\usepackage{colortbl}   % \rowcolor, \arrayrulecolor
 \newtcolorbox{sourcebox}[1]{
   enhanced, breakable,
   colback=SAPLightOrange, colframe=SAPOrange,
@@ -88,10 +96,40 @@
   boxed title style={colback=SAPOrange, rounded corners},
   rounded corners, arc=3mm
 }
+% ===== TikZ & positioning =====
+\usetikzlibrary{
+    positioning,
+    arrows.meta,
+    shadows,
+    calc
+}
+\usetikzlibrary{decorations.pathreplacing, fit, backgrounds}
+
+% ===== Float placement =====
+\usepackage{float}
+
+% ===== Colors =====
+\usepackage{xcolor}
+
+% ===== SAP Color Palette =====
+\definecolor{SAPBlue}{HTML}{0A6ED1}
+\definecolor{SAPLightBlue}{HTML}{EAF3FC}
+
+\definecolor{SAPGreen}{HTML}{107E3E}
+\definecolor{SAPLightGreen}{HTML}{EAF7ED}
+
+\definecolor{SAPOrange}{HTML}{E9730C}
+\definecolor{SAPLightOrange}{HTML}{FFF3E8}
+
+\definecolor{SAPGray}{HTML}{5B5B5B}
 
 % ---- Listings (code) ----
 \usepackage{listings}
 \usepackage{caption}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\usepackage{enumitem}
+% tikz already assumed loaded
 
 \lstdefinestyle{sapcode}{
   backgroundcolor=\color{CodeBg},
