@@ -1,0 +1,679 @@
+% ============================================================
+%  Chapitre 5 — Préparation des données
+% ============================================================
+
+\chapter{Préparation des données}
+\label{chap:preparation_donnees}
+
+\section*{Objectif}
+\addcontentsline{toc}{section}{Objectif}
+
+Ce chapitre décrit les étapes de préparation des données pour le pipeline RAG. Les documents SAP collectés ont été nettoyés, structurés et transformés en embeddings pour alimenter le moteur de recherche sémantique.
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Vue d'ensemble du pipeline de préparation}
+\label{sec:vue-ensemble}
+% ─────────────────────────────────────────────────────────────────────────────
+
+Le pipeline de préparation des données se compose de cinq étapes. Il démarre avec les données brutes et se termine par l’intégration finale dans la base vectorielle. Chaque étape utilise les résultats de la précédente pour produire des données intermédiaires bien définies. Cela assure un processus de transformation structuré, traçable et reproductible.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    font=\small,
+    >={Stealth[length=7pt, width=5pt]},
+    endpoint/.style = {
+        rectangle, rounded corners=6pt,
+        minimum width=12cm, minimum height=1.3cm,
+        draw, line width=1pt,
+        text centered, align=center, inner sep=8pt
+    },
+    procstep/.style = {
+        rectangle, rounded corners=6pt,
+        minimum width=12cm, minimum height=1.65cm,
+        draw=SAPBlue, line width=1pt, fill=SAPLightBlue,
+        inner xsep=6pt, inner ysep=8pt, align=left
+    },
+    finalprocstep/.style = {
+        rectangle, rounded corners=6pt,
+        minimum width=12cm, minimum height=1.65cm,
+        draw=SAPGreen, line width=1pt, fill=SAPLightGreen,
+        inner xsep=6pt, inner ysep=8pt, align=left
+    },
+    badge/.style = {
+        circle, draw=SAPBlue, line width=1.2pt,
+        fill=white, text=SAPBlue,
+        minimum size=1cm, font=\bfseries, inner sep=0pt
+    },
+    finalbadge/.style = {
+        circle, draw=SAPGreen, line width=1.2pt,
+        fill=white, text=SAPGreen,
+        minimum size=1cm, font=\bfseries, inner sep=0pt
+    },
+    artifact/.style = {
+        rectangle, rounded corners=3pt,
+        minimum width=7.5cm, minimum height=0.7cm,
+        draw=SAPGray!70, line width=0.6pt, dashed,
+        fill=white, font=\footnotesize\ttfamily,
+        text centered, inner sep=5pt
+    },
+    arrow/.style = {->, thick, line width=1pt, color=SAPGray}
+]
+
+% ===== SOURCE =====
+\node[endpoint, fill=SAPLightOrange, draw=SAPOrange] (raw) {%
+    \textbf{\textsc{Données brutes}} \\[1pt]
+    \footnotesize JSON de scraping SAP Help\,+\,\texttt{structured\_content.json} (PDF parsés)
+};
+
+% ===== STEP 1 =====
+\node[procstep, below=0.55cm of raw] (step1) {%
+    \begin{tabular}{@{\hspace{1.3cm}}l@{}}
+    \textbf{Nettoyage et normalisation} \\[1pt]
+    \footnotesize Correction de l'encodage CID, validation des T-codes, harmonisation des champs \\[1pt]
+    \footnotesize\textcolor{SAPGray}{Script : \texttt{sap\_normalizer.py}}
+    \end{tabular}
+};
+\node[badge] at ([xshift=0.55cm]step1.west) {1};
+
+\node[artifact, below=0.28cm of step1] (a1) {unified\_content.json};
+
+% ===== STEP 2 =====
+\node[procstep, below=0.28cm of a1] (step2) {%
+    \begin{tabular}{@{\hspace{1.3cm}}l@{}}
+    \textbf{Suppression des doublons et du bruit} \\[1pt]
+    \footnotesize Élimination des chunks répétés, des pages QCM et du contenu non documentaire \\[1pt]
+    \footnotesize\textcolor{SAPGray}{Filtres qualité multi-critères}
+    \end{tabular}
+};
+\node[badge] at ([xshift=0.55cm]step2.west) {2};
+
+% ===== STEP 3 =====
+\node[procstep, below=0.55cm of step2] (step3) {%
+    \begin{tabular}{@{\hspace{1.3cm}}l@{}}
+    \textbf{Découpage des documents en chunks} \\[1pt]
+    \footnotesize Segmentation sémantique avec préservation du contexte hiérarchique \\[1pt]
+    \footnotesize\textcolor{SAPGray}{Script : \texttt{chunker.py}}
+    \end{tabular}
+};
+\node[badge] at ([xshift=0.55cm]step3.west) {3};
+
+\node[artifact, below=0.28cm of step3] (a3) {chunked\_for\_embedding.json};
+
+% ===== STEP 4 =====
+\node[procstep, below=0.28cm of a3] (step4) {%
+    \begin{tabular}{@{\hspace{1.3cm}}l@{}}
+    \textbf{Génération des embeddings} \\[1pt]
+    \footnotesize Vectorisation dense des chunks pour la recherche sémantique \\[1pt]
+    \footnotesize\textcolor{SAPGray}{Script : \texttt{embedder.py}}
+    \end{tabular}
+};
+\node[badge] at ([xshift=0.55cm]step4.west) {4};
+
+\node[artifact, below=0.28cm of step4] (a4) {embeddings.npy + metadata.json};
+
+% ===== STEP 5 (final, green) =====
+\node[finalprocstep, below=0.28cm of a4] (step5) {%
+    \begin{tabular}{@{\hspace{1.3cm}}l@{}}
+    \textbf{Ingestion en base vectorielle} \\[1pt]
+    \footnotesize Insertion des vecteurs et métadonnées dans PostgreSQL\,+\,pgvector \\[1pt]
+    \footnotesize\textcolor{SAPGray}{Script : \texttt{ingest\_to\_db.py}}
+    \end{tabular}
+};
+\node[finalbadge] at ([xshift=0.55cm]step5.west) {5};
+
+% ===== ARROWS =====
+\draw[arrow] (raw)   -- (step1);
+\draw[arrow] (step1) -- (a1);
+\draw[arrow] (a1)    -- (step2);
+\draw[arrow] (step2) -- (step3);
+\draw[arrow] (step3) -- (a3);
+\draw[arrow] (a3)    -- (step4);
+\draw[arrow] (step4) -- (a4);
+\draw[arrow] (a4)    -- (step5);
+\end{tikzpicture}
+\caption{Pipeline complet de préparation des données }
+\end{figure}
+
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Nettoyage des données}
+\label{sec:nettoyage}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\subsection{Problèmes identifiés dans les données brutes}
+
+Les données collectées à partir du portail SAP Help et des fichiers PDF présentent plusieurs problèmes de qualité. Les pages web contiennent des balises HTML résiduelles, des entités HTML, des URLs intégrées dans le texte et des titres dupliqués. Les fichiers PDF, quant à eux, comportent des caractères incorrects dus à l’encodage, des symboles indésirables et du bruit provenant des tables des matières. Ces anomalies rendent les données difficiles à utiliser directement dans le pipeline RAG. Cela nécessite une phase de nettoyage préalable.
+
+Sans traitement, ces artefacts pollueraient les embeddings et dégraderaient la qualité de
+la recherche sémantique~: un vecteur calculé sur un texte contenant des centaines de codes
+CID ne représente plus le sens du document, mais le bruit de l'extraction.
+
+\subsection{Les  opérations de normalisation}
+
+Le module \texttt{sap\_normalizer.py} applique six opérations de nettoyage sur chaque
+document, dans un ordre précis. Ces opérations sont les mêmes pour les documents issus du
+portail SAP et pour les livres PDF, garantissant un schéma unifié en sortie.
+
+\begin{table}[H]
+\centering
+\caption{Les six opérations de normalisation appliquées à chaque document}
+\label{tab:six-ops}
+\begin{tabularx}{\textwidth}{@{}clXl@{}}
+\toprule
+\textbf{N°} & \textbf{Opération} & \textbf{Description} & \textbf{Exemple} \\
+\midrule
+1 & Correction encodage & Supprime les codes CID des polices PDF, corrige le mojibake Unicode & \texttt{(cid:34)} → espace \\
+\addlinespace
+2 & Normalisation espaces & Réduit les espaces multiples, limite les sauts de ligne à deux maximum & \texttt{"SM  37"} → \texttt{"SM37"} \\
+\addlinespace
+3 & Suppression HTML & Retire les balises HTML réelles, préserve les placeholders SAP comme \texttt{<HOST>} & \texttt{<br/>}, \texttt{\&nbsp;} → supprimés \\
+\addlinespace
+4 & Normalisation T-codes & Fusionne les codes transactionnels mal formatés & \texttt{"SM 37"} → \texttt{"SM37"} \\
+\addlinespace
+5 & Formatage SAP Notes & Uniformise les références aux notes SAP & \texttt{"\#2031538"} → \texttt{"SAP Note 2031538"} \\
+\addlinespace
+6 & Casse acronymes SAP & Corrige la capitalisation des termes techniques & \texttt{"abap"} → \texttt{"ABAP"} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+
+\subsection{Expansion sémantique des termes SAP}
+Les modèles d'embedding n'ont pas été entraînés sur de la documentation SAP et ne connaissent pas la signification des T-codes comme SM37 ou PFCG. Pour compenser ce manque, chaque document contenant des T-codes reconnus reçoit une extension textuelle à la fin. Cette extension associe chaque T-code à sa description en anglais courant.
+
+\begin{lstlisting}[language=Python, caption={Exemple d'expansion sémantique pour SM37}]
+# Texte original
+"La transaction SM37 permet de surveiller les jobs en arriere-plan."
+
+# Texte apres expansion
+"La transaction SM37 permet de surveiller les jobs en arriere-plan.
+[SAP context: SM37=job monitor background job overview scheduled
+jobs batch processing]"
+\end{lstlisting}
+
+Cette technique permet à un utilisateur posant la question
+\textit{«~comment vérifier mes jobs de nuit~?»} de retrouver les documents qui mentionnent
+SM37, même si sa question ne contient pas le code lui-même.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Suppression des doublons et du bruit}
+\label{sec:deduplication}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\subsection{Stratégie de déduplication en deux passes}
+
+Le processus de suppression des doublons se fait après la fusion des différentes sources de données pour éviter d’avoir des documents répétés dans la base de connaissances. Cette étape se déroule en deux phases.
+
+La première phase consiste à identifier les documents web identiques en utilisant le titre et l'URL de chaque page. Cette méthode aide à repérer les pages du portail SAP qui ont été récupérées plusieurs fois lors de différentes sessions de collecte.
+
+La seconde phase s’appuie sur l'examen du contenu des documents. Une empreinte numérique est créée à partir du texte pour repérer les contenus similaires ou totalement identiques, même s'ils viennent de sources différentes. Cette méthode aide à identifier les passages du portail SAP qui apparaissent aussi dans certains supports de formation PDF.
+
+% --- Add to your preamble if not already present -------------------------
+% \usepackage{tikz}
+% \usepackage{float}
+% \usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
+%
+% --- If your SAP* colors aren't defined globally, add this once: ---------
+% \definecolor{SAPBlue}{RGB}{0,112,166}
+% \definecolor{SAPLightBlue}{RGB}{220,235,247}
+% \definecolor{SAPGray}{RGB}{100,100,100}
+% \definecolor{SAPLightGray}{RGB}{240,240,240}
+% \definecolor{SAPGreen}{RGB}{56,138,67}
+% \definecolor{SAPLightGreen}{RGB}{225,242,225}
+% \definecolor{SAPRed}{RGB}{187,40,52}
+% -------------------------------------------------------------------------
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    >={Stealth[length=5pt]},
+    every node/.style={inner sep=3pt},
+    start/.style={rectangle, rounded corners=8pt, draw=SAPBlue, thick,
+                  fill=SAPLightBlue, minimum width=3.8cm, minimum height=0.8cm,
+                  text centered, font=\small\bfseries},
+    decision/.style={diamond, draw=SAPBlue, thick, fill=SAPLightBlue,
+                     text width=2.2cm, text centered, font=\footnotesize,
+                     inner sep=0pt, aspect=2.2},
+    action/.style={rectangle, rounded corners=3pt, draw=SAPGray, thick,
+                   fill=SAPLightGray, minimum width=3.8cm, minimum height=0.8cm,
+                   text centered, font=\small},
+    terminal/.style={rectangle, rounded corners=8pt, draw=SAPGreen, thick,
+                     fill=SAPLightGreen, minimum width=3.8cm, minimum height=0.8cm,
+                     text centered, font=\small\bfseries},
+    trash/.style={rectangle, rounded corners=8pt, draw=SAPRed, thick,
+                  fill=red!10, minimum width=3.2cm, minimum height=0.75cm,
+                  text centered, font=\footnotesize\bfseries},
+    arr/.style={->, thick, color=SAPGray, line width=0.7pt},
+    edgelabel/.style={font=\scriptsize\itshape, fill=white, inner sep=2pt}
+]
+
+% --- Nodes --------------------------------------------------------------
+\node[start]                          (start) {Document nettoyé};
+\node[decision, below=0.7cm of start] (d1)    {Source = web~?};
+\node[action,   below=0.9cm of d1]    (key)   {Calcul de la clé\\(titre, URL)};
+\node[decision, below=0.7cm of key]   (d2)    {Clé déjà\\rencontrée~?};
+\node[trash,    right=1.6cm of d2]    (del1)  {Doublon web};
+\node[action,   below=1.0cm of d2]    (md5)   {Empreinte MD5\\(500 premiers car.)};
+\node[decision, below=0.7cm of md5]   (d3)    {Empreinte déjà\\rencontrée~?};
+\node[trash,    right=1.6cm of d3]    (del2)  {Doublon contenu};
+\node[terminal, below=0.7cm of d3]    (keep)  {Document conservé};
+
+% --- Pass annotations ---------------------------------------------------
+\node[font=\scriptsize\bfseries\itshape, text=SAPBlue, anchor=east]
+      at ([xshift=-1.8cm]key.west) {Passe 1};
+\node[font=\scriptsize\bfseries\itshape, text=SAPBlue, anchor=east]
+      at ([xshift=-1.8cm]md5.west) {Passe 2};
+
+% --- Flow ---------------------------------------------------------------
+\draw[arr] (start) -- (d1);
+\draw[arr] (d1)    -- node[edgelabel] {oui} (key);
+\draw[arr] (key)   -- (d2);
+\draw[arr] (d2)    -- node[edgelabel] {oui} (del1);
+\draw[arr] (d2)    -- node[edgelabel] {non} (md5);
+
+% PDF bypass: split into two segments so the label has a clear midpoint
+\coordinate (bypass) at ([xshift=-1.4cm]d1.west);
+\draw[arr] (d1.west) -- node[edgelabel, above] {non} (bypass);
+\draw[arr] (bypass) |- (md5.west);
+
+\draw[arr] (md5) -- (d3);
+\draw[arr] (d3)  -- node[edgelabel] {oui} (del2);
+\draw[arr] (d3)  -- node[edgelabel] {non} (keep);
+
+\end{tikzpicture}
+\caption[Algorithme de déduplication en deux passes]%
+{Algorithme de déduplication en deux passes appliqué après l'étape de
+normalisation. La première passe, restreinte aux documents issus du
+\emph{scraping} web, élimine les doublons stricts identifiés par le couple
+(titre, URL). La seconde passe, appliquée à l'ensemble du corpus, détecte les
+contenus quasi-identiques au moyen d'une empreinte MD5 calculée sur les 500
+premiers caractères, indépendamment de la source du document.}
+\label{fig:dedup}
+\end{figure}
+
+\subsection{Filtrage du bruit sémantique}
+
+Certaines documents sont techniquement valides — sans doublons et avec un texte soigné — mais ne sont pas utiles pour un système RAG de support technique. C'est notamment le cas des pages de quiz et d'auto-évaluation sur le portail SAP Help, qui contiennent des questions à choix multiples telles que \textit{«~Déterminez si cette affirmation est vraie ou fausse~»}. Ces pages nuisent à la base de connaissances, car le moteur de recherche pourrait les afficher en réponse à des requêtes légitimes, fournissant ainsi des réponses de type examen plutôt que des réponses techniques. Un filtre basé sur des expressions régulières permet d'identifier et d'éliminer ces pages en repérant des motifs tels que \texttt{learning assessment}, \texttt{determine whether this statement} ou \texttt{choose the correct answer} dans le titre ou dans les 200 premiers caractères du contenu.
+
+\begin{table}[H]
+\centering
+\caption{Filtres de qualité appliqués après fusion des sources}
+\label{tab:filtres}
+\begin{tabularx}{\textwidth}{@{}lXl@{}}
+\toprule
+\textbf{Type de filtre} & \textbf{Méthode} & \textbf{Portée} \\
+\midrule
+Doublon exact (web) & Empreinte (titre + URL) & Documents web uniquement \\
+\addlinespace
+Doublon contenu & MD5 des 500 premiers caractères & Toutes sources \\
+\addlinespace
+Pages quiz & Regex sur titre et début de contenu & Toutes sources \\
+\addlinespace
+Contenu trop court & Longueur $<$ 50 caractères & Toutes sources \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Découpage des documents (Chunking)}
+\label{sec:chunking}
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection{Qu’est-ce que le découpage }
+
+Le découpage consiste à découper de grands ensembles de texte ou de données en segments plus petits et plus faciles à gérer, appelés « chunks ». Cette technique est utile lorsqu’on travaille avec des modèles d’apprentissage automatique qui ont des limites de taille d’entrée. Elle est également efficace pour traiter de grands volumes de données transactionnelles, où chaque entrée doit être analysée séparément tout en contribuant à des analyses globales.
+\subsection{Pourquoi découper les documents~?}
+
+LLe modèle d'embedding  peut traiter un maximum de 512 tokens en entrée. Toutefois, la documentation SAP contient souvent des textes bien plus longs que cette limite, atteignant parfois plusieurs milliers de tokens. Dans ce cas, soumettre un document complet au modèle entraînerait une troncature automatique, ce qui provoquerait une perte d'informations, en particulier dans les sections finales du document.
+
+D'un autre côté, une segmentation simpliste ou non régulée des textes pourrait affecter la continuité sémantique des informations et réduire la qualité des représentations vectorielles générées. Il est donc nécessaire que le processus de découpage remplit deux buts : garantir que les morceaux sont compatibles avec la fenêtre de contexte du modèle et préserver la cohérence sémantique indispensable pour une représentation exacte du contenu.
+\subsection{Stratégie hiérarchique parent-enfant}
+
+L'application de la base vectorielle s'appuie sur une méthode de découpage hiérarchique qui garantit la conservation de la structure des documents tout en améliorant l'efficacité de recherche et de récupération d'information. Cette approche a été spécifiquement élaborée pour gérer la complexité et l'imbrication de la documentation SAP.
+
+\subsubsection{Extraction sensible à la structure et au contenu}
+
+Le système applique une méthode d'extraction basée sur la structure pour maintenir l'organisation logique et sémantique des documents SAP. Cette méthode permet de garder la hiérarchie des sections et les liens entre les divers composants du document, ce qui améliore la qualité de l'indexation et de la recherche d'informations.
+\paragraph{Extraction basée sur la mise en page}
+
+Le processus d’extraction prend en compte la structure visuelle et organisationnelle des documents à travers plusieurs mécanismes :
+
+\begin{itemize}
+\item Conservation de la hiérarchie des titres (\texttt{H1}, \texttt{H2}, \texttt{H3}, etc.) ;
+\item Préservation des relations parent-enfant entre les sections et sous-sections ;
+\item Identification et traitement des tableaux sous une représentation structurée de type HTML ;
+\item Reconnaissance des listes et maintien de leur niveau d’imbrication.
+\end{itemize}
+
+\paragraph{Traitement enrichi par les métadonnées}
+
+Le système extrait et conserve différentes catégories de métadonnées afin d’améliorer l’organisation documentaire et la précision de la récupération :
+
+\begin{itemize}
+\item Métadonnées générales du document (titre, date de création, version) ;
+\item Métadonnées structurelles liées à l’organisation du contenu ;
+\item Métadonnées techniques telles que les associations aux modules SAP ou les références aux codes de transaction.
+\end{itemize}
+
+\subsubsection{Traitement multi-niveaux du contenu}
+
+Le contenu documentaire est analysé à plusieurs niveaux afin de capturer à la fois la structure globale du document et les caractéristiques spécifiques de chaque élément.
+
+\paragraph{Analyse au niveau des blocs}
+
+Cette étape comprend :
+
+\begin{itemize}
+\item La détection automatique des titres à partir de leur position, formatage et propriétés textuelles ;
+\item La classification des types de contenu afin de distinguer les paragraphes, listes, tableaux et images ;
+\item Une analyse spatiale exploitant les coordonnées des éléments pour reconstruire la disposition du document.
+\end{itemize}
+
+\paragraph{Traitement spécifique selon le type de contenu}
+
+Chaque type de contenu bénéficie d’un traitement adapté :
+
+\begin{itemize}
+\item Les tableaux complexes sont convertis vers un format HTML structuré afin de préserver leur organisation ;
+\item Les éléments de listes associés sont regroupés dans des fragments cohérents ;
+\item Les images font l’objet d’un processus d’extraction sémantique basé sur le modèle \texttt{microsoft/Florence-2-large}. Ce choix a été retenu après une évaluation comparative avec \texttt{GLM-OCR} ainsi qu’une approche reposant uniquement sur \texttt{Tesseract OCR}. Contrairement à une simple reconnaissance optique de caractères, le modèle Florence-2-large permet de mieux préserver le contexte et la signification des informations visuelles présentes dans les schémas, captures d’écran et illustrations techniques de la documentation SAP ;
+\item Les légendes et descriptions associées aux images sont reliées automatiquement au contenu visuel correspondant.
+\end{itemize}
+
+
+
+\subsection{Algorithme de découpage et chevauchement}
+
+L'algorithme de découpage interne cherche toujours à opérer aux frontières les plus naturelles du texte. Il tente d'abord de sectionner entre les \textbf{paragraphes} (délimités par deux sauts de ligne), ensuite entre les \textbf{phrases} (séparées par «~.~», «~!~» ou «~?~»), et finalement entre les \textbf{mots} en dernier recours.
+
+Pour éviter toute perte de contexte aux frontières entre deux fragments successifs, chaque nouveau fragment débute avec les \textbf{50 derniers tokens} du fragment précédent. Ce chevauchement (\textit{overlap}) d'environ 10\,\% assure que les phrases qui traversent une limite de découpage restent compréhensibles dans les deux fragments.
+\begin{table}[H]
+\centering
+\caption{Niveaux de découpage par ordre de priorité}
+\label{tab:niveaux-decoupage}
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{Priorité} & \textbf{Niveau} & \textbf{Déclencheur} & \textbf{Séparateur} \\
+\midrule
+1 & Paragraphe & Paragraphe seul $>$ 512 tokens & \texttt{\textbackslash n\textbackslash n} \\
+2 & Phrase & Phrase seule $>$ 512 tokens & \texttt{. ! ?} \\
+3 & Mot & Phrase extrêmement longue & espace \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Résultats du découpage}
+
+Après application du chunker sur l'ensemble du corpus normalisé, les statistiques obtenues
+sont les suivantes~:
+
+\begin{table}[H]
+\centering
+\caption{Statistiques de découpage du corpus SAP}
+\label{tab:stats-chunking}
+\begin{tabular}{@{}lrp{6cm}@{}}
+\toprule
+\textbf{Type d'enregistrement} & \textbf{Nombre} & \textbf{Description} \\
+\midrule
+Singles  & 73\,137 & Documents courts — un seul enregistrement embedded \\
+Parents  & 8\,795  & Documents longs — texte complet, stocké, non embedded \\
+Enfants  & 32\,194 & Fragments de documents longs, embedded et indexés \\
+\midrule
+\textbf{Total} & \textbf{114\,126} & \textbf{Enregistrements } \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Transformation des données en embeddings vectoriels}
+\label{sec:embeddings}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\subsection{Choix du modèle d'embedding}
+
+Le modèle retenu pour la génération des vecteurs est \textbf{BAAI/bge-large-en-v1.5}, un
+modèle de la famille BGE (\textit{BAAI General Embedding}) publié par l'Institut de
+l'Intelligence Artificielle de Pékin. Ce modèle produit des vecteurs denses de 1\,024
+dimensions et a été entraîné pour la recherche sémantique dense en anglais, ce qui
+correspond à la langue principale de la documentation SAP technique.
+
+\begin{table}[H]
+\centering
+\caption{Comparaison des modèles d'embedding évalués}
+\label{tab:modeles-embedding}
+\renewcommand{\arraystretch}{1.4}
+\setlength{\tabcolsep}{10pt}
+\begin{tabularx}{\textwidth}{@{} l c c X X @{}}
+
+\toprule
+\rowcolor{gray!20}
+\textbf{Modèle} & \textbf{Dim.} & \textbf{Langue} & \textbf{Points forts} & \textbf{Limitation} \\
+\midrule
+
+\rowcolor{blue!5}
+\textbf{bge-large-en-v1.5}
+  & 1\,024
+  & Anglais
+  & Très performant sur benchmarks BEIR
+  & Monolingue \\
+
+bge-m3
+  & 1\,024
+  & Multilingue
+  & Supporte 100+ langues
+  & Légèrement moins précis en anglais \\
+
+\rowcolor{blue!5}
+all-MiniLM-L6-v2
+  & 384
+  & Anglais
+  & Rapide et léger
+  & Moins précis \\
+
+text-embedding-ada-002
+  & 1\,536
+  & Multilingue
+  & API OpenAI, très utilisé
+  & Payant, dépendance externe \\
+
+\bottomrule
+\end{tabularx}
+
+\smallskip
+\footnotesize\textit{Dim. = Dimensionnalité du vecteur d'embedding produit par le modèle.}
+\end{table}
+
+Le modèle bge-large-en-v1.5 a été retenu pour ses performances supérieures sur des tâches
+de recherche documentaire technique, avec une fenêtre de 512 tokens alignée exactement sur
+la taille maximale de nos chunks.
+
+\subsection{Processus de génération des vecteurs}
+
+Le script \texttt{embedder.py} prend en entrée le fichier
+\texttt{chunked\_for\_embedding.json} et produit deux fichiers indexés de manière alignée~:
+\texttt{embeddings.npy} (tableau NumPy de forme $(N, 1\,024)$) et \texttt{metadata.json}
+(liste de $N$ dictionnaires). L'alignement par indice garantit que le vecteur
+\texttt{embeddings[i]} correspond exactement au document \texttt{metadata[i]}.
+
+Le modèle BGE requiert un préfixe spécifique ajouté à chaque texte avant l'encodage pour
+signaler qu'il s'agit d'un document (et non d'une requête)~:
+
+
+
+Les vecteurs produits sont normalisés en L2, ce qui signifie que la similarité cosinus
+entre deux vecteurs est équivalente à leur produit scalaire. Cette propriété accélère
+significativement la recherche dans pgvector.
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Structuration des métadonnées}
+\label{sec:metadonnees}
+% ─────────────────────────────────────────────────────────────────────────────
+
+\subsection{Rôle des métadonnées dans un système RAG}
+
+Dans un système RAG, les métadonnées jouent un rôle aussi important que les vecteurs
+eux-mêmes. Elles permettent d'appliquer des filtres \textit{avant} la recherche vectorielle,
+réduisant l'espace de recherche et améliorant la précision des résultats. Par exemple, une
+question portant sur la gestion des background jobs peut être filtrée sur le champ
+\texttt{module = "BASIS"} avant même de comparer les vecteurs, excluant d'emblée les
+documents d'autres modules SAP.
+
+\subsection{Schéma des métadonnées}
+
+Chaque enregistrement porte quatre catégories de métadonnées définies dans
+ et transportées jusqu'en base de données .
+
+\begin{table}[H]
+\centering
+\caption{Champs d'identification et de source}
+\label{tab:meta-source}
+\begin{tabularx}{\textwidth}{@{}llX@{}}
+\toprule
+\textbf{Champ} & \textbf{Type} & \textbf{Description} \\
+\midrule
+\texttt{doc\_id}      & string & Identifiant unique du document d'origine \\
+\texttt{source\_type} & string & \texttt{"sap\_help"} ou \texttt{"technical\_book"} \\
+\texttt{source\_book} & string & Nom du livre PDF source (si applicable) \\
+\texttt{title}        & string & Titre de la section ou du document \\
+\texttt{module}       & string & Module SAP concerné (BASIS, ABAP, FI, etc.) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Champs de structure hiérarchique et d'entités SAP}
+\label{tab:meta-structure}
+\begin{tabularx}{\textwidth}{@{}llX@{}}
+\toprule
+\textbf{Champ} & \textbf{Type} & \textbf{Description} \\
+\midrule
+\texttt{heading\_level}      & entier & Niveau de titre (H1=1, H2=2, H3=3…) \\
+\texttt{section\_type}       & string & Type de section (procedure, code, note, table) \\
+\texttt{breadcrumb}          & liste  & Chemin hiérarchique dans le document \\
+\texttt{mentioned\_tcodes}   & liste  & T-codes cités dans le document, ex. [\texttt{"SM37"}, \texttt{"ST22"}] \\
+\texttt{mentioned\_sap\_notes} & liste & Numéros de SAP Notes référencées \\
+\texttt{contains\_code}      & bool   & Le document contient du code ABAP \\
+\texttt{contains\_table}     & bool   & Le document contient un tableau \\
+\texttt{contains\_procedure} & bool   & Le document décrit une procédure étape par étape \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Champs de liaison parent-enfant}
+\label{tab:meta-hierarchy}
+\begin{tabularx}{\textwidth}{@{}llX@{}}
+\toprule
+\textbf{Champ} & \textbf{Type} & \textbf{Description} \\
+\midrule
+\texttt{is\_parent}       & bool   & \texttt{True} si enregistrement parent (non embedded) \\
+\texttt{parent\_chunk\_id} & string & UUID du parent (vide si single ou parent) \\
+\texttt{chunk\_index}      & entier & Position du fragment dans le document ($-1$ pour parent) \\
+\texttt{chunk\_total}      & entier & Nombre total de fragments du document \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Stockage et indexation dans PostgreSQL}
+
+Les chunks extraits sont persistés dans une base de données PostgreSQL enrichie de
+l'extension \textbf{pgvector}, qui ajoute un type de données natif pour les vecteurs
+denses et les opérateurs de similarité associés. L'ensemble des données est stocké dans
+une table unique \texttt{sap\_chunks}, dont le schéma est défini comme suit~:
+
+\begin{lstlisting}[language=SQL, caption={Schéma de la table \texttt{sap\_chunks}}]
+CREATE TABLE sap_chunks (
+    id        UUID           PRIMARY KEY,
+    content   TEXT           NOT NULL,
+    metadata  JSONB,
+    embedding vector(1024)
+);
+\end{lstlisting}
+
+Chaque enregistrement correspond à un chunk textuel identifié par un UUID, accompagné
+de son contenu brut, de ses métadonnées structurées et de son vecteur d'embedding de
+dimension 1\,024. La colonne \texttt{metadata} adopte le type \textbf{JSONB} (JSON
+Binaire), format natif de PostgreSQL permettant des requêtes conditionnelles efficaces
+sur des champs imbriqués arbitraires.
+
+\medskip
+Afin d'assurer des performances de recherche adaptées à un usage en production, deux
+index complémentaires sont définis sur cette table~:
+
+\begin{itemize}
+    \item \textbf{Index HNSW} (\textit{Hierarchical Navigable Small World})~: appliqué
+    sur la colonne \texttt{embedding}, cet index permet la recherche approximative des
+    plus proches voisins par similarité cosinus. Il est configuré avec les paramètres
+    \texttt{m=16} et \texttt{ef\_construction=64}, qui contrôlent respectivement le
+    nombre de liens par nœud dans le graphe et la précision du processus de construction.
+
+    \item \textbf{Index GIN} (\textit{Generalized Inverted Index})~: appliqué sur la
+    colonne \texttt{metadata}, il accélère les filtres JSONB du type
+    \texttt{metadata @> '\{"module": "BASIS"\}'}, permettant de restreindre l'espace de
+    recherche vectorielle avant l'exécution de la requête HNSW.
+\end{itemize}
+
+\medskip
+L'articulation de ces deux mécanismes d'indexation constitue le cœur de la stratégie
+de recherche hybride adoptée dans ce travail. Comme l'illustre la
+figure~\ref{fig:recherche-meta}, la requête utilisateur est d'abord filtrée par les
+métadonnées via l'index GIN, réduisant l'espace candidat avant la recherche vectorielle
+approximative effectuée par l'index HNSW. Les chunks retenus sont ensuite enrichis par
+remontée au chunk parent le cas échéant, avant d'être transmis au modèle de langage
+comme contexte de génération.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=0.55cm and 0.8cm,
+    box/.style={
+        rectangle, rounded corners=4pt, draw=SAPBlue, thick,
+        fill=SAPLightBlue, minimum width=5.8cm, minimum height=0.9cm,
+        text centered, font=\small
+    },
+    filt/.style={
+        rectangle, rounded corners=4pt, draw=SAPOrange, thick,
+        fill=SAPLightOrange, minimum width=5.8cm, minimum height=0.9cm,
+        text centered, font=\small
+    },
+    vect/.style={
+        rectangle, rounded corners=4pt, draw=SAPGreen, thick,
+        fill=SAPLightGreen, minimum width=5.8cm, minimum height=0.9cm,
+        text centered, font=\small
+    },
+    arr/.style={-{Stealth[length=5pt]}, thick, color=SAPGray}
+]
+
+\node[box]  (query)  {Requête utilisateur};
+
+\node[filt, below=of query] (gin)
+    {Filtrage par métadonnées (index GIN)\\
+     \footnotesize\textit{module, source\_type, mentioned\_tcodes…}};
+
+\node[vect, below=of gin] (hnsw)
+    {Recherche vectorielle approchée (index HNSW)\\
+     \footnotesize\textit{Top-$K$ voisins par similarité cosinus}};
+
+\node[box, below=of hnsw] (parent)
+    {Récupération du chunk parent\\
+     \footnotesize\textit{remontée via \texttt{parent\_chunk\_id} si applicable}};
+
+\node[vect, below=of parent] (llm)
+    {Transmission du contexte au modèle de langage};
+
+\draw[arr] (query)  -- (gin);
+\draw[arr] (gin)    -- node[right, font=\scriptsize] {espace candidat réduit} (hnsw);
+\draw[arr] (hnsw)   -- (parent);
+\draw[arr] (parent) -- (llm);
+
+\end{tikzpicture}
+\caption{Pipeline de recherche hybride exploitant les index GIN et HNSW lors d'une
+         requête RAG}
+\label{fig:recherche-meta}
+\end{figure}
