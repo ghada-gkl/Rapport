@@ -1,0 +1,495 @@
+% ============================================================
+%  Chapitre 6 : Modeling — Système RAG pour la documentation SAP
+% ============================================================
+
+\chapter{Modeling}
+\section*{Objectifs du chapitre}
+L'objectif fondamental de l'étape de Modélisation (Modeling) dans la méthodologie CRISP-DM consiste à choisir et à mettre en œuvre différentes techniques de Machine Learning ou statistiques sur les données traitées, puis à optimiser leurs paramètres afin de déterminer le modèle qui convient le mieux aux objectifs du projet.% ─────────────────────────────────────────────────────────────
+\section{Introduction}
+% ─────────────────────────────────────────────────────────────
+La phase de modélisation constitue l’étape clé de la méthodologie CRISP-DM, où les données préparées sont utilisées pour créer des solutions répondant aux objectifs commerciaux. Dans le contexte de ce projet, cette étape implique la mise en place d'un système de Retrieval-Augmented Generation (RAG) spécifiquement destiné au secteur SAP, afin d’offrir des réponses précises, fiables et contextualisées aux questions techniques.
+\section{Architecture globale du système RAG}
+% ─────────────────────────────────────────────────────────────
+
+\subsection{Vue d'ensemble}
+
+Le système RAG conçu se divise en deux étapes majeures : une étape \textit{offline} pour l'ingestion et l'indexation, et une étape \textit{online} pour le traitement des requêtes. L'étape offline convertit les documents SAP bruts en une base vectorielle qui peut être interrogée. L'étape online gère la requête d'un utilisateur, en l'analysant sur le plan sémantique, en extrayant les passages les plus pertinents, et en produisant une réponse structurée à l'aide d'un LLM.
+
+L'architecture repose sur les éléments clés suivants :
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Base de données vectorielle PostgreSQL (pgvector)}~: stocke les chunks de documentation SAP avec leurs embeddings, leurs métadonnées (module, T-code mentionné, type de source, fil d'Ariane) et un index de recherche plein texte (\texttt{tsvector}).
+  \item \textbf{Modèle d'embedding BAAI/bge-large-en-v1.5}~: transforme les textes en vecteurs denses de dimension 1024, via la bibliothèque \texttt{SentenceTransformers}.
+  \item \textbf{Cross-encoder de reranking}~: le modèle \texttt{cross-encoder/ms-marco-MiniLM-L-6-v2} évalue la pertinence fine de chaque chunk candidat par rapport à la requête.
+  \item \textbf{LLM Ollama (llama3.2:3b)}~: modèle de génération de langage local, servi via l'API Ollama sur \texttt{http://localhost:11434}.
+  \item \textbf{API FastAPI}~: couche REST exposant le pipeline à un frontend React/SAP Fiori.
+\end{itemize}
+
+\subsection{Flux de données}
+
+Le flux global d'une requête utilisateur peut être résumé comme suit~: la question brute de l'utilisateur transite d'abord par une étape de compréhension sémantique (NLP), qui extrait l'intention, les entités SAP (T-codes, numéros de notes) et reformule la requête. La requête enrichie est ensuite vectorisée, puis soumise simultanément à une recherche vectorielle (similarité cosinus via pgvector) et à une recherche plein texte (BM25 via PostgreSQL \texttt{ts\_rank}). Les résultats des deux recherches sont fusionnés par \textit{Reciprocal Rank Fusion} (RRF), avant d'être reranqués par le cross-encoder. Les chunks retenus sont injectés dans un prompt structuré, puis transmis au LLM pour génération de la réponse finale. Un mécanisme de détection d'hallucinations valide la cohérence de la réponse avant son renvoi à l'utilisateur.
+
+\subsection{Diagramme d'architecture}
+
+
+% ─────────────────────────────────────────────────────────────
+\section{Pipeline RAG: Description détaillée}
+% ─────────────────────────────────────────────────────────────
+
+\subsection{Vue séquentielle du pipeline}
+
+Le pipeline RAG, implémenté principalement dans \texttt{rag\_pipeline.py}, orchestre l'ensemble du traitement d'une requête utilisateur à travers la fonction centrale \texttt{ask()}. Celle-ci coordonne successivement~: la compréhension de la requête, l'enrichissement sémantique, la recherche hybride, la fusion RRF, le reranking par cross-encoder, la construction du prompt et la génération par le LLM, avant de valider la réponse par un contrôle anti-hallucination.
+
+\subsection{Normalisation de la requête}
+
+La première opération appliquée à toute requête entrante est une normalisation SAP-spécifique réalisée par la fonction \texttt{normalize\_query()}. Cette étape corrige les espaces erronés dans les codes de transaction (ex. \texttt{"SM 37"} $\rightarrow$ \texttt{"SM37"}), et rétablit la casse correcte des termes SAP (\texttt{"abap"} $\rightarrow$ \texttt{"ABAP"}, \texttt{"idoc"} $\rightarrow$ \texttt{"IDoc"}). Cette harmonisation est essentielle pour garantir que les entités extraites correspondront exactement aux valeurs indexées dans la base de données.
+
+\subsection{Compréhension sémantique de la requête (NLP)}
+La fonction \texttt{understand\_query()} constitue l'un des éléments clés du pipeline RAG.Cette fonction s'appuie sur une méthode totalement \textit{rule-based} et ne fait appel à aucun modèle de langage (LLM). L'analyse est ainsi entièrement déterministe, rapide et stable, avec un temps d'exécution inférieur à une milliseconde.
+
+Sa principale mission est de convertir une requête utilisateur brute en une forme structurée et enrichie, qui peut être directement utilisée par le moteur de recherche hybride du système.
+
+La fonction renvoie un objet qui inclut plusieurs attributs essentiels :
+\begin{itemize}
+    \item \textbf{intent} : intention détectée parmi \texttt{lookup}, \texttt{how-to}, \texttt{troubleshoot} ou \texttt{explain}.
+    
+    \item \textbf{clean\_query} : version nettoyée de la requête, sans mots inutiles ni expressions de remplissage (\textit{filler words}).
+    
+    \item \textbf{expanded\_query} : requête enrichie par des termes SAP associés afin d’améliorer le rappel documentaire.
+    
+    \item \textbf{tcodes} : liste des codes de transaction SAP détectés dans la requête.
+    
+    \item \textbf{sap\_notes} : liste des numéros de notes SAP OSS éventuellement identifiés.
+    
+    \item \textbf{module} : module SAP détecté (\texttt{BASIS}, \texttt{ABAP}, \texttt{MM}, \texttt{SD}, \texttt{FI}, \texttt{SECURITY}, etc.).
+    
+    \item \textbf{min\_score} : seuil minimal de similarité cosinus utilisé lors de la recherche vectorielle. Ce seuil est adaptatif : il est fixé à \texttt{0.05} lorsqu’un T-code est détecté dans une requête de type \texttt{lookup}, et à \texttt{0.30} pour les autres cas.
+\end{itemize}
+
+La reconnaissance des intentions s'appuie sur une liste structurée de règles regex désignée par \texttt{\_INTENT\_RULES}. Le système utilise les règles selon un ordre de priorité : le premier modèle trouvé détermine immédiatement l'intention finale. Les catégories principales sont :
+\begin{itemize}
+    \item \texttt{troubleshoot} : détection des erreurs et incidents techniques ;
+    \item \texttt{how-to} : demandes de procédures ou d’actions ;
+    \item \texttt{lookup} : requêtes de définition ou d’identification ;
+    \item \texttt{explain} : catégorie par défaut lorsqu’aucune règle spécifique n’est détectée.
+\end{itemize}
+
+Par ailleurs, lorsqu’un T-code SAP est identifié dans la requête, l’intention est automatiquement forcée à \texttt{lookup}, car ces requêtes correspondent généralement à des demandes d’information ciblées.
+
+L’identification du module SAP s’appuie sur deux mécanismes complémentaires :
+
+\begin{itemize}
+    \item le dictionnaire \texttt{\_MODULE\_KEYWORDS}, qui associe des expressions régulières à chaque module SAP ;
+    
+    \item le dictionnaire statique \texttt{\_TCODE\_TO\_MODULE}, permettant de mapper directement un T-code vers son module fonctionnel.
+\end{itemize}
+
+Le pipeline intègre également un mécanisme de résolution des pronoms anaphoriques via la fonction \texttt{\_resolve\_pronouns()}. Ce mécanisme améliore la continuité conversationnelle en réinjectant automatiquement le dernier T-code mentionné dans l’historique lorsque la requête contient un pronom.
+
+Par exemple :
+
+\begin{quote}
+``Qu’est-ce qu’il fait ?''
+\end{quote}
+
+sera automatiquement transformé en une requête contenant le T-code précédemment mentionné dans la conversation.
+
+La fonction \texttt{enrich\_expanded\_query()} complète ensuite cette phase en enrichissant la requête avec des descriptions sémantiques prédéfinies pour chaque T-code connu, à l’aide du dictionnaire \texttt{\_TCODE\_EXPANSIONS}.
+
+Cette étape améliore fortement la qualité des embeddings pour les transactions SAP spécialisées. Par exemple, le T-code \texttt{SMQ1} peut être enrichi par des termes tels que :
+
+\begin{itemize}
+    \item qRFC outbound queue ;
+    \item asynchronous communication ;
+    \item queue monitoring ;
+    \item outbound scheduler ;
+    \item RFC queue administration.
+\end{itemize}
+
+Grâce à cet enrichissement sémantique, le moteur de recherche vectorielle peut retrouver des documents pertinents même lorsque les contenus documentaires ne contiennent pas explicitement le T-code recherché.
+
+\subsection{Vectorisation de la requête}
+Le modèle \texttt{BAAI/bge-large-en-v1.5} convertit la requête enrichie en vecteur dense, étant chargé de manière paresseuse à l'aide de la fonction \texttt{get\_model()} dans un contexte de singleton. La bibliothèque \texttt{SentenceTransformers} garantit l'encodage avec normalisation L2. Conformément aux directives du modèle BGE pour la recherche asymétrique (requête courte vs passages longs), un préfixe distinctif \texttt{"Represent this sentence for searching relevant passages: "} est constamment rajouté en amont de la requête. La dimension du vecteur résultant est de 1024.
+
+Une amélioration significative de la version V2 ([F8]) permet d'éviter le double calcul de l'embedding lorsque \texttt{clean\_query} et \texttt{expanded\_query} sont identiques : le vecteur est déterminé une seule fois et réutilisé.
+
+
+
+
+
+\subsection{Recherche hybride parallèle}
+
+La fonction \texttt{\_do\_search()} orchestre trois recherches simultanées via un \texttt{ThreadPoolExecutor} à trois workers~:
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Recherche vectorielle}~: requête SQL utilisant l'opérateur de distance cosinus \texttt{<=>} de pgvector, avec filtrage par \texttt{min\_score}. Les 15 meilleurs candidats (\texttt{FETCH\_K=15}) sont récupérés.
+  \item \textbf{BM25 sur expanded\_query}~: recherche plein texte via \texttt{plainto\_tsquery('english', ...)} et \texttt{ts\_rank()} sur la colonne \texttt{text\_search} (tsvector précalculé).
+  \item \textbf{BM25 sur clean\_query}~: même recherche mais sur la requête nettoyée, pour capturer les documents correspondant exactement aux termes SAP.
+\end{enumerate}
+
+Les résultats BM25 des deux variantes sont fusionnés par score maximum (\texttt{max}) — et non par somme — pour éviter la surpondération artificielle d'un document présent dans les deux listes .
+
+\subsection{Fusion par Reciprocal Rank Fusion (RRF)}
+
+La fonction \texttt{rrf\_fuse()} implémente l'algorithme RRF avec une pondération asymétrique favorable au BM25~:
+
+\begin{equation}
+  \text{score\_RRF}(d) = \frac{W_{\text{vec}}}{k + r_{\text{vec}}(d)} + \frac{W_{\text{BM25}}}{k + r_{\text{BM25}}(d)}
+  \label{eq:rrf}
+\end{equation}
+
+où $W_{\text{vec}} = 0.4$, $W_{\text{BM25}} = 0.6$, $k = 60$, et $r(d)$ désigne le rang du document $d$ dans chaque liste. Le choix de favoriser BM25 ($W_{\text{BM25}} > W_{\text{vec}}$) est motivé par la nature terminologique du corpus SAP~: les codes de transaction, les noms de modules et les numéros de notes sont des correspondances exactes que BM25 capture mieux que la sémantique vectorielle. Les 10 meilleurs candidats fusionnés (\texttt{RERANK\_K=10}) sont transmis au cross-encoder.
+
+
+\subsection{Injection CAG (Context-Augmented Generation)}
+
+Après la fusion RRF et avant le reranking, un mécanisme de \textbf{CAG} (\textit{Context-Augmented Generation}) injecte des chunks pré-chargés pour les requêtes de type \texttt{lookup} portant sur un T-code connu. La fonction \texttt{get\_cag\_context(tcode, conn\_str)} interroge la base de données pour récupérer les chunks les plus ciblés sur ce T-code (triés par nombre croissant de T-codes mentionnés, pour favoriser les chunks les plus spécifiques)~:
+
+\begin{lstlisting}[language=SQL, caption={Requête CAG : chunks les plus ciblés pour un T-code}]
+SELECT ... FROM sap_chunks
+WHERE %s = ANY(mentioned_tcodes)
+  AND is_parent IS NOT TRUE
+ORDER BY array_length(mentioned_tcodes, 1) ASC
+LIMIT 6;
+\end{lstlisting}
+
+Ces chunks sont mis en cache process-lifetime dans le dictionnaire \texttt{\_CAG\_DB\_CACHE} (protégé par un verrou thread-safe), de sorte que chaque T-code ne déclenche qu'un seul accès DB quelle que soit la fréquence des requêtes. Lors de l'injection, les chunks CAG sont placés \textbf{en tête} du contexte (avant les chunks RAG dynamiques), garantissant que le contenu le plus autoritaire sur ce T-code est toujours visible par le LLM~:
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{CAG\_MAX\_CHUNKS = 3}~: nombre maximum de chunks pré-chargés injectés.
+  \item Les chunks RAG dont l'identifiant est déjà présent dans les chunks CAG sont dédupliqués.
+  \item Le total des chunks injectés au LLM reste plafonné à \texttt{TOP\_K} (5 par défaut).
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────
+\section{Modélisation des données}
+% ─────────────────────────────────────────────────────────────
+
+\subsection{Structure de la table \texttt{sap\_chunks}}
+
+La base de données PostgreSQL conserve la documentation SAP sous forme de chunks dans la table \texttt{sap\_chunks}. Chaque enregistrement correspond à un fragment autonome de documentation, accompagné de métadonnées structurées permettant d’effectuer des recherches ciblées et un filtrage précis des résultats.
+
+\begin{table}[H]
+\centering
+\caption{Colonnes de la table \texttt{sap\_chunks}}
+\label{tab:sap_chunks}
+
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{Colonne} & \textbf{Type} & \textbf{Description} \\
+\hline
+
+\texttt{chunk\_id} &
+UUID &
+Identifiant unique du chunk \\
+\hline
+
+\texttt{text} &
+TEXT &
+Contenu textuel du chunk \\
+\hline
+
+\texttt{title} &
+TEXT &
+Titre de la section ou du document \\
+\hline
+
+\texttt{source\_type} &
+VARCHAR &
+Type de source : \texttt{sap\_help} ou \texttt{technical\_book} \\
+\hline
+
+\texttt{source\_book} &
+TEXT &
+Nom du livre ou de la documentation source \\
+\hline
+
+\texttt{module} &
+VARCHAR &
+Module SAP (BASIS, ABAP, MM, SD, FI, SECURITY) \\
+\hline
+
+\texttt{section\_type} &
+VARCHAR &
+Type de section (chapter, section, subsection) \\
+\hline
+
+\texttt{breadcrumb} &
+TEXT[] &
+Fil d'Ariane hiérarchique \\
+\hline
+
+\texttt{mentioned\_tcodes} &
+TEXT[] &
+T-codes SAP mentionnés dans le chunk \\
+\hline
+
+\texttt{mentioned\_sap\_notes} &
+TEXT[] &
+Numéros des notes SAP mentionnées \\
+\hline
+
+\texttt{embedding} &
+VECTOR(1024) &
+Vecteur d'embedding dense (BGE-large) \\
+\hline
+
+\texttt{text\_search} &
+TSVECTOR &
+Index de recherche plein texte (BM25) \\
+\hline
+
+\texttt{is\_parent} &
+BOOLEAN &
+Indique si le chunk est un chunk parent \\
+\hline
+
+\texttt{parent\_chunk\_id} &
+UUID &
+Référence au chunk parent (si enfant) \\
+\hline
+
+\end{tabularx}
+\end{table}
+\subsection{Hiérarchie des chunks et stratégie Small-to-Big}
+
+La colonne \texttt{is\_parent} et \texttt{parent\_chunk\_id} révèlent l'implémentation d'une stratégie de chunking hiérarchique (\textit{Small-to-Big Retrieval}). Les chunks enfants (petits, précis) sont indexés pour la recherche, tandis que les chunks parents (plus larges, plus contextuels) peuvent être retournés au LLM pour une meilleure cohérence de contexte. Les requêtes de retrieval filtrent systématiquement les chunks parents (\texttt{is\_parent IS NOT TRUE}) afin de ne récupérer que des chunks feuilles lors de la recherche.
+
+\section{Techniques d'Embeddings}
+% ─────────────────────────────────────────────────────────────
+
+\subsection{Modèle retenu~: BAAI/bge-large-en-v1.5}
+Le modèle d’embedding retenu dans le cadre de ce projet est Beijing Academy of Artificial Intelligence BAAI/bge-large-en-v1.5. Développé selon une architecture bi-encodeur, ce modèle génère des représentations vectorielles denses de dimension 1024. Les embeddings produits sont normalisés selon la norme L2, permettant ainsi d’exploiter directement le produit scalaire pour calculer la similarité cosinus entre les vecteurs.
+Ce choix est motivé par plusieurs facteurs~:
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Performance sur les benchmarks de retrieval}~: BGE-large-en-v1.5 figure parmi les meilleurs modèles sur le benchmark MTEB (\textit{Massive Text Embedding Benchmark}), notamment pour les tâches de recherche d'information en anglais.
+  \item \textbf{Optimisation asymétrique}~: le modèle supporte l'ajout d'un préfixe spécifique pour les requêtes (\texttt{"Represent this sentence for searching relevant passages: "}), permettant une séparation sémantique entre la représentation d'une requête courte et celle d'un passage long.
+  \item \textbf{Exécution locale}~: le modèle peut être chargé localement via \texttt{SentenceTransformers}, sans dépendance à une API externe payante.
+  \item \textbf{Richesse sémantique}~: avec 1024 dimensions, le modèle capture des nuances sémantiques fines, essentielles pour distinguer des concepts SAP proches (ex. \texttt{SM37} vs \texttt{SM36}, \texttt{qRFC} vs \texttt{tRFC}).
+\end{itemize}
+
+\subsection{Méthode de vectorisation}
+
+L'embedding des chunks à l'indexation est réalisé sans préfixe (représentation du document), tandis que l'embedding des requêtes utilise le préfixe dédié. La fonction \texttt{embed\_query()} encapsule cette logique~:
+
+\begin{lstlisting}[language=Python, caption={Fonction d'embedding de la requête}]
+EMBED_MODEL  = "BAAI/bge-large-en-v1.5"
+QUERY_PREFIX = "Represent this sentence for searching relevant passages: "
+
+def embed_query(text: str) -> list[float]:
+    return get_model().encode(
+        QUERY_PREFIX + text,
+        normalize_embeddings=True,
+        convert_to_numpy=True
+    ).tolist()
+\end{lstlisting}
+
+Le chargement du modèle est réalisé en singleton paresseux (\textit{lazy singleton}) via \texttt{get\_model()}, évitant ainsi de recharger le modèle en mémoire à chaque requête.
+
+% ─────────────────────────────────────────────────────────────
+\section{Base Vectorielle}
+% ─────────────────────────────────────────────────────────────
+
+\subsection{PostgreSQL avec l'extension pgvector}
+
+Le système n'utilise pas un vector store dédié (tel que ChromaDB, Pinecone ou Weaviate), mais s'appuie sur \textbf{PostgreSQL} enrichi de l'extension \textbf{pgvector}. Ce choix architectural présente plusieurs avantages décisifs pour le contexte SAP~:
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Unification des données}~: texte, métadonnées structurées (module, T-code, source) et vecteurs cohabitent dans la même table, permettant des filtres combinés en une seule requête SQL.
+  \item \textbf{Recherche hybride native}~: PostgreSQL supporte nativement les index \texttt{TSVECTOR} (BM25) et les index vectoriels HNSW via pgvector, éliminant le besoin d'orchestrer deux systèmes distincts.
+  \item \textbf{ACID et fiabilité}~: les garanties transactionnelles de PostgreSQL assurent la cohérence des données lors des mises à jour de la base de connaissances.
+  \end{itemize}
+
+\subsection{Indexation vectorielle HNSW}
+
+L'extension pgvector crée un index HNSW (\textit{Hierarchical Navigable Small World}) sur la colonne \texttt{embedding}, permettant une recherche approximative du plus proche voisin (\textit{Approximate Nearest Neighbor}) en temps sous-linéaire. La recherche vectorielle est exprimée via l'opérateur \texttt{<=>} qui calcule la distance cosinus~:
+
+\begin{lstlisting}[language=SQL, caption={Requête de recherche vectorielle avec pgvector}]
+SELECT chunk_id::text, text, title, source_type, source_book,
+       module, section_type, breadcrumb,
+       mentioned_tcodes, mentioned_sap_notes,
+       is_parent, parent_chunk_id::text,
+       1 - (embedding <=> '[0.012,...,0.034]'::vector) AS score
+FROM sap_chunks
+WHERE is_parent IS NOT TRUE
+  AND module = 'BASIS'
+ORDER BY embedding <=> '[0.012,...,0.034]'::vector
+LIMIT 15;
+\end{lstlisting}
+
+Le score de similarité cosinus est calculé comme $1 - \text{distance\_cosinus}$, ce qui donne une valeur entre $-1$ et $1$, les chunks les plus proches du vecteur requête obtenant les scores les plus élevés.
+
+
+% ─────────────────────────────────────────────────────────────
+\section{Mécanisme de Retrieval}
+% ─────────────────────────────────────────────────────────────
+
+\subsection{Recherche sémantique vectorielle}
+La recherche vectorielle représente le premier axe du retrieval hybride. Elle repose sur la mesure de similarité cosinus entre le vecteur de la requête et ceux des chunks indexés. L'opérateur pgvector \texttt{<=>} effectue cette évaluation de manière optimale grâce à l'index HNSW déjà construit. La fonction \texttt{vector\_search()} élimine les résultats dont le score est inférieur au seuil \texttt{min\_score}, qui oscille entre 0.05 (requêtes \textit{lookup} avec T-code) et 0.30 (requêtes \textit{explain} générales). Cette adaptation dynamique du seuil permet d'ajuster la précision du retrieval selon le type de requête : une question concernant un T-code spécifique doit permettre de récupérer tous les chunks faisant mention de ce code, même avec une similarité globale faible.
+% ─────────────────────────────────────────────────────────────
+\section{Mécanisme de Reranking par Cross-Encoder}
+% ─────────────────────────────────────────────────────────────
+
+\subsection{Modèle cross-encoder ms-marco-MiniLM-L-6-v2}
+
+Le reranking constitue la troisième couche de filtrage du pipeline. Contrairement au bi-encodeur BGE qui encode requête et document séparément, le cross-encoder \texttt{cross-encoder/ms-marco-MiniLM-L-6-v2} analyse conjointement la paire (requête, chunk) pour produire un score de pertinence fine. Ce modèle, entraîné sur le dataset MS-MARCO de recherche de passages, produit des scores sur une échelle approximative de $-10$ à $+10$.
+
+La fonction \texttt{rerank()} applique le cross-encoder sur toutes les paires (requête, chunk candidat) en une seule inférence vectorisée :
+
+\begin{lstlisting}[language=Python, caption={Fonction de reranking par cross-encoder}]
+def rerank(query, chunks, top_k=TOP_K):
+    scores = get_reranker().predict(
+        [[query, c["content"]] for c in chunks],
+        show_progress_bar=False
+    )
+    for chunk, score in zip(chunks, scores):
+        chunk["rerank_score"] = round(float(score), 4)
+    # Filtrage par seuil MIN_RERANK_SCORE = 2.0
+    ranked = [c for c in
+              sorted(chunks, key=lambda c: c["rerank_score"],
+                     reverse=True)
+              if c["rerank_score"] >= MIN_RERANK_SCORE]
+    # Deduplication : max 3 chunks par source_book
+    source_counts = {}
+    deduped = []
+    for c in ranked:
+        src = (c["metadata"].get("source_book")
+               or c["metadata"].get("source_type", ""))
+        if source_counts.get(src, 0) < MAX_CHUNKS_PER_SOURCE:
+            deduped.append(c)
+            source_counts[src] = source_counts.get(src, 0) + 1
+    return deduped[:top_k]
+\end{lstlisting}
+
+\subsection{Seuillage et déduplication}
+
+Le paramètre \texttt{MIN\_RERANK\_SCORE = 2.0} [F2] filtre les chunks dont le score du cross-encoder est inférieur à ce seuil, éliminant les passages hors-sujet. Ce seuil, relevé de 0.5 à 2.0 par rapport à la version précédente, permet un filtrage efficace tout en conservant les chunks borderline potentiellement utiles. Un mécanisme de déduplication limite à \texttt{MAX\_CHUNKS\_PER\_SOURCE = 3} le nombre de chunks provenant d'une même source, évitant qu'un seul ouvrage ne domine le contexte injecté au LLM.
+
+Un filet de sécurité (\textit{safety net}) est implémenté : si le reranker filtre tous les candidats, les meilleurs candidats RRF bruts sont utilisés à la place, garantissant qu'une réponse est toujours générée.
+
+% ─────────────────────────────────────────────────────────────
+% ─────────────────────────────────────────────────────────────
+\section{Large Language Model}
+% ─────────────────────────────────────────────────────────────
+
+\subsection{Modèle et infrastructure d'exécution locale}
+Le modèle de langage utilisé pour générer les réponses est \textbf{llama3.2:3b}, déployé localement à travers \textbf{Ollama} (\texttt{http://localhost:11434/api/generate}). Cette architecture \textit{on-premise} offre plusieurs bénéfices dans le cadre d'un système d'information SAP d'entreprise : sécurité des données (aucune demande ne quitte l'infrastructure interne), contrôle des coûts (pas de facturation à l'utilisation), et autonomie par rapport à un fournisseur de cloud. Un modèle alternatif, \texttt{qwen2.5:7b}, est également pris en charge via la variable d'environnement \texttt{OLLAMA\_MODEL\_QWEN}, permettant de choisir entre rapidité (llama3.2:3b) et qualité supérieure (qwen2.5:7b).
+
+\subsection{Mode streaming et intégration API}
+
+Le LLM supporte deux modes de génération : le mode \textit{streaming} (tokens renvoyés au fil de la génération, affiché en temps réel dans le terminal) et le mode \textit{non-streaming} (réponse complète renvoyée en une fois). L'API FastAPI désactive systématiquement le streaming (\texttt{stream=False}) pour renvoyer une réponse JSON complète au frontend Fiori.
+
+% ─────────────────────────────────────────────────────────────
+\section{Prompt Engineering}
+% ─────────────────────────────────────────────────────────────
+
+\subsection{Structure du prompt système}
+
+Le prompt système (\texttt{SYSTEM\_PROMPT}) définit le rôle du LLM et ses contraintes de \textbf{synthèse}. Il positionne le modèle comme un \textit{expert SAP technical consultant} et lui demande explicitement de \textit{synthétiser} une réponse à partir des blocs d'evidence pré-sélectionnés (déjà filtrés par \texttt{synthesize\_chunks}), en appliquant quatre règles de synthèse~:
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Fusionner} les faits connexes provenant de plusieurs blocs en une réponse cohérente~; ne pas répéter le même fait par source.
+  \item \textbf{Convergence}~: si deux blocs s'accordent sur un fait, l'énoncer une seule fois avec double citation~: \texttt{"as described in [1][3]"}.
+  \item \textbf{Conflit}~: si deux blocs se contredisent, présenter explicitement les deux versions~: \texttt{"[1] states X, while [2] states Y"}.
+  \item Citer les sources \textbf{en ligne} uniquement via la notation \texttt{[N]}~; ne jamais inventer de citations absentes des en-têtes d'evidence.
+\end{enumerate}
+
+Des règles strictes (\textit{STRICT RULES}) interdisent explicitement l'invention de T-codes, de titres de livres, d'URLs SAP Help ou d'étapes non présentes dans l'evidence. Le LLM doit déclarer explicitement~: \texttt{"The available documentation does not cover this."} si le contexte est insuffisant. Cette combinaison de \textit{grounding} strict et de \textit{synthesis rules} constitue la principale défense contre les hallucinations tout en améliorant la cohérence des réponses multi-sources.
+
+
+\subsection{Contrôle anti-hallucination post-génération}
+La fonction \texttt{check\_hallucinations()} met en œuvre un mécanisme de vérification post-génération visant à détecter d’éventuelles incohérences dans la réponse produite par le LLM. Elle compare les T-codes ainsi que les numéros de notes SAP mentionnés dans la réponse générée avec ceux effectivement présents dans les chunks de contexte récupérés lors de la phase de retrieval. Lorsqu’un T-code ou une note SAP apparaît dans la réponse sans être référencé dans le contexte fourni au modèle, cet élément est considéré comme une hallucination potentielle. Il est alors signalé dans le champ \texttt{warnings} de la réponse API, afin de permettre au frontend d’informer l’utilisateur si nécessaire.
+% ───────────────────────────────────────────────────
+\section{Workflow global d'une requête utilisateur}
+
+Le traitement d’une requête utilisateur suit plusieurs étapes depuis l’interface SAP Fiori jusqu’au retour de la réponse finale. Après la soumission de la question dans le chatbot, la requête est envoyée au backend Python via l’endpoint \texttt{POST /query} de l’API FastAPI. Une session identifiée par UUID est ensuite récupérée ou créée avant l’appel de la fonction principale \texttt{ask()}.
+
+La première étape du pipeline consiste en une analyse NLP \textbf{rule-based} avec \texttt{understand\_query()}, permettant d’identifier l’intention, les entités SAP et une reformulation optimisée de la requête, sans appel au LLM. La requête enrichie est ensuite vectorisée avec BGE-large-en-v1.5 puis comparée au \textbf{cache sémantique}. En cas de similarité suffisante, la réponse est immédiatement renvoyée sans exécuter de retrieval ni de génération.
+
+En cas de cache miss, la fonction \texttt{retrieve()} lance en parallèle une recherche vectorielle et deux recherches BM25. Les résultats sont fusionnés par RRF, avec relâchement progressif des filtres si nécessaire. Pour les requêtes contenant un T-code connu, les chunks du \textbf{cache CAG} sont injectés dans le contexte. Les meilleurs résultats sont ensuite rerankés par un cross-encoder ; un \textit{safety net} restaure les meilleurs chunks RRF si tous les candidats sont rejetés.
+
+Les chunks retenus sont synthétisés afin d’extraire les informations essentielles et supprimer les redondances. Le prompt final est construit avec l’historique conversationnel puis envoyé au modèle Ollama pour la génération de la réponse. Après vérification via \texttt{check\_hallucinations()}, la réponse est stockée dans le cache sémantique et retournée sous forme JSON avec les sources, scores de pertinence, avertissements éventuels et identifiant de session. Enfin, la session est sauvegardée de manière asynchrone dans PostgreSQL.% ─────────────────────────────────────────────────────────────
+\section{Algorithme général du pipeline}
+% ─────────────────────────────────────────────────────────────
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize,
+  startstop/.style={draw, rectangle, rounded corners=6pt,
+                    fill=SAPBlue, text=white,
+                    minimum width=5.5cm, minimum height=0.6cm, text centered},
+  process/.style={draw, rectangle,
+                  fill=SAPLightBlue, draw=SAPBlue,
+                  minimum width=5.5cm, minimum height=0.6cm, text centered},
+  cache/.style={draw, rectangle,
+                fill=SAPGreen!30, draw=SAPGreen,
+                minimum width=5.5cm, minimum height=0.6cm, text centered},
+  decision/.style={draw, diamond, aspect=3,
+                   fill=SAPLightOrange, draw=SAPOrange,
+                   minimum width=5.5cm, minimum height=0.6cm, text centered},
+  arr/.style={-{Stealth[length=5pt]}, SAPBlue, thick},
+  node distance=0.45cm,
+]
+\node[startstop] (start)   {Requête utilisateur};
+\node[process, below=of start]    (norm)    {1. normalize\_query()};
+\node[process, below=of norm]     (nlp)     {2. understand\_query() rule-based + enrich()};
+\node[process, below=of nlp]      (embed)   {3. embed(clean\_query) — BGE-large L2};
+\node[cache,   below=of embed]    (clookup) {Cache sémantique lookup (seuil 0.92)};
+\node[decision, below=of clookup] (chit)    {Cache hit ?};
+\node[process, below=of chit]     (search)  {4. vector\_search() \textbar\textbar{} bm25\_search() $\times$2};
+\node[decision, below=of search]  (enought) {|résultats| < 3 ?};
+\node[process, right=1.5cm of enought] (fallback) {Fallback filtres};
+\node[process, below=of enought]  (rrf)     {5. rrf\_fuse() — $W_{v}$=0.4 / $W_{b}$=0.6};
+\node[cache,   below=of rrf]      (cag)     {6b. CAG inject (intent=lookup + T-code ?)};
+\node[process, below=of cag]      (rerank)  {7. cross\_encoder rerank() — seuil 2.0};
+\node[decision, below=of rerank]  (empty)   {chunks vides ?};
+\node[process, right=1.5cm of empty] (safety) {Safety net RRF};
+\node[process, below=of empty]    (synth)   {8. synthesize\_chunks() — dédup + conflits};
+\node[process, below=of synth]    (prompt)  {9. build\_prompt() — synthesis\_text + hist.};
+\node[process, below=of prompt]   (gen)     {10. generate() — llama3.2:3b, T=0.1};
+\node[process, below=of gen]      (halluc)  {11. check\_hallucinations()};
+\node[process, below=of halluc]   (save)    {12. session.add\_turn() async};
+\node[cache,   below=of save]     (cstore)  {13. SemanticCache.store()};
+\node[startstop, below=of cstore] (end)     {Réponse JSON};
+
+\draw[arr] (start)   -- (norm);
+\draw[arr] (norm)    -- (nlp);
+\draw[arr] (nlp)     -- (embed);
+\draw[arr] (embed)   -- (clookup);
+\draw[arr] (clookup) -- (chit);
+\draw[arr] (chit.east) -- node[above]{\tiny oui} ++(1.8,0) |- (end.east);
+\draw[arr] (chit.south) -- node[right]{\tiny non} (search.north);
+\draw[arr] (search)  -- (enought);
+\draw[arr] (enought.east) -- node[above]{\tiny oui} (fallback.west);
+\draw[arr] (fallback.south) |- (rrf.east);
+\draw[arr] (enought.south) -- node[right]{\tiny non} (rrf.north);
+\draw[arr] (rrf)     -- (cag);
+\draw[arr] (cag)     -- (rerank);
+\draw[arr] (rerank)  -- (empty);
+\draw[arr] (empty.east) -- node[above]{\tiny oui} (safety.west);
+\draw[arr] (safety.south) |- (synth.east);
+\draw[arr] (empty.south) -- node[right]{\tiny non} (synth.north);
+\draw[arr] (synth)   -- (prompt);
+\draw[arr] (prompt)  -- (gen);
+\draw[arr] (gen)     -- (halluc);
+\draw[arr] (halluc)  -- (save);
+\draw[arr] (save)    -- (cstore);
+\draw[arr] (cstore)  -- (end);
+\end{tikzpicture}
+\caption{Flowchart du pipeline RAG SAP V2 Fixed (rag\_pipeline\_v2\_fixed.py)}
+\label{fig:pipeline_flowchart}
+\end{figure}
+
+\subsection{Limites identifiées}
+
+Malgré ses nombreux atouts, le système comporte certaines limitations. La génération locale avec \texttt{llama3.2:3b} reste plus lente et moins performante qu’un grand modèle hébergé dans le cloud, tel que GPT-4o ou Claude Sonnet. De plus, la fenêtre de contexte limitée à 8192 tokens, bien qu’adaptée à l’utilisation de cinq chunks, peut devenir insuffisante pour des requêtes nécessitant un volume documentaire important.
+
+La détection des hallucinations repose essentiellement sur des heuristiques basées sur des expressions régulières identifiant des T-codes et des numéros de notes. Cette approche ne permet pas de détecter toutes les formes d’hallucination, notamment les affirmations factuellement erronées ne contenant aucun identifiant explicite. Par ailleurs, le \textbf{cache sémantique fonctionne uniquement en mémoire} : son contenu est perdu à chaque redémarrage de l’application et il ne peut pas être mutualisé entre plusieurs instances, ce qui réduit son intérêt dans une architecture distribuée ou multi-processus.
+
+L’analyse \textbf{NLP fondée sur des règles}, bien qu’efficace en termes de rapidité et de déterminisme, montre également ses limites face aux requêtes ambiguës, complexes ou multilingues. Les formulations en français ou les tournures inhabituelles peuvent ainsi conduire à une mauvaise classification des intentions utilisateur. Enfin, les performances du mécanisme de retrieval dépendent fortement de la qualité du découpage initial des documents ainsi que de la pertinence des métadonnées associées, rendant indispensable un important travail de préparation et de structuration des données en amont.
+% ─────────────────────────────────────────────────────────────
+\section*{Conclusion }
+% ─────────────────────────────────────────────────────────────
+
+Ce chapitre a présenté la phase de modélisation du système RAG hybride développé pour la documentation SAP . L’architecture combine plusieurs composants complémentaires, notamment le NLP rule-based, le cache sémantique, le retrieval hybride BM25 + vecteurs, le reranking par cross-encoder et la génération via Llama3.2 avec Ollama. Les améliorations intégrées.
