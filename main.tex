@@ -111,6 +111,23 @@
 % ===== Colors =====
 \usepackage{xcolor}
 
+% ── Packages (if not already present) ──
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{tcolorbox}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usetikzlibrary{arrows.meta, positioning, fit, backgrounds, shadows}
+\tcbuselibrary{skins, breakable, most}
+
+% ── Color definitions ──
+\definecolor{offlinecolor}{HTML}{1565C0}
+\definecolor{onlinecolor}{HTML}{2E7D32}
+\definecolor{offlinebg}{HTML}{E3F2FD}
+\definecolor{onlinebg}{HTML}{E8F5E9}
+\definecolor{arrowcolor}{HTML}{5C6BC0}
+\definecolor{stepbg}{HTML}{EDE7F6}
+\definecolor{stepfg}{HTML}{4527A0}
 % ===== SAP Color Palette =====
 \definecolor{SAPBlue}{HTML}{0A6ED1}
 \definecolor{SAPLightBlue}{HTML}{EAF3FC}
@@ -162,6 +179,9 @@
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 
+% ---- Bibliographie ----
+\usepackage[numbers,sort&compress]{natbib}
+
 % ---- Hyperliens ----
 \usepackage[hidelinks]{hyperref}
 
@@ -191,4 +211,9 @@
 \input{chapters/chapter4}
 \input{chapters/chapter5}
 \input{chapters/chapter6}
+\input{chapters/chapter7}
+
+% ---- Bibliographie ----
+\bibliographystyle{plainnat}
+\bibliography{references}
 \end{document}

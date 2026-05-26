@@ -8,26 +8,109 @@ L'objectif fondamental de l'étape de Modélisation (Modeling) dans la méthodol
 \section{Introduction}
 % ─────────────────────────────────────────────────────────────
 La phase de modélisation constitue l’étape clé de la méthodologie CRISP-DM, où les données préparées sont utilisées pour créer des solutions répondant aux objectifs commerciaux. Dans le contexte de ce projet, cette étape implique la mise en place d'un système de Retrieval-Augmented Generation (RAG) spécifiquement destiné au secteur SAP, afin d’offrir des réponses précises, fiables et contextualisées aux questions techniques.
-\section{Architecture globale du système RAG}
-% ─────────────────────────────────────────────────────────────
+
+% ─── Required packages (add to your preamble if not already present) ──────────
+% \usepackage{xcolor}
+% \usepackage{tikz}
+% \usepackage{tcolorbox}
+% \usepackage{booktabs}
+% \usepackage{colortbl}
+% \usetikzlibrary{arrows.meta, positioning, fit, backgrounds, shadows}
+% \tcbuselibrary{skins, breakable, most}
+%
+% ─── Color definitions (add to your preamble) ─────────────────────────────────
+% \definecolor{offlinecolor}{HTML}{1565C0}
+% \definecolor{onlinecolor}{HTML}{2E7D32}
+% \definecolor{offlinebg}{HTML}{E3F2FD}
+% \definecolor{onlinebg}{HTML}{E8F5E9}
+% \definecolor{arrowcolor}{HTML}{5C6BC0}
+% \definecolor{stepbg}{HTML}{EDE7F6}
+% \definecolor{stepfg}{HTML}{4527A0}
+% ──────────────────────────────────────────────────────────────────────────────
+
+\section{Architecture globale du syst\`{e}me RAG}
+
+% ─────────────────────────────────────────────────────────────────────────────
 
 \subsection{Vue d'ensemble}
 
-Le système RAG conçu se divise en deux étapes majeures : une étape \textit{offline} pour l'ingestion et l'indexation, et une étape \textit{online} pour le traitement des requêtes. L'étape offline convertit les documents SAP bruts en une base vectorielle qui peut être interrogée. L'étape online gère la requête d'un utilisateur, en l'analysant sur le plan sémantique, en extrayant les passages les plus pertinents, et en produisant une réponse structurée à l'aide d'un LLM.
+Le syst\`{e}me \textbf{RAG} (\textit{Retrieval-Augmented Generation}) con\c{c}u s'articule autour de deux
+\'{e}tapes majeures et compl\'{e}mentaires~: une \textcolor{offlinecolor}{\textbf{\'{e}tape \textit{offline}}},
+d\'{e}di\'{e}e \`{a} l'ingestion et \`{a} l'indexation des donn\'{e}es, et une
+\textcolor{onlinecolor}{\textbf{\'{e}tape \textit{online}}}, responsable du traitement dynamique des
+requ\^{e}tes utilisateurs. L'\'{e}tape \textit{offline} convertit les documents SAP bruts en une base
+vectorielle interrogeable~; l'\'{e}tape \textit{online} g\`{e}re la requ\^{e}te d'un utilisateur en
+l'analysant sur le plan s\'{e}mantique, en extrayant les passages les plus pertinents et en produisant
+une r\'{e}ponse structur\'{e}e \`{a} l'aide d'un LLM.
 
-L'architecture repose sur les éléments clés suivants :
-\begin{itemize}[leftmargin=2em]
-  \item \textbf{Base de données vectorielle PostgreSQL (pgvector)}~: stocke les chunks de documentation SAP avec leurs embeddings, leurs métadonnées (module, T-code mentionné, type de source, fil d'Ariane) et un index de recherche plein texte (\texttt{tsvector}).
-  \item \textbf{Modèle d'embedding BAAI/bge-large-en-v1.5}~: transforme les textes en vecteurs denses de dimension 1024, via la bibliothèque \texttt{SentenceTransformers}.
-  \item \textbf{Cross-encoder de reranking}~: le modèle \texttt{cross-encoder/ms-marco-MiniLM-L-6-v2} évalue la pertinence fine de chaque chunk candidat par rapport à la requête.
-  \item \textbf{LLM Ollama (llama3.2:3b)}~: modèle de génération de langage local, servi via l'API Ollama sur \texttt{http://localhost:11434}.
-  \item \textbf{API FastAPI}~: couche REST exposant le pipeline à un frontend React/SAP Fiori.
-\end{itemize}
+% ── Architecture diagram ──────────────────────────────────────────────────────
+\vspace{0.8cm}
+\begin{center}
+\begin{tikzpicture}[
+  node distance=0.5cm and 0.5cm,
+  box/.style={
+    rectangle, rounded corners=4pt,
+    minimum width=2.6cm, minimum height=0.8cm,
+    font=\small\bfseries, text centered, drop shadow
+  },
+  arr/.style={-Stealth, thick},
+]
+  % Offline row
+  \node[box, fill=offlinebg, draw=offlinecolor, text=offlinecolor] (docs)  {Documents SAP};
+  \node[box, fill=offlinebg, draw=offlinecolor, text=offlinecolor, right=of docs]  (chunk) {Chunking};
+  \node[box, fill=offlinebg, draw=offlinecolor, text=offlinecolor, right=of chunk] (embed) {Embeddings};
+  \node[box, fill=offlinebg, draw=offlinecolor, text=offlinecolor, right=of embed] (index) {Index Vectoriel};
 
+  % Online row
+  \node[box, fill=onlinebg, draw=onlinecolor, text=onlinecolor, below=1.6cm of docs]  (query)  {Requ\^{e}te};
+  \node[box, fill=onlinebg, draw=onlinecolor, text=onlinecolor, right=of query]        (qemb)   {Emb. Requ\^{e}te};
+  \node[box, fill=onlinebg, draw=onlinecolor, text=onlinecolor, right=of qemb]         (search) {Similarit\'{e}};
+  \node[box, fill=onlinebg, draw=onlinecolor, text=onlinecolor, right=of search]       (llm)    {LLM};
+  \node[box, fill=onlinebg, draw=onlinecolor, text=onlinecolor, right=of llm]          (resp)   {R\'{e}ponse};
+
+  % Offline arrows
+  \draw[arr, offlinecolor] (docs)  -- (chunk);
+  \draw[arr, offlinecolor] (chunk) -- (embed);
+  \draw[arr, offlinecolor] (embed) -- (index);
+
+  % Online arrows
+  \draw[arr, onlinecolor] (query)  -- (qemb);
+  \draw[arr, onlinecolor] (qemb)   -- (search);
+  \draw[arr, onlinecolor] (search) -- (llm);
+  \draw[arr, onlinecolor] (llm)    -- (resp);
+
+  % Cross-lane: index -> search
+  \draw[arr, dashed, arrowcolor, thick]
+    (index.south) -- ++(0,-0.4) -| (search.north)
+    node[midway, above, font=\tiny\itshape, color=arrowcolor] {r\'{e}cup\'{e}ration};
+
+  % Lane backgrounds
+  \begin{scope}[on background layer]
+    \node[fit=(docs)(index), inner sep=10pt, fill=offlinebg, draw=offlinecolor,
+          dashed, rounded corners=7pt, opacity=0.35] (ob) {};
+    \node[fit=(query)(resp), inner sep=10pt, fill=onlinebg, draw=onlinecolor,
+          dashed, rounded corners=7pt, opacity=0.35] (nb) {};
+  \end{scope}
+
+  \node[left=0.1cm of ob, rotate=90, anchor=south,
+        font=\footnotesize\bfseries, color=offlinecolor] {OFFLINE};
+  \node[left=0.1cm of nb, rotate=90, anchor=south,
+        font=\footnotesize\bfseries, color=onlinecolor] {ONLINE};
+\end{tikzpicture}
+\end{center}
+\vspace{0.4cm}
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+
+% ─────────────────────────────────────────────────────────────────────────────
+
+\
 \subsection{Flux de données}
-
-Le flux global d'une requête utilisateur peut être résumé comme suit~: la question brute de l'utilisateur transite d'abord par une étape de compréhension sémantique (NLP), qui extrait l'intention, les entités SAP (T-codes, numéros de notes) et reformule la requête. La requête enrichie est ensuite vectorisée, puis soumise simultanément à une recherche vectorielle (similarité cosinus via pgvector) et à une recherche plein texte (BM25 via PostgreSQL \texttt{ts\_rank}). Les résultats des deux recherches sont fusionnés par \textit{Reciprocal Rank Fusion} (RRF), avant d'être reranqués par le cross-encoder. Les chunks retenus sont injectés dans un prompt structuré, puis transmis au LLM pour génération de la réponse finale. Un mécanisme de détection d'hallucinations valide la cohérence de la réponse avant son renvoi à l'utilisateur.
-
+Le flux global d'une requête utilisateur peut être résumé comme suit : la question brute de l'utilisateur transite d'abord par une étape de compréhension sémantique (NLP), qui extrait l'intention, les entités SAP (T-codes, numéros de notes) et reformule la requête. La requête enrichie est ensuite vectorisée, puis soumise simultanément à une recherche vectorielle (similarité cosinus via pgvector) et à une recherche plein texte (BM25 via PostgreSQL \texttt{ts\_rank}). Les résultats des deux recherches sont fusionnés par \textbf{Reciprocal Rank Fusion (RRF)}, une technique qui combine les classements issus de sources hétérogènes en attribuant à chaque résultat un score inversement proportionnel à sa position dans chaque liste, favorisant ainsi les chunks bien classés dans plusieurs recherches simultanément. Ces résultats fusionnés sont ensuite reranqués par un \textbf{cross-encoder}, un modèle qui, contrairement aux embeddings calculés indépendamment, évalue la paire (requête, chunk) conjointement pour produire un score de pertinence plus fin et contextuellement précis. Les chunks retenus sont injectés dans un prompt structuré, puis transmis au LLM pour génération de la réponse finale. Un mécanisme de détection d'hallucinations valide la cohérence de la réponse avant son renvoi à l'utilisateur.
 \subsection{Diagramme d'architecture}
 
 
@@ -108,10 +191,9 @@ Cette étape améliore fortement la qualité des embeddings pour les transaction
 Grâce à cet enrichissement sémantique, le moteur de recherche vectorielle peut retrouver des documents pertinents même lorsque les contenus documentaires ne contiennent pas explicitement le T-code recherché.
 
 \subsection{Vectorisation de la requête}
-Le modèle \texttt{BAAI/bge-large-en-v1.5} convertit la requête enrichie en vecteur dense, étant chargé de manière paresseuse à l'aide de la fonction \texttt{get\_model()} dans un contexte de singleton. La bibliothèque \texttt{SentenceTransformers} garantit l'encodage avec normalisation L2. Conformément aux directives du modèle BGE pour la recherche asymétrique (requête courte vs passages longs), un préfixe distinctif \texttt{"Represent this sentence for searching relevant passages: "} est constamment rajouté en amont de la requête. La dimension du vecteur résultant est de 1024.
+Le modèle BAAI BAAI/bge-large-en-v1.5 transforme la requête améliorée en un vecteur dense, étant chargé de manière paresseuse via la fonction \texttt{get\_model()} dans un cadre de singleton. La bibliothèque SentenceTransformers assure que l'encodage inclut une normalisation L2. Selon les recommandations du modèle BGE pour la recherche asymétrique (requête brève contre passages longs), un préfixe spécifique \texttt{"Represent this sentence for searching relevant passages: "} est toujours ajouté avant la requête. La taille du vecteur produit est de 1024.
 
-Une amélioration significative de la version V2 ([F8]) permet d'éviter le double calcul de l'embedding lorsque \texttt{clean\_query} et \texttt{expanded\_query} sont identiques : le vecteur est déterminé une seule fois et réutilisé.
-
+Ce modèle a été sélectionné pour garantir la cohérence entre les embeddings créés lors de l'interrogation et ceux qui sont déjà présents dans la base vectorielle, lesquels ont également été générés avec le modèle BAAI/bge-large-en-v1.5. Cette uniformité assure la compatibilité des représentations vectorielles et renforce la pertinence de la recherche sémantique.
 
 
 
@@ -397,10 +479,70 @@ Le prompt système (\texttt{SYSTEM\_PROMPT}) définit le rôle du LLM et ses con
 Des règles strictes (\textit{STRICT RULES}) interdisent explicitement l'invention de T-codes, de titres de livres, d'URLs SAP Help ou d'étapes non présentes dans l'evidence. Le LLM doit déclarer explicitement~: \texttt{"The available documentation does not cover this."} si le contexte est insuffisant. Cette combinaison de \textit{grounding} strict et de \textit{synthesis rules} constitue la principale défense contre les hallucinations tout en améliorant la cohérence des réponses multi-sources.
 
 
+\subsection{Construction dynamique du prompt — \texttt{build\_prompt()}}
+
+Le prompt final soumis au LLM est assemblé dynamiquement par la fonction \texttt{build\_prompt()} à partir de trois composants~: le prompt système fixe, les blocs d’evidence récupérés, et l’historique conversationnel. Chaque chunk est présenté au LLM sous forme d’un bloc numéroté avec un en-tête structuré~:
+
+\begin{lstlisting}[language=Python, caption={Exemple de bloc d’evidence injecté dans le prompt}]
+[1] ADM325_Software_Logistics — Setting Up RFC Connections (BASIS > RFC)
+The RFC destination SM59 allows configuring connections between SAP
+systems. Enter the target hostname, system number, and logon data...
+\end{lstlisting}
+
+L’en-tête contient~: le numéro de citation \texttt{[N]}, le nom du livre source, le titre de la section, et le \textit{breadcrumb} hiérarchique (\texttt{BASIS > RFC}). Cette structuration permet au LLM de citer précisément ses sources via la notation \texttt{[1][3]} et d’éviter toute confusion entre documents de même thématique.
+
+\subsection{Pré-synthèse des chunks (\texttt{synthesis\_text})}
+
+Avant la construction du prompt, chaque chunk subit une étape de \textbf{pré-synthèse sémantique} réalisée par la fonction \texttt{synthesize\_chunks()}. Cette étape extrait, par similarité cosinus avec le vecteur de la requête, uniquement les phrases les plus pertinentes du chunk~:
+
+\begin{enumerate}[leftmargin=2em]
+  \item Les phrases du chunk sont découpées et vectorisées individuellement avec BGE-large.
+  \item Chaque phrase est scorée par similarité cosinus avec le vecteur de la requête.
+  \item Seules les phrases dépassant un seuil de pertinence sont conservées dans \texttt{synthesis\_text}.
+  \item Les chunks quasi-identiques (similarité inter-chunks $>$ 0.92) sont éliminés comme doublons.
+\end{enumerate}
+
+\begin{lstlisting}[language=Python, caption={Utilisation de synthesis\_text dans build\_prompt()}]
+# Pre-synthesized sentences if available, fallback to raw content
+content = c.get("synthesis_text") or c["content"]
+content = content[:500]  # Hard-cap to keep total prompt under 2048 tokens
+\end{lstlisting}
+
+Cette pré-synthèse réduit le bruit injecté dans le prompt~: le LLM reçoit une sélection de phrases directement utiles plutôt que des blocs de texte bruts pouvant contenir des informations hors-sujet. Elle améliore également la fidélité de la réponse en concentrant l’attention du modèle sur les passages les plus pertinents.
+
+\subsection{Injection de l’historique conversationnel}
+
+Pour supporter les échanges multi-tours, \texttt{build\_prompt()} intègre les derniers tours de la conversation sous forme d’un bloc \texttt{RECENT CONVERSATION HISTORY}~:
+
+\begin{lstlisting}[language=Python, caption={Injection de l’historique conversationnel}]
+=== RECENT CONVERSATION HISTORY ===
+User: How do I check background jobs in SAP?
+Assistant: To monitor background jobs, use transaction SM37...
+
+=== QUESTION ===
+Which statuses indicate a failed job?
+\end{lstlisting}
+
+Chaque message est tronqué à 150 caractères afin de contenir la taille totale du prompt dans la fenêtre de contexte du LLM (2048 tokens pour llama3.2:3b). Cette troncature préserve la référence contextuelle tout en évitant de saturer le budget de tokens alloué aux chunks d’evidence.
+
 \subsection{Contrôle anti-hallucination post-génération}
-La fonction \texttt{check\_hallucinations()} met en œuvre un mécanisme de vérification post-génération visant à détecter d’éventuelles incohérences dans la réponse produite par le LLM. Elle compare les T-codes ainsi que les numéros de notes SAP mentionnés dans la réponse générée avec ceux effectivement présents dans les chunks de contexte récupérés lors de la phase de retrieval. Lorsqu’un T-code ou une note SAP apparaît dans la réponse sans être référencé dans le contexte fourni au modèle, cet élément est considéré comme une hallucination potentielle. Il est alors signalé dans le champ \texttt{warnings} de la réponse API, afin de permettre au frontend d’informer l’utilisateur si nécessaire.
+
+Le contrôle anti-hallucination opère en deux étapes complémentaires après la génération~:
+
+\textbf{Étape 1 — Détection par \texttt{check\_hallucinations()}.} La fonction compare les T-codes et numéros de notes SAP présents dans la réponse générée avec ceux effectivement contenus dans les chunks récupérés. Tout T-code connu (\texttt{KNOWN\_TCODES}) mentionné dans la réponse sans apparaître dans le contexte est signalé comme hallucination potentielle~:
+
+\[
+\text{T-codes halluc.} = \bigl(\text{T-codes}(\text{réponse}) \setminus \text{T-codes}(\text{contexte})\bigr) \cap \texttt{KNOWN\_TCODES}
+\]
+
+\textbf{Étape 2 — Sanitisation par \texttt{sanitize\_answer()}.} Les phrases de la réponse dont \textit{tous} les T-codes mentionnés sont hallucinés (non présents dans le contexte) sont supprimées de la réponse finale avant renvoi à l’utilisateur. Les phrases mixtes (T-codes halluc. + T-codes légitimes) sont conservées et signalées en \texttt{warnings} dans la réponse API.
+
+\begin{definitionbox}{Choix de conception — Contrôle déterministe vs RAGAS}
+La détection d’hallucinations par correspondance T-code est délibérément déterministe, contrairement aux métriques LLM-as-Judge (Faithfulness RAGAS). Ce choix garantit une vérification instantanée ($<$1 ms), sans appel LLM supplémentaire, avec un comportement prévisible et explicable. Les deux approches sont complémentaires~: le contrôle déterministe attrape les hallucinations d’entités SAP précises~; RAGAS évalue la fidélité sémantique globale.
+\end{definitionbox}
+
 % ───────────────────────────────────────────────────
-\section{Workflow global d'une requête utilisateur}
+\section{Workflow global d’une requête utilisateur}
 
 Le traitement d’une requête utilisateur suit plusieurs étapes depuis l’interface SAP Fiori jusqu’au retour de la réponse finale. Après la soumission de la question dans le chatbot, la requête est envoyée au backend Python via l’endpoint \texttt{POST /query} de l’API FastAPI. Une session identifiée par UUID est ensuite récupérée ou créée avant l’appel de la fonction principale \texttt{ask()}.
 
