@@ -1,0 +1,124 @@
+
+\chapter*{Introduction Générale}
+\addcontentsline{toc}{chapter}{Introduction Générale}
+\label{chap:intro_generale}
+
+% ============================================================
+
+Dans le paysage actuel des entreprises, les systèmes SAP constituent bien plus qu'un simple
+outil informatique : ils forment la colonne vertébrale des opérations métiers les plus critiques
+dans de nombreux secteurs d'activité. En tant que solutions de progiciel de gestion intégré (PGI),
+ces systèmes orchestrent des processus fondamentaux touchant à la chaîne d'approvisionnement,
+à la logistique, aux relations clients, aux ressources humaines et aux opérations financières.
+
+Maintenir efficacement ces environnements SAP représente pourtant un défi constant pour les
+organisations qui en dépendent surtout lorsqu'il s'agit de gérer les connaissances au sein
+de déploiements distribués, d'analyser des flux transactionnels massifs, et d'assurer une
+supervision continue de systèmes d'une grande complexité.
+
+Cette complexité est notamment due à l'immensité des volumes de transactions générés chaque
+jour, à la densité de la documentation technique disponible, et à la nature dispersée des
+applications entre différents départements et entités de l'entreprise.
+
+Concrètement, qu'il s'agisse d'administrateurs SAP ou de consultants expérimentés, plusieurs
+difficultés reviennent systématiquement :
+
+\begin{itemize}[leftmargin=*, label=\textbullet]
+  \item \textbf{Extraire des insights exploitables} depuis des journaux de transactions
+        éparpillés sur plusieurs systèmes aux architectures hétérogènes.
+  \item \textbf{Identifier les Notes SAP et la documentation pertinente} face à des
+        comportements système spécifiques ou des incidents inattendus.
+  \item \textbf{Anticiper les défaillances potentielles} et détecter proactivement les
+        opportunités d'optimisation avant qu'elles ne se transforment en problèmes coûteux.
+  \item \textbf{Assister les consultants} dans leur maîtrise d'une base de connaissances
+        vaste et en constante évolution, indispensable pour administrer efficacement les
+        environnements SAP.
+\end{itemize}
+
+% ============================================================
+\section*{Motivation et contexte industriel}
+\addcontentsline{toc}{section}{Motivation et contexte industriel}
+
+L'intégration de l'intelligence artificielle dans les systèmes d'entreprise représente aujourd'hui
+l'une des mutations les plus profondes dans l'évolution des technologies de gestion. Selon
+le Hype Cycle de Gartner pour l'Intelligence Artificielle 2024\footnote{Gartner Inc., \textit{Hype
+Cycle for Artificial Intelligence 2024}. Disponible sur : \url{https://www.gartner.com/en/articles/hype-cycle-for-artificial-intelligence}},
+plusieurs technologies au cœur de ce projet occupent des positions stratégiques sur la courbe
+d'innovation.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.80\textwidth]{images/hype_cycle_2024.png}
+  \caption{Hype Cycle de Gartner pour l'Intelligence Artificielle, 2024}
+  \label{fig:hype_cycle_2024}
+\end{figure}
+
+Les \textbf{Graphes de Connaissances}, composante centrale de notre approche, traversent
+actuellement la \textit{Slope of Enlightenment}  la pente de l'illumination. Ce positionnement
+témoigne d'une maturité croissante et d'une capacité désormais prouvée à générer de la valeur
+métier concrète. Après les espoirs parfois excessifs des premières années et la phase de
+désillusionment qui a suivi, les organisations développent aujourd'hui une vision beaucoup
+plus pragmatique de leurs usages et de leurs bénéfices dans un contexte d'entreprise.
+
+De leur côté, les approches d'\textbf{IA générative} se situent près du \textit{Peak of
+Inflated Expectations}  le pic des attentes excessives. Cet engouement intense, parfois
+déconnecté des réalités opérationnelles, illustre bien les tensions propres à toute technologie
+émergente. Notre projet tient compte de ce positionnement en adoptant une démarche hybride :
+exploiter pleinement les forces de l'IA générative tout en la contraignant dans un cadre de
+représentation structurée des connaissances, afin d'en surmonter les limites.
+
+Le placement des \textbf{Applications Intelligentes} sur la pente de l'illumination vient
+conforter notre approche : construire une application d'entreprise spécialisée, combinant
+plusieurs technologies d'IA à différents stades de maturité. En les articulant de façon
+complémentaire, ce projet vise à produire une valeur métier tangible, tout en contournant
+les obstacles habituels liés aux cycles d'adoption technologique.
+
+Sur le plan scientifique, les récentes avancées en intelligence artificielle notamment à
+travers les grands modèles de langage (LLM) ont ouvert des perspectives inédites pour
+concevoir des assistants intelligents et des agents de supervision au sein des écosystèmes
+d'entreprise. Ces modèles excellent dans la compréhension et la génération du langage naturel,
+mais ils présentent des limites connues : fenêtre de contexte restreinte, tendance aux
+hallucinations, et difficultés à raisonner sur des données structurées ou tabulaires.
+
+Pour pallier ces insuffisances, le paradigme de la \textbf{Génération Augmentée par
+Récupération} (RAG — \textit{Retrieval-Augmented Generation}) a émergé ces dernières années.
+Il permet aux LLM d'accéder à des sources d'information externes au moment de l'inférence,
+enrichissant ainsi leurs réponses avec des faits vérifiables. Cependant, les systèmes RAG
+classiques, qui reposent essentiellement sur une recherche sémantique vectorielle sur des
+documents non structurés, peinent souvent à capturer les relations structurelles fines entre
+entités  ce qui limite la précision et la traçabilité des réponses dans des contextes métiers
+sensibles où l'erreur a un coût.
+
+Des travaux récents ont alors proposé d'aller plus loin avec les approches de
+\textbf{Graph-Enhanced RAG}, qui intègrent une représentation structurée des connaissances 
+via des graphes de connaissances  directement dans le processus génératif. En enrichissant
+les architectures RAG avec ces représentations du domaine, il devient possible d'améliorer
+à la fois la cohérence factuelle et l'interprétabilité des alertes ou recommandations produites.
+
+% ============================================================
+\section*{Objectifs du projet}
+\addcontentsline{toc}{section}{Objectifs du projet}
+
+L'objectif principal de ce projet de fin d'études est de concevoir et d'implémenter un
+\textbf{système RAG hybride} dédié à l'alerting intelligent et à la supervision de l'activité
+transactionnelle SAP.
+
+Cette implémentation combine des technologies situées à différentes phases du Hype Cycle de
+Gartner, dans le but d'établir un équilibre pragmatique entre innovation et applicabilité
+concrète. En ancrant les capacités de l'IA générative dans un cadre structuré de graphes de
+connaissances, le projet ambitionne de contribuer à la création d'une solution d'administration
+de systèmes d'entreprise à la fois robuste et universelle  une solution capable d'éviter les
+écueils classiques des technologies émergentes tout en tirant pleinement parti de leurs atouts.
+
+Ce travail cherche également à répondre à des enjeux fondamentaux de la supervision moderne :
+la \textbf{détection d'anomalies}, l'\textbf{ancrage dans les connaissances du domaine}, et
+l'\textbf{explicabilité} des résultats pour l'utilisateur final.
+
+% ============================================================
+\section*{Structure du rapport}
+\addcontentsline{toc}{section}{Structure du rapport}
+
+La suite de ce rapport est organisée comme suit. Nous présentons d'abord les fondements
+théoriques sur lesquels repose notre approche, puis les choix de conception architecturale,
+avant de détailler les étapes d'implémentation. Nous clôturons par une évaluation expérimentale
+de l'agent de supervision intelligent développé pour les systèmes SAP.

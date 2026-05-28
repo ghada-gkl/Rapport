@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//c/Users/Youss/Documents/pfeamen/APP_RAG/**)",
-      "Bash(grep -h \"pip install\\\\|import\\\\|from\" \"C:/Users/Youss/Documents/RAG_SAP/rag/rag_pipelinev2.py\" | head -50)",
-      "Read(//c/Users/Youss/Documents/RAG_SAP/rag/**)"
-    ]
-  }
-}
