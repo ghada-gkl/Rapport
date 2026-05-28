@@ -34,84 +34,208 @@ Ce chapitre présente l’architecture générale de déploiement, les différen
 
 Le système déployé repose sur une architecture à trois couches distinctes communiquant via des interfaces bien définies. La figure 8.2  illustre l'ensemble des composants et leurs interconnexions.
 
+% Required in preamble:
+% \usetikzlibrary{arrows.meta, fit, backgrounds, shadows.blur, calc}
+
+% Preamble: \usetikzlibrary{arrows.meta, fit, backgrounds, shadows.blur, calc}
+
 \begin{figure}[H]
 \centering
 \resizebox{0.97\textwidth}{!}{%
 \begin{tikzpicture}[
   font=\small,
-  box/.style={draw, rectangle, rounded corners=5pt,
-              minimum width=3.2cm, minimum height=1.2cm,
-              text centered, align=center, font=\footnotesize, fill=white},
-  arr/.style={-{Stealth[length=6pt]}, thick},
-  lbl/.style={font=\scriptsize, fill=white, inner sep=2pt, rounded corners=2pt},
+  %% ── Box style ───────────────────────────────────────────
+  box/.style={
+    draw=#1, rectangle, rounded corners=6pt,
+    minimum width=3.3cm, minimum height=1.4cm,
+    text centered, align=center, font=\footnotesize,
+    fill=white, line width=1.1pt,
+    blur shadow={shadow blur steps=4, shadow xshift=1.5pt,
+                 shadow yshift=-1.5pt, shadow blur radius=3pt,
+                 shadow opacity=0.15}
+  },
+  box/.default=black,
+  %% ── Arrow styles ────────────────────────────────────────
+  arr/.style={-{Stealth[length=7pt,width=5pt]}, line width=1.2pt, #1},
+  arr/.default=black,
+  arrbi/.style={
+    {Stealth[length=6pt,width=4pt]}-{Stealth[length=6pt,width=4pt]},
+    line width=1.0pt, #1},
+  arrbi/.default=black,
+  %% ── Label styles ────────────────────────────────────────
+  lbl/.style={font=\scriptsize\ttfamily, fill=white, inner sep=2.5pt,
+              rounded corners=3pt, draw=gray!35, line width=0.6pt},
+  ilbl/.style={font=\tiny\sffamily, fill=white, inner sep=1.5pt,
+               rounded corners=2pt, draw=gray!25, line width=0.5pt},
+  portbadge/.style={
+    font=\tiny\bfseries\ttfamily, fill=white,
+    draw=#1, rounded corners=3pt,
+    inner sep=2.5pt, text=#1, line width=0.8pt},
+  portbadge/.default=black,
+  %% ── Layer title style ───────────────────────────────────
+  layertitle/.style={
+    font=\footnotesize\bfseries, text=#1,
+    fill=white, draw=#1, rounded corners=4pt,
+    inner xsep=8pt, inner ysep=4pt, line width=0.9pt},
+  layertitle/.default=black,
 ]
 
-% ── Boîtes Couche 1 : Frontend (y=8.0) ──────────────────────
-\node[box, draw=SAPBlue] (shell)    at (-5.0, 8.0) {\textbf{ShellBar}\\\scriptsize Bouton IA};
-\node[box, draw=SAPBlue] (panel)    at (-1.5, 8.0) {\textbf{ChatPanel}\\\scriptsize Tiroir latéral};
-\node[box, draw=SAPBlue] (chatpage) at ( 2.0, 8.0) {\textbf{Chatbot.jsx}\\\scriptsize Page dédiée};
-\node[box, draw=SAPBlue] (pages)    at ( 5.5, 8.0) {\textbf{25+ Pages}\\\scriptsize Monitoring};
+%% ════════════════════════════════════════════════════════════
+%% LAYER 1 BOXES — Frontend  (y = 8.0)
+%% ════════════════════════════════════════════════════════════
+\node[box=SAPBlue] (shell)    at (-5.5, 8.0)
+  {{\color{SAPBlue}\textbf{ShellBar}}\\[2pt]\scriptsize Bouton IA};
+\node[box=SAPBlue] (panel)    at (-1.7, 8.0)
+  {{\color{SAPBlue}\textbf{ChatPanel}}\\[2pt]\scriptsize Tiroir latéral};
+\node[box=SAPBlue] (chatpage) at ( 2.0, 8.0)
+  {{\color{SAPBlue}\textbf{Chatbot.jsx}}\\[2pt]\scriptsize Page dédiée};
+\node[box=SAPBlue] (pages)    at ( 5.8, 8.0)
+  {{\color{SAPBlue}\textbf{25+ Pages}}\\[2pt]\scriptsize Monitoring};
 
-% ── Boîtes Couche 2 : CAP (y=5.0) ───────────────────────────
-\node[box, draw=SAPGreen] (chatSrv) at (-3.5, 5.0) {\textbf{chat-service}\\\scriptsize OData Action};
-\node[box, draw=SAPGreen] (monSrv)  at ( 0.5, 5.0) {\textbf{monitoring-service}\\\scriptsize 18 entités OData};
-\node[box, draw=SAPGreen] (mongo)   at ( 4.5, 5.0) {\textbf{MongoDB Atlas}\\\scriptsize Données monitoring};
+%% ════════════════════════════════════════════════════════════
+%% LAYER 2 BOXES — CAP / Métier  (y = 4.5)
+%% ════════════════════════════════════════════════════════════
+\node[box=SAPGreen] (chatSrv) at (-3.5, 4.5)
+  {{\color{SAPGreen}\textbf{chat-service}}\\[2pt]\scriptsize OData Action};
+\node[box=SAPGreen] (monSrv)  at ( 1.0, 4.5)
+  {{\color{SAPGreen}\textbf{monitoring-service}}\\[2pt]\scriptsize 18 entités OData};
+\node[box=SAPGreen] (mongo)   at ( 5.3, 4.5)
+  {{\color{SAPGreen}\textbf{MongoDB Atlas}}\\[2pt]\scriptsize Données monitoring};
 
-% ── Boîtes Couche 3 : RAG (y=2.0) ───────────────────────────
-\node[box, draw=SAPOrange] (api)    at (-5.0, 2.0) {\textbf{api.py}\\\scriptsize FastAPI};
-\node[box, draw=SAPOrange] (pipe)   at (-1.5, 2.0) {\textbf{rag\_pipelinev2}\\\scriptsize Pipeline RAG};
-\node[box, draw=SAPOrange] (ollama) at ( 2.0, 2.0) {\textbf{Ollama}\\\scriptsize llama3.2:3b (11434)};
-\node[box, draw=SAPOrange] (pg)     at ( 5.5, 2.0) {\textbf{PostgreSQL}\\\scriptsize pgvector (5432)};
+%% ════════════════════════════════════════════════════════════
+%% LAYER 3 BOXES — RAG / Python  (y = 1.0)
+%% ════════════════════════════════════════════════════════════
+\node[box=SAPOrange] (api)    at (-5.5, 1.0)
+  {{\color{SAPOrange}\textbf{api.py}}\\[2pt]\scriptsize FastAPI};
+\node[box=SAPOrange] (pipe)   at (-1.7, 1.0)
+  {{\color{SAPOrange}\textbf{rag\_pipeline v2}}\\[2pt]\scriptsize Pipeline RAG};
+\node[box=SAPOrange] (ollama) at ( 2.0, 1.0)
+  {{\color{SAPOrange}\textbf{Ollama}}\\[2pt]\scriptsize llama3.2:3b};
+\node[box=SAPOrange] (pg)     at ( 5.8, 1.0)
+  {{\color{SAPOrange}\textbf{PostgreSQL}}\\[2pt]\scriptsize pgvector};
 
-% ── Fonds des couches (fit autour des boîtes) ────────────────
+%% ════════════════════════════════════════════════════════════
+%% BACKGROUND BANDS  (fit snugly around boxes only)
+%% ════════════════════════════════════════════════════════════
 \begin{scope}[on background layer]
-  \node[draw=SAPBlue,   fill=SAPLightBlue,   rounded corners=10pt, inner sep=12pt,
+  \node[draw=SAPBlue,   fill=SAPLightBlue,   rounded corners=10pt,
+        inner sep=12pt, line width=1.3pt,
         fit=(shell)(panel)(chatpage)(pages)]   (layer1) {};
-  \node[draw=SAPGreen,  fill=SAPLightGreen,  rounded corners=10pt, inner sep=12pt,
+  \node[draw=SAPGreen,  fill=SAPLightGreen,  rounded corners=10pt,
+        inner sep=12pt, line width=1.3pt,
         fit=(chatSrv)(monSrv)(mongo)]          (layer2) {};
-  \node[draw=SAPOrange, fill=SAPLightOrange, rounded corners=10pt, inner sep=12pt,
+  \node[draw=SAPOrange, fill=SAPLightOrange, rounded corners=10pt,
+        inner sep=12pt, line width=1.3pt,
         fit=(api)(pipe)(ollama)(pg)]           (layer3) {};
 \end{scope}
 
-% ── Labels des couches (intérieur haut-gauche) ───────────────
-\node[anchor=north west, font=\footnotesize\bfseries\color{SAPBlue}]
-  at ([xshift=7pt, yshift=-6pt]layer1.north west)
-  {Couche Présentation — Frontend React / SAP UI5 (port 3000)};
-\node[anchor=north west, font=\footnotesize\bfseries\color{SAPGreen}]
-  at ([xshift=7pt, yshift=-6pt]layer2.north west)
-  {Couche Métier — SAP CAP / Express (port 4004)};
-\node[anchor=north west, font=\footnotesize\bfseries\color{SAPOrange}]
-  at ([xshift=7pt, yshift=-6pt]layer3.north west)
-  {Couche RAG — Python / FastAPI (port 8000)};
+%% ════════════════════════════════════════════════════════════
+%% LAYER TITLE BANNERS — placed ABOVE each band (no overlap)
+%% ════════════════════════════════════════════════════════════
+\node[layertitle=SAPBlue, anchor=south west]
+  at ([xshift=6pt, yshift=3pt]layer1.north west)
+  {Couche Présentation — Frontend React / SAP UI5};
+\node[portbadge=SAPBlue, anchor=south east]
+  at ([xshift=-6pt, yshift=3pt]layer1.north east)
+  {:3000};
 
-% ── Flèches inter-couches ────────────────────────────────────
-% ChatPanel → chat-service (flèche principale + label)
-\draw[arr, SAPBlue!80]
-  (panel.south)
-  -- node[lbl, right]{\texttt{POST /odata/v4/chat/query}} ++(0,-1.0)
+\node[layertitle=SAPGreen, anchor=south west]
+  at ([xshift=6pt, yshift=3pt]layer2.north west)
+  {Couche Métier — SAP CAP / Express};
+\node[portbadge=SAPGreen, anchor=south east]
+  at ([xshift=-6pt, yshift=3pt]layer2.north east)
+  {:4004};
+
+\node[layertitle=SAPOrange, anchor=south west]
+  at ([xshift=6pt, yshift=3pt]layer3.north west)
+  {Couche RAG — Python / FastAPI};
+\node[portbadge=SAPOrange, anchor=south east]
+  at ([xshift=-6pt, yshift=3pt]layer3.north east)
+  {:8000};
+
+%% ════════════════════════════════════════════════════════════
+%% INTER-LAYER ARROWS
+%% ════════════════════════════════════════════════════════════
+
+%% ChatPanel → chat-service  (primary, solid)
+\draw[arr=SAPBlue!80]
+  (panel.south) -- ++(0,-0.75)
+  node[lbl, pos=0.6, right=4pt]{\texttt{POST /odata/v4/chat/query}}
   -| (chatSrv.north);
 
-% Chatbot.jsx → chat-service (chemin secondaire)
-\draw[arr, SAPBlue!50, dashed]
-  (chatpage.south) -- ++(0,-1.4) -| (chatSrv.north);
+%% Chatbot.jsx → chat-service  (secondary, dashed)
+\draw[arr=SAPBlue!35, dashed, line width=0.85pt]
+  (chatpage.south) -- ++(0,-1.3) -| (chatSrv.north);
 
-% chat-service → api.py (appel RAG + label)
-\draw[arr, SAPGreen!80]
-  (chatSrv.south)
-  -- node[lbl, right]{\texttt{POST http://localhost:8000/query}} ++(0,-1.0)
+%% 25+Pages → monitoring-service  (secondary, dashed)
+\draw[arr=SAPBlue!35, dashed, line width=0.85pt]
+  (pages.south) -- ++(0,-1.3) -| (monSrv.north);
+
+%% chat-service → api.py  (RAG call)
+\draw[arr=SAPGreen!80]
+  (chatSrv.south) -- ++(0,-0.75)
+  node[lbl, pos=0.6, right=4pt]{\texttt{POST http://localhost:8000/query}}
   -| (api.north);
 
-% Flèches internes couche RAG
-\draw[arr, SAPOrange] (api.east)    -- (pipe.west);
-\draw[arr, SAPOrange] (pipe.east)   -- (ollama.west);
-% pipe → PostgreSQL : routage sous la ligne pour éviter de traverser Ollama
-\draw[arr, SAPOrange]
-  (pipe.south) -- ++(0,-0.45)
-  -- ($(pg.south) + (0,-0.45)$)
+%% ════════════════════════════════════════════════════════════
+%% INTRA-LAYER ARROWS — RAG layer
+%% (labels placed BELOW the connecting line to avoid box overlap)
+%% ════════════════════════════════════════════════════════════
+\draw[arrbi=SAPOrange]
+  (api.east) -- node[ilbl, below=3pt]{embed + retrieve} (pipe.west);
+
+\draw[arrbi=SAPOrange]
+  (pipe.east) -- node[ilbl, below=3pt]{prompt} (ollama.west);
+
+%% pipe → PostgreSQL: routed below to avoid crossing Ollama
+\draw[arr=SAPOrange]
+  (pipe.south) -- ++(0,-0.55)
+  -- node[ilbl, below=2pt]{vecteurs}
+     ($(pg.south)+(0,-0.55)$)
   -- (pg.south);
 
-% Flèche interne couche CAP
-\draw[arr, SAPGreen] (monSrv.east) -- (mongo.west);
+%% ════════════════════════════════════════════════════════════
+%% INTRA-LAYER ARROWS — CAP layer
+%% ════════════════════════════════════════════════════════════
+\draw[arrbi=SAPGreen]
+  (monSrv.east) -- node[ilbl, above=2pt]{CRUD} (mongo.west);
+
+%% ════════════════════════════════════════════════════════════
+%% RIGHT-SIDE DATA-FLOW SPINE
+%% ════════════════════════════════════════════════════════════
+\coordinate (spineTop) at (9.0, 8.8);
+\coordinate (spineMid) at (9.0, 5.2);
+\coordinate (spineBot) at (9.0, 1.7);
+
+\draw[arr=gray!45, line width=0.9pt, dashed]
+  (spineTop) -- (spineMid)
+  node[midway, right=3pt, font=\tiny\sffamily\color{gray!65}, align=center]
+    {Requête\\utilisateur};
+
+\draw[arr=gray!45, line width=0.9pt, dashed]
+  (spineMid) -- (spineBot)
+  node[midway, right=3pt, font=\tiny\sffamily\color{gray!65}, align=center]
+    {Inférence\\RAG};
+
+%% ════════════════════════════════════════════════════════════
+%% BOTTOM LEGEND
+%% ════════════════════════════════════════════════════════════
+\begin{scope}[shift={(0,-0.55)}]
+  \draw[arr=gray!70, line width=1.0pt]
+    (-6.5,-0.05) -- (-5.1,-0.05);
+  \node[right, font=\tiny\sffamily\color{gray!60}] at (-5.0,-0.05)
+    {Appel synchrone};
+
+  \draw[arr=gray!50, dashed, line width=0.85pt]
+    (-2.5,-0.05) -- (-1.1,-0.05);
+  \node[right, font=\tiny\sffamily\color{gray!60}] at (-1.0,-0.05)
+    {Flux secondaire};
+
+  \draw[arrbi=gray!60, line width=0.9pt]
+    (1.6,-0.05) -- (3.0,-0.05);
+  \node[right, font=\tiny\sffamily\color{gray!60}] at (3.1,-0.05)
+    {Échange interne bidirectionnel};
+\end{scope}
 
 \end{tikzpicture}%
 }
@@ -119,6 +243,16 @@ Le système déployé repose sur une architecture à trois couches distinctes co
 \label{fig:deploy_arch}
 \end{figure}
 
+\section{Diagramme de cas d'utilisation général}
+
+Dans cette section, les exigences fonctionnelles du système sont représentées à l'aide d'un diagramme de cas d'utilisation conforme au langage de modélisation UML. Ce diagramme (voir figure 2.1) met en évidence les différents acteurs du système ainsi que les interactions possibles entre ces acteurs et les fonctionnalités offertes par l'application. Il permet ainsi de fournir une vision globale du comportement du système et des services qu'il propose aux utilisateurs.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Diagramme vierge.png}
+    \caption{Diagramme de cas d'utilisation général du système}
+    \label{fig:usecase_ch8}
+\end{figure}
 \subsection{Technologies utilisées}
 
 L'ensemble de la pile technologique mise en œuvre est résumé dans le tableau~\ref{tab:tech_stack}.
@@ -147,6 +281,9 @@ Base vectorielle & PostgreSQL + pgvector & Stockage et recherche hybride (port 5
 \hline
 \end{tabularx}
 \end{table}
+
+
+% ─────────────────────────────────────────────────────────────────────────────
 
 % ─────────────────────────────────────────────────────────────
 \section{Déploiement du système RAG}
@@ -211,6 +348,13 @@ class QueryRequest(BaseModel):
     filter_source: Optional[str] = None
 \end{lstlisting}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/sequence_chatbot_fr.png}
+\caption{Diagramme de séquence — cycles complets d'interaction~: initialisation de session, surveillance SAP et chatbot RAG}
+\label{fig:sequence_requete}
+\end{figure}
+
 \subsection{Paramètres clés du pipeline}
 
 Le tableau~\ref{tab:pipeline_params} regroupe les hyperparamètres déterminants du pipeline RAG déployé en production~:
@@ -239,7 +383,7 @@ Le tableau~\ref{tab:pipeline_params} regroupe les hyperparamètres déterminants
 \hline
 $W_{\text{vec}}$ / $W_{\text{BM25}}$ & 0.4 / 0.6 & Poids de fusion RRF (BM25 privilégié pour corpus SAP) \\
 \hline
-\texttt{NUM\_CTX} & 8~192 & Fenêtre de contexte du LLM Ollama (en tokens) \\
+\texttt{NUM\_CTX} & 4~096 & Fenêtre de contexte du LLM Ollama (en tokens) \\
 \hline
 \texttt{Temperature} & 0.1 & Température de génération (réponses déterministes) \\
 \hline
@@ -253,6 +397,13 @@ $W_{\text{vec}}$ / $W_{\text{BM25}}$ & 0.4 / 0.6 & Poids de fusion RRF (BM25 pri
 \subsection{Vue d'ensemble de l'intégration}
 
 L'intégration du chatbot dans AutoMoni a été réalisée selon une architecture en trois niveaux~: la \textbf{définition du service} en CDS (Core Data Services), l'\textbf{implémentation du handler} en JavaScript côté CAP, et les \textbf{composants React} côté frontend.
+
+% ── PLACEHOLDER 3 ────────────────────────────────────────────────────────────
+% Diagramme à réaliser : architecture des composants de l'intégration chatbot
+% Composants : ChatPanel.jsx, AppShell.jsx, chat-service.cds, chat-service.js, api.py
+% Suggestions : diagramme de composants UML ou schéma bloc en draw.io
+
+% ─────────────────────────────────────────────────────────────────────────────
 
 \subsection{Définition du service OData (CAP CDS)}
 
@@ -278,7 +429,7 @@ Cette définition génère automatiquement l'endpoint OData \texttt{POST /odata/
 Le chatbot est implémenté côté frontend sous deux formes complémentaires~:
 
 \begin{itemize}[leftmargin=2em]
-  \item \textbf{Page dédiée} (\texttt{/chatbot})~: le composant \texttt{Chatbot.jsx} (723 lignes) offre une interface complète avec historique de conversations organisées en sessions, liste des conversations précédentes, zone de réponse avec rendu Markdown via \texttt{react-markdown}, et boutons d'action (nouvelle conversation, effacement).
+  \item \textbf{Page dédiée} (\texttt{/chatbot})~: le composant \texttt{Chatbot.jsx} (515 lignes) offre une interface complète avec historique de conversations organisées en sessions, liste des conversations précédentes, zone de réponse avec rendu Markdown via \texttt{react-markdown}, et boutons d'action (nouvelle conversation, effacement).
 
   \item \textbf{ChatPanel — Tiroir latéral}~: exporté depuis \texttt{Chatbot.jsx}, ce panneau coulissant est intégré dans le composant \texttt{AppShell.jsx} et rendu accessible depuis toutes les pages de l'application via le bouton IA dans la \texttt{ShellBar}. Il est monté paresseusement (\textit{lazy mount}) à la première ouverture afin d'éviter un flash CSS indésirable~:
 
@@ -292,10 +443,67 @@ const onChatbotClick = () => {
 }
 
 {chatHasOpened && (
-  <ChatPanel isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+  <ChatPanel open={isChatOpen} onClose={() => setIsChatOpen(false)} />
 )}
 \end{lstlisting}
 \end{itemize}
+
+\subsection{Chatbot et évaluation intégrée en temps réel}
+\label{subsec:chatbot-eval}
+
+L'intégration du pipeline d'évaluation directement dans la boucle de traitement du chatbot constitue un apport majeur par rapport à une évaluation \textit{offline} classique. Plutôt que d'utiliser un juge LLM coûteux à chaque appel (comme G-Eval), le système repose sur deux mécanismes complémentaires déclenchés automatiquement à chaque réponse~:
+
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Détection déterministe des hallucinations}~: la fonction \texttt{check\_hallucinations()} analyse la réponse générée à la recherche de T-codes SAP et de numéros de notes SAP qui ne figurent pas dans les chunks récupérés. Toute mention identifiée comme non ancrée dans les sources est supprimée par \texttt{sanitize\_answer()} avant renvoi à l'utilisateur. Ce mécanisme s'exécute en moins d'une milliseconde sans appel LLM supplémentaire.
+
+  \item \textbf{Attribution des sources}~: les chunks utilisés pour construire la réponse sont retournés dans le champ \texttt{sources} de la réponse JSON, sous forme de références structurées (\textit{«~titre du livre $>$ section~»}).
+\end{enumerate}
+
+Ces deux informations sont remontées dans l'interface utilisateur via le contrat d'API défini dans \texttt{chat-service.cds}~:
+
+\begin{lstlisting}[language=SQL, caption={Champs d'évaluation retournés par le service RAG}]
+returns {
+  answer:   String;          -- reponse nettoyee
+  sources:  array of String; -- references des chunks utilises
+  warnings: array of String; -- hallucinations detectees et supprimees
+  session_id: String;
+}
+\end{lstlisting}
+
+Le composant React \texttt{BotMessageContent} interprète ces champs et affiche, sous chaque réponse du bot, un indicateur de qualité et la liste des sources consultées~:
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Badge vert «~\checkmark~Réponse vérifiée~»}~: aucun avertissement détecté, la réponse est intégralement ancrée dans les sources récupérées.
+  \item \textbf{Badge orange «~$\triangle$~N avertissement(s)~»}~: au moins une affirmation a été filtrée pour risque d'hallucination, l'utilisateur est averti.
+  \item \textbf{Section «~Sources~» dépliable}~: liste des références documentaires utilisées, permettant à l'utilisateur de vérifier l'origine de chaque information.
+\end{itemize}
+
+\begin{lstlisting}[language=JavaScript, caption={Rendu du badge qualité et des sources dans BotMessageContent (Chatbot.jsx)}]
+const BotMessageContent = ({ message }) => (
+  <>
+    <Markdown>{message.text}</Markdown>
+    {(message.sources?.length > 0 || message.warnings?.length > 0) && (
+      <div className="ag-eval-footer">
+        <span className={`ag-quality-badge ${
+          message.warnings?.length > 0
+            ? 'ag-quality-badge--warn'
+            : 'ag-quality-badge--ok'
+        }`}>
+          {message.warnings?.length > 0
+            ? `Warning: ${message.warnings.length} hallucination(s) filtered`
+            : 'Response verified'}
+        </span>
+        <details className="ag-sources">
+          <summary>{message.sources.length} source(s)</summary>
+          <ul>{message.sources.map((src, i) => <li key={i}>{src}</li>)}</ul>
+        </details>
+      </div>
+    )}
+  </>
+)
+\end{lstlisting}
+
+Cette approche est délibérément \textbf{déterministe et légère}~: contrairement à RAGAS ou G-Eval qui nécessitent un second appel LLM pour scorer la réponse, la détection par règles (T-codes, numéros de notes) est instantanée et 100\,\% reproductible. Elle constitue un mécanisme de premier niveau suffisant pour alerter l'utilisateur sur les cas les plus risqués, RAGAS étant réservé à l'évaluation \textit{offline} en batch du pipeline.
 
 \subsection{Intelligence de navigation — T-codes vers pages monitoring}
 
@@ -350,7 +558,7 @@ Le composant \texttt{ChatPanel} est directement intégré au sein du shell appli
 \end{figure}
 
 % ─────────────────────────────────────────────────────────────
-\section{Évaluation et benchmarking}
+\section{Sélection du modèle LLM et benchmarking}
 % ─────────────────────────────────────────────────────────────
 
 \subsection{Protocole d'évaluation}

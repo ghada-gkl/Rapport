@@ -1,0 +1,47 @@
+@startuml sequence_chatbot_fr
+
+title Diagramme de séquence — Chatbot
+
+actor "Utilisateur" as User
+participant "Frontend" as FE
+participant "Service d'authentification" as Auth
+participant "API Backend" as API
+participant "Agent RAG" as RAG
+participant "Gestionnaire de cache" as Cache
+
+' ===== Authentification =====
+User -> FE : Demande de connexion
+FE -> Auth : Authentifier(identifiants)
+Auth -> Cache : Vérifier la session
+Cache --> Auth : Statut de la session
+Auth --> FE : Jeton d'authentification
+
+' ===== Flux de surveillance système =====
+group #E3F2FD Flux de surveillance système
+    User -> FE : Accéder au moniteur système
+    FE -> API : GET /api/systems
+    API -> Cache : Vérifier les données en cache
+    Cache --> API : Retourner cache/null
+
+    alt Cache manqué
+        API -> RAG : Récupérer les données système
+        RAG --> API : Données système
+        API -> Cache : Stocker les données
+    end
+
+    API --> FE : Données système
+    FE --> User : Afficher les systèmes
+end
+
+' ===== Flux d'interaction du chat =====
+group #F3E5F5 Flux d'interaction du chat
+    User -> FE : Envoyer la requête
+    FE -> API : POST /api/chat
+    API -> RAG : Traiter la requête
+    RAG --> API : Générer la réponse
+    API -> Cache : Stocker la réponse
+    API --> FE : Retourner la réponse
+    FE --> User : Afficher la réponse
+end
+
+@enduml

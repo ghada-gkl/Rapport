@@ -1,0 +1,89 @@
+@startuml sequence_chatbot_fr
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam sequenceArrowThickness 1.5
+skinparam roundcorner 6
+skinparam sequenceParticipantBorderThickness 1.5
+
+skinparam participant {
+  BackgroundColor #FFFFFF
+  BorderColor     #455A64
+  FontStyle       Bold
+  FontSize        11
+}
+skinparam actor {
+  BackgroundColor #ECEFF1
+  BorderColor     #455A64
+  FontStyle       Bold
+}
+skinparam sequence {
+  ArrowColor           #37474F
+  LifeLineBorderColor  #90A4AE
+  LifeLineBackgroundColor #FAFAFA
+  BoxBorderColor       #90A4AE
+  MessageAlignment     left
+}
+skinparam note {
+  BackgroundColor #FFF9C4
+  BorderColor     #F9A825
+}
+
+' ── Participants ────────────────────────────────────────────
+actor       "Utilisateur"         as U
+
+participant "Interface\nReact\n(port 3000)"     as UI   #EDE7F6
+participant "Service\nSAP CAP\n(port 4004)"     as CAP  #E3F2FD
+participant "API FastAPI\nRAG\n(port 8000)"     as RAG  #E8F5E9
+participant "Pipeline RAG\n(rag_pipelinev1)"    as PIPE #FFF9C4
+participant "Cache\nSémantique"                 as CACHE #FFF3E8
+
+' ══════════════════════════════════════════════════════════
+'  1. Flux d'Initialisation de Session
+' ══════════════════════════════════════════════════════════
+U  ->  UI   : Accès à l'application AutoMoni
+UI ->  CAP  : Vérification de session\n[GET /odata/v4/$metadata]
+CAP --> UI  : Session valide + données utilisateur
+UI  --> U   : Interface chargée
+
+' ══════════════════════════════════════════════════════════
+'  2. Flux de Surveillance SAP
+' ══════════════════════════════════════════════════════════
+box "Flux de Surveillance SAP" #EEF2FF
+  U   ->  UI  : Accéder au tableau de bord
+  UI  ->  CAP : GET /odata/v4/<collection>\n(SM37, ST22, DB02…)
+  CAP ->  CAP : Requête MongoDB Atlas\n(18 collections SAP)
+  CAP --> UI  : Données de monitoring (JSON)
+  UI  --> U   : Affichage des KPI, alertes et graphiques
+end box
+
+' ══════════════════════════════════════════════════════════
+'  3. Flux d'Interaction Chatbot RAG
+' ══════════════════════════════════════════════════════════
+box "Flux d'Interaction Chatbot RAG" #F3E5F5
+  U   ->  UI  : Envoyer une question SAP\n(ex. « Analyser les dumps ST22 »)
+  UI  ->  CAP : POST /odata/v4/chat/query\n{question, session_id}
+  CAP ->  RAG : POST /query\n{question, session_id, top_k=5}
+
+  RAG ->  CACHE : Recherche en cache sémantique\n(similarité cosinus > seuil)
+
+  alt Cache manquant (Cold Query)
+    CACHE --> RAG  : null
+    RAG   ->  PIPE : Comprendre l'intention\n(understand_query — sans LLM)
+    PIPE  ->  PIPE : Recherche hybride parallèle\n[vectorielle + BM25 via ThreadPoolExecutor]
+    PIPE  ->  PIPE : Fusion RRF (BM25×0.6 + vec×0.4)\n+ Reranking cross-encoder (RERANK_K=10)
+    PIPE  ->  PIPE : Génération LLM\n(Ollama llama3.2:3b, top_k=5 chunks)
+    PIPE  ->  PIPE : Vérification hallucinations\n(check_hallucinations + sanitize_answer)
+    PIPE  -->  RAG : {answer, sources, warnings}
+    RAG   ->  CACHE : Mettre en cache (TTL 24h)
+  else Cache présent (Warm Query)
+    CACHE --> RAG  : Réponse mise en cache\n(retour immédiat < 10 ms)
+  end
+
+  RAG  --> CAP : {answer, sources[], warnings[]}
+  CAP  --> UI  : Réponse structurée OData
+  UI   --> U   : Réponse Markdown\n+ badge qualité (verifie / avertissement)\n+ sources depliables
+end box
+
+@enduml

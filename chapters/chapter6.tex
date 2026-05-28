@@ -484,7 +484,7 @@ Des règles strictes (\textit{STRICT RULES}) interdisent explicitement l'inventi
 Le prompt final soumis au LLM est assemblé dynamiquement par la fonction \texttt{build\_prompt()} à partir de trois composants~: le prompt système fixe, les blocs d’evidence récupérés, et l’historique conversationnel. Chaque chunk est présenté au LLM sous forme d’un bloc numéroté avec un en-tête structuré~:
 
 \begin{lstlisting}[language=Python, caption={Exemple de bloc d’evidence injecté dans le prompt}]
-[1] ADM325_Software_Logistics — Setting Up RFC Connections (BASIS > RFC)
+[1] ADM325_Software_Logistics -- Setting Up RFC Connections (BASIS > RFC)
 The RFC destination SM59 allows configuring connections between SAP
 systems. Enter the target hostname, system number, and logon data...
 \end{lstlisting}

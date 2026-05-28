@@ -176,42 +176,105 @@ L'évaluation utilise \texttt{llama3.2:3b} via Ollama comme juge LLM (local, CPU
 
 \subsection{Résultats RAGAS}
 
+% ── colour legend macros (local to this section) ──────────────────────────
+\newcommand{\scoreHigh}[1]{\cellcolor{SAPLightGreen}\textbf{#1}}
+\newcommand{\scoreMid}[1]{\cellcolor{SAPLightOrange}\textbf{#1}}
+\newcommand{\scoreLow}[1]{\cellcolor{red!10}\textbf{#1}}
+\newcommand{\scoreNA}{\cellcolor{SAPLightGray}\textcolor{SAPGray}{---}}
+% ──────────────────────────────────────────────────────────────────────────
+
 \begin{table}[H]
 \centering
-\caption{Résultats RAGAS — Évaluation LLM-as-Judge sur 3 requêtes SAP}
+\renewcommand{\arraystretch}{1.55}
+\caption{Résultats RAGAS — Évaluation LLM-as-Judge (\texttt{llama3.2:3b}) sur 3 requêtes SAP}
 \label{tab:ragas-results}
-\begin{tabular}{lccc}
+\begin{tabularx}{\textwidth}{@{}lccX@{}}
 \toprule
-\textbf{Métrique} & \textbf{Score moyen} & \textbf{Évaluable (llama3.2:3b)} & \textbf{Interprétation} \\
+\rowcolor{SAPLightBlue}
+\textbf{Métrique} & \textbf{Score moyen} & \textbf{Évaluable} & \textbf{Interprétation} \\
 \midrule
-Answer Relevancy  & \textbf{0.92} & Oui & Réponse bien centrée sur la question \\
-Context Recall    & \textbf{0.89} & Oui & Contexte couvre bien la vérité terrain \\
-Faithfulness      & ---           & Non & Requiert une sortie JSON stricte \\
-Context Precision & ---           & Non & Requiert une sortie JSON stricte \\
+\rowcolor{SAPLightGreen!60}
+Answer Relevancy
+  & \textcolor{SAPGreen}{\Large\bfseries 0.920}
+  & \textcolor{SAPGreen}{\bfseries Oui}
+  & Réponses bien centrées sur les questions posées, sans dérive hors-sujet \\
+\rowcolor{SAPLightGreen!60}
+Context Recall
+  & \textcolor{SAPGreen}{\Large\bfseries 0.889}
+  & \textcolor{SAPGreen}{\bfseries Oui}
+  & Le contexte récupéré couvre bien les informations de la vérité terrain \\
+\rowcolor{SAPLightGray}
+Faithfulness
+  & \textcolor{SAPGray}{\bfseries N/A}
+  & \textcolor{SAPRed}{\bfseries Non}
+  & \textcolor{SAPGray}{Requiert une sortie JSON stricte du juge LLM} \\
+\rowcolor{SAPLightGray}
+Context Precision
+  & \textcolor{SAPGray}{\bfseries N/A}
+  & \textcolor{SAPRed}{\bfseries Non}
+  & \textcolor{SAPGray}{Requiert une sortie JSON stricte du juge LLM} \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
-Les métriques Faithfulness et Context Precision nécessitent que le modèle-juge génère un JSON strictement structuré. Le modèle \texttt{llama3.2:3b} (3 milliards de paramètres) ne respecte pas ce schéma de manière fiable, entraînant des erreurs de parsing systématiques. Ces métriques nécessitent un modèle plus puissant (GPT-4, Claude Sonnet, ou un modèle Ollama 7B+).
+\begin{tcolorbox}[
+  enhanced, breakable,
+  colback=SAPLightOrange, colframe=SAPOrange,
+  fonttitle=\small\bfseries\color{white},
+  title={Limite du modèle-juge \texttt{llama3.2:3b} — métriques JSON-dépendantes},
+  attach boxed title to top left={yshift=-2mm, xshift=6mm},
+  boxed title style={colback=SAPOrange, rounded corners},
+  rounded corners, arc=3mm,
+  left=8pt, right=8pt, top=5pt, bottom=5pt
+]
+Les métriques \textbf{Faithfulness} et \textbf{Context Precision} nécessitent que le modèle-juge génère
+une sortie JSON strictement structurée. Le modèle \texttt{llama3.2:3b} (3\,Mds de paramètres) ne
+respecte pas ce schéma de manière fiable~: \textbf{100\,\% des appels échouent} avec une erreur de
+\textit{parsing}. Un modèle plus puissant (GPT-4, Claude Sonnet, ou Ollama $\geq$7\,B) est requis pour
+calculer ces métriques de manière fiable.
+\end{tcolorbox}
 
+\medskip
 \begin{table}[H]
 \centering
-\caption{Résultats RAGAS par requête}
+\renewcommand{\arraystretch}{1.45}
+\caption{Résultats RAGAS détaillés par requête}
 \label{tab:ragas-per-query}
-\begin{tabular}{llcc}
+\begin{tabularx}{\textwidth}{@{}llccl@{}}
 \toprule
-\textbf{ID} & \textbf{Question (abrégée)} & \textbf{Answer Relevancy} & \textbf{Context Recall} \\
+\rowcolor{SAPLightBlue}
+\textbf{ID} & \textbf{Question (abrégée)} & \textbf{Answer Relevancy} & \textbf{Context Recall} & \textbf{Domaine} \\
 \midrule
-Q01 & Analyze ABAP short dumps in ST22?         & ---   & 1.000 \\
-Q03 & Authorization failed, check missing auth? & 0.849 & 1.000 \\
-Q14 & Monitor performance with ST06 and SM50?   & 0.990 & 0.667 \\
+Q01 & Analyze ABAP short dumps in ST22?
+  & \scoreNA
+  & \scoreHigh{1.000}
+  & Troubleshooting ABAP \\
+Q03 & Authorization failed, check missing auth?
+  & \scoreMid{0.849}
+  & \scoreHigh{1.000}
+  & Sécurité / Autorisations \\
+Q14 & Monitor performance with ST06 and SM50?
+  & \scoreHigh{0.990}
+  & \scoreLow{0.667}
+  & Monitoring BASIS \\
 \midrule
-\textbf{Moyenne} & & \textbf{0.920} & \textbf{0.889} \\
+\rowcolor{SAPLightBlue!50}
+\textbf{Moyenne} & & \textbf{0.920} & \textbf{0.889} & \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
+\vspace{3pt}
+{\footnotesize
+\textcolor{SAPGreen}{\rule{1em}{0.6em}}~Score $\geq 0.90$\quad
+\textcolor{SAPOrange}{\rule{1em}{0.6em}}~Score $\in [0.70,\,0.90)$\quad
+\textcolor{red!50}{\rule{1em}{0.6em}}~Score $< 0.70$\quad
+\textcolor{SAPGray}{\rule{1em}{0.6em}}~Non calculé (TimeoutError ou parsing JSON)
+}
 \end{table}
 
-La colonne Answer Relevancy de Q01 est absente en raison d'un dépassement de délai (TimeoutError) causé par la surcharge CPU lors de l'exécution simultanée du modèle d'embedding et du juge LLM.
+La valeur Answer Relevancy de Q01 est absente en raison d'un \textit{TimeoutError}
+causé par la saturation CPU lors de l'exécution simultanée du modèle d'embedding et du juge LLM.
+Le Context Recall de Q14 (0.667) reflète une requête multi-entités~: les chunks récupérés
+couvrent principalement SM50 et ne contiennent qu'une couverture partielle des métriques OS de ST06.
 
 \subsection{Analyse des résultats}
 

@@ -209,10 +209,11 @@ Les pages extraites du portail \texttt{help.sap.com} présentent des anomalies s
 
 % ── Tag helper (reusable anywhere) ──────────────────────────────────────────
 \newcommand{\ptag}[2]{%
+  \colorlet{ptagcol}{#1}%
   \tikz[baseline=-0.55ex]{%
     \node[rectangle, rounded corners=2pt,
-          fill=#1!13, draw=#1!45, line width=0.45pt,
-          font=\tiny\bfseries\sffamily, text=#1!85!black,
+          fill=ptagcol!15, draw=ptagcol!55, line width=0.45pt,
+          font=\tiny\bfseries\sffamily, text=ptagcol!85!black,
           inner xsep=3pt, inner ysep=1.8pt, outer sep=2pt]{#2};%
   }%
 }
@@ -405,7 +406,7 @@ La seconde phase s’appuie sur l'examen du contenu des documents. Une empreinte
                      inner sep=0pt, aspect=2.2},
     action/.style={rectangle, rounded corners=3pt, draw=SAPGray, thick,
                    fill=SAPLightGray, minimum width=3.8cm, minimum height=0.8cm,
-                   text centered, font=\small},
+                   text centered, align=center, text width=3.4cm, font=\small},
     terminal/.style={rectangle, rounded corners=8pt, draw=SAPGreen, thick,
                      fill=SAPLightGreen, minimum width=3.8cm, minimum height=0.8cm,
                      text centered, font=\small\bfseries},
