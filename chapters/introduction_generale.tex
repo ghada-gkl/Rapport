@@ -47,37 +47,34 @@ des LLM tout en enracinant leurs réponses dans une base de connaissances qui es
 Les \textbf{Applications Intelligentes} - des systèmes d'entreprise qui unissent diverses composantes d'IA pour faciliter ou gérer des processus d'affaires complexes - se positionnent sur la \textit{Slope of Enlightenment}, un indicateur marquant une maturité en progression et une aptitude démontrée à produire de la valeur opérationnelle tangible. Cette orientation renforce l'ambition de ce projet : élaborer une application intelligente spécialisée, directement utilisable en conditions pratiques par des équipes SAP.
 Du point de vue scientifique, le paradigme de la \textbf{Génération Augmentée par Récupération} (RAG — \textit{Retrieval-Augmented Generation}) est apparu comme une réaction directe face aux limites des LLM. Cela offre au modèle langagier la possibilité d'obtenir, durant le processus d'inférence, des extraits provenant d'une base de connaissances externe, ancrant ainsi ses réponses sur des faits vérifiables plutôt que sur sa simple mémoire paramétrique. Des améliorations récentes, telles que la \textbf{Génération Augmentée par Cache} (CAG - \textit{Cache-Augmented Generation}), viennent compléter cette architecture pour les réponses existantes déjà structurées en réponse à des requêtes courantes, diminuant ainsi les délais de latence et la charge de calcul.
 % ============================================================
-\section*{Objectifs du projet}
+ \section*{Objectifs du projet}
 \addcontentsline{toc}{section}{Objectifs du projet}
+L'objectif principal de ce projet de fin d'études, mené au sein d'AVAXIA GROUP, consiste à créer et à mettre en place un \textbf{assistant intelligent de supervision SAP} --- nommé \textit{AutoMoni} --- qui sera capable de fournir des réponses en langage naturel aux interrogations des administrateurs BASIS et des consultants SAP, en s'appuyant sur un corpus de connaissances tiré de la documentation officielle SAP ainsi que sur des données de surveillance recueillies en temps réel.
+Pour atteindre cet objectif, le projet se structure autour de trois axes complémentaires :  
+\begin{itemize}[leftmargin=*, label=\textbullet]  
+  \item \textbf{Élaboration d’une base de connaissances SAP :} recueil et organisation de plus de 297 manuels de formation SAP officiels (extraction PDF à l'aide de \texttt{pdfplumber}) ainsi que du portail \texttt{help.sap.com}, suivis d'un processus de nettoyage, de découpage hiérarchique parent-enfant en segments de 512 tokens, et de vectorisation utilisant le modèle \texttt{BAAI/bge-large-en-v1.5} (1\,024 dimensions), ce qui conduit à 76\,463 vecteurs indexés dans PostgreSQL par le biais de l’extension \texttt{pgvector} avec un index HNSW.  
+\item \textbf{Pipeline RAG à récupération hybride :} un système de recherche qui associe
 
-L'objectif principal de ce projet de fin d'études, réalisé au sein d'AVAXIA GROUP, est de
-concevoir et d'implémenter un \textbf{assistant intelligent de supervision SAP} --- baptisé
-\textit{AutoMoni} --- capable de répondre en langage naturel aux questions des administrateurs
-BASIS et des consultants SAP, en ancrant chaque réponse dans un corpus de connaissances extrait
-de la documentation officielle SAP et des données de monitoring collectées en temps réel.
+la recherche sémantique vectorielle à la recherche lexicale BM25, combinées grâce
 
-Pour atteindre cet objectif, le projet s'articule autour de trois axes complémentaires :
+à l'algorithme RRF (\textit{Reciprocal Rank Fusion}), puis réévaluées par un
 
-\begin{itemize}[leftmargin=*, label=\textbullet]
-  \item \textbf{Construction d'une base de connaissances SAP :} collecte et structuration de
-        plus de 297 manuels de formation SAP officiels (extraction PDF via \texttt{pdfplumber})
-        et du portail \texttt{help.sap.com}, suivies d'un pipeline de nettoyage, de découpage
-        hiérarchique parent-enfant en segments de 512 tokens, et de vectorisation avec le modèle
-        \texttt{BAAI/bge-large-en-v1.5} (1\,024 dimensions), aboutissant à 76\,463 vecteurs
-        indexés dans PostgreSQL via l'extension \texttt{pgvector} avec index HNSW.
+cross-encodeur (\texttt{ms-marco-MiniLM}), avant de générer la réponse finale par
 
-  \item \textbf{Pipeline RAG à récupération hybride :} un système de recherche combinant
-        la recherche sémantique vectorielle et la recherche lexicale BM25, fusionnées par
-        l'algorithme RRF (\textit{Reciprocal Rank Fusion}) puis rerankées par un
-        cross-encodeur (\texttt{ms-marco-MiniLM}), avant génération de la réponse finale par
-        le modèle \texttt{llama3.2:3b} via Ollama. Le système intègre un mécanisme de cache
-        sémantique (CAG), une gestion de l'historique conversationnel multi-tours et une boucle
-        de rétroaction permettant aux administrateurs de corriger les réponses insatisfaisantes.
+le modèle \texttt{llama3.2:3b} via Ollama. Le système comprend un mécanisme de cache
 
-  \item \textbf{Intégration dans l'application AutoMoni :} déploiement du pipeline RAG sous
-        forme d'API REST (FastAPI) et intégration d'un chatbot conversationnel dans l'interface
-        web de supervision SAP, développée avec React et les composants SAP UI5, offrant aux
-        utilisateurs un accès unifié aux tableaux de bord de monitoring et à l'assistance
-        documentaire intelligente.
-\end{itemize}
+sémantique (CAG), la gestion de l'historique des conversations multi-tours ainsi qu'une boucle
+
+de rétroaction permettant aux administrateurs de rectifier les réponses jugées insatisfaisantes.
+
+\item \textbf{Intégration dans l'application AutoMoni :} mise en œuvre du pipeline RAG sous
+
+forme d'API REST (FastAPI) et incorporation d'un chatbot conversationnel dans l'interface
+
+web de supervision SAP, créée avec React et les composants SAP UI5, fournissant aux
+
+utilisateurs un accès centralisé aux tableaux de bord de suivi et à l'assistance
+
+documentaire intelligente.\end{itemize}
+
 
