@@ -57,7 +57,7 @@ Ainsi, ce système contribuera à améliorer la compréhension et la gestion des
 \section{Spécification des besoins}
 \label{sec:specification_besoins}
 
-L'analyse des besoins a pour objectif de comprendre les attentes des utilisateurs et à définir le
+L'analyse des besoins a pour objectif de comprendre les attentes des utilisateurs et de définir le
 contexte métier dans lequel s'inscrit le système à développer. Elle permet de décrire
 les fonctionnalités que le système prendra en charge, ses interactions avec les différents
 intervenants, ainsi que les règles qui encadrent ces interactions.
@@ -130,9 +130,13 @@ local du LLM via Ollama pour éliminer toute latence réseau.
 
 \subsubsection*{Fiabilité}
 Le taux d'hallucination doit rester inférieur à \textbf{5\%}, garanti
-par la validation NLI à chaque réponse générée. Si aucun chunk pertinent
-n'est trouvé (score similarité $< 0.5$), le système retourne explicitement
-une absence de réponse plutôt que d'inventer une information.
+par une validation déterministe par règles à chaque réponse générée : les
+T-codes SAP et numéros de notes SAP présents dans la réponse sont comparés
+par expressions régulières à ceux effectivement présents dans les chunks
+récupérés ; toute entité non ancrée dans le contexte est supprimée avant
+renvoi à l'utilisateur. Si aucun chunk pertinent n'est trouvé (score
+similarité $< 0.5$), le système retourne explicitement une absence de
+réponse plutôt que d'inventer une information.
 
 \subsubsection*{Confidentialité}
 L'intégralité du pipeline tourne en local — LLM via Ollama, base
@@ -154,8 +158,8 @@ sans réindexer l'intégralité du corpus.
 \textbf{Catégorie} & \textbf{Seuil cible} & \textbf{Mécanisme} \\
 \midrule
 Temps de réponse        & $\leq$ 5s (p95)   & HNSW + Ollama local \\
-Taux hallucination      & $\leq$ 5\%        & Validation NLI \\
-Recall@5                & $\geq$ 0.75       & BM25 + vecteur hybride \\
+Taux hallucination      & $\leq$ 5\%        & Validation déterministe par règles \\
+MRR / Recall@10         & 1.000 / 1.000     & BM25 + vecteur hybride + reranking \\
 Confidentialité données & 100\% local       & Ollama on-premise \\
 Insertion incrémentale  & Sans rebuild      & Index HNSW \\
 Maintenabilité          & Pipeline rejouable & Git + scripts versionnés \\

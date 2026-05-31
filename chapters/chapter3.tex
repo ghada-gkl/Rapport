@@ -16,8 +16,8 @@ d'aligner les efforts techniques sur les objectifs métier, afin que la solution
 réponde aux défis réels auxquels sont confrontées les équipes SAP.
 
 % ============================================================
-\section{État de l'art}
-\label{sec:etat_art}
+\section{Contexte métier SAP}
+\label{sec:contexte_sap}
 
 \subsection{Qu'est-ce qu'un ERP ?}
 
@@ -125,7 +125,7 @@ L'administrateur vérifie qu'aucun job n'est en erreur ou bloqué.
   \label{fig:sm37}
 \end{figure}
 
-La figure SM37 présente l'interface du T-code \texttt{SM37}, qui affiche
+La figure~\ref{fig:sm37} présente l'interface du T-code \texttt{SM37}, qui affiche
 la liste des jobs planifiés avec leur statut (\textit{Finished}, \textit{Released},
 \textit{Active}), leur date et heure de démarrage, leur durée d'exécution ainsi que
 le délai éventuel. Cette vue permet à l'administrateur BASIS d'identifier en un coup
@@ -145,7 +145,7 @@ arrêt complet du système.
   \label{fig:db02}
 \end{figure}
 
-La figure db02 illustre le T-code \texttt{DB02}, qui fournit une vue
+La figure~\ref{fig:db02} illustre le T-code \texttt{DB02}, qui fournit une vue
 synthétique de l'état de la base de données Oracle. On y retrouve le taux de
 remplissage global, la taille totale et l'espace libre, ainsi que le détail par
 tablespace et par segment (tables, index, autres). Un taux d'utilisation élevé —
@@ -165,7 +165,7 @@ les problèmes avant qu'ils n'impactent les utilisateurs.
   \label{fig:st22}
 \end{figure}
 
-La figure ST22 présente l'interface du T-code \texttt{ST22}, qui recense
+La figure~\ref{fig:st22} présente l'interface du T-code \texttt{ST22}, qui recense
 l'ensemble des \textit{short dumps} ABAP survenus sur le système. Chaque entrée
 indique la date, l'heure, le serveur applicatif, l'utilisateur concerné et le nom
 de l'erreur. Les erreurs récurrentes telles que \texttt{TSV\_TNEW\_PAGE\_ALLOC\_FAILED}
@@ -174,6 +174,9 @@ sont des indicateurs d'anomalies systémiques qui doivent être analysées et r�
 en priorité par l'équipe BASIS.
 
 % ============================================================
+\section{État de l'art}
+\label{sec:etat_art}
+
 \subsection{Les Fondements Technologiques de l'IA Générative}
 
 L’intelligence artificielle générative repose sur un ensemble de technologies complémentaires qui, combinées, permettent de concevoir des systèmes capables d’analyser, de raisonner et de produire du contenu à partir de données complexes. Cette section présente les principaux fondements technologiques qui soutiennent la compréhension et la génération du langage naturel.
@@ -204,7 +207,7 @@ Contrairement aux architectures séquentielles traditionnelles telles que les r�
 
 \subsection{Traitement Automatique du Langage Naturel (NLP)}
 
-Le traitement automatique du langage naturel (\textit{NLP}) est un domaine de l’intelligence artificielle dédié à l’interaction entre les machines et le langage humain. Il regroupe un ensemble de techniques permettant de comprendre, analyser et générer du texte.
+Le traitement automatique du langage naturel (\textit{NLP}) est un domaine de l’intelligence artificielle dédié à l’interaction entre les machines et le langage humain. Il regroupe un ensemble de techniques permettant de comprendre, analyser et générer du texte~\cite{jurafsky2024slp}.
 
 Parmi les principales applications du NLP figurent la classification de textes, l’analyse de sentiments, la traduction automatique, la reconnaissance d’entités nommées ainsi que la génération automatique de contenu.
 
@@ -212,7 +215,7 @@ Parmi les principales applications du NLP figurent la classification de textes, 
 
 \subsection{Les Modèles de Langage de Grande Taille : Capacités et Limites}
 
-Les modèles de langage de grande taille (\textit{LLMs}) sont des modèles avancés d’apprentissage profond entraînés sur des volumes massifs de données textuelles (livres, articles, sites web, code, etc.). Leur objectif est de comprendre et de générer un langage proche de celui des humains.
+Les modèles de langage de grande taille (\textit{LLMs}) sont des modèles avancés d’apprentissage profond entraînés sur des volumes massifs de données textuelles (livres, articles, sites web, code, etc.). Leur objectif est de comprendre et de générer un langage proche de celui des humains~\cite{brown2020gpt3}.
 
 Comme illustré dans la figure~\ref{fig:llm_intersection}, ces modèles se situent à l’intersection du \textit{Deep Learning} et du \textit{NLP}, combinant ainsi la puissance des réseaux de neurones profonds avec les techniques d’analyse linguistique.
 
@@ -233,9 +236,9 @@ Parmi les modèles les plus connus figurent \textit{GPT-4}, \textit{Claude} et \
 
 \subsection{Architecture de RAG (Retrieval-Augmented Generation)}
 
-Bien que les LLMs possèdent une connaissance générale acquise lors de leur entraînement, ils ne disposent pas d’un accès direct aux données spécifiques d’une organisation ni aux informations les plus récentes. L’architecture \textit{RAG (Retrieval-Augmented Generation)} a été conçue pour répondre à cette limitation.
+Bien que les LLMs possèdent une connaissance générale acquise lors de leur entraînement, ils ne disposent pas d’un accès direct aux données spécifiques d’une organisation ni aux informations les plus récentes. L’architecture \textit{RAG (Retrieval-Augmented Generation)}~\cite{lewis2020rag} a été conçue pour répondre à cette limitation.
 
-Son fonctionnement repose sur plusieurs étapes. Tout d’abord, les documents sont découpés en fragments appelés \textit{chunks}. Chaque fragment est ensuite transformé en un vecteur numérique (\textit{embedding}) représentant son contenu sémantique. Ces vecteurs sont stockés dans une base de données vectorielle.
+Son fonctionnement repose sur plusieurs étapes. Tout d’abord, les documents sont découpés en fragments appelés \textit{chunks}. Chaque fragment est ensuite transformé en un vecteur numérique (\textit{embedding}) représentant son contenu sémantique~\cite{reimers2019sbert}. Ces vecteurs sont stockés dans une base de données vectorielle.
 
 Lorsqu’une requête utilisateur est soumise, le système identifie les fragments les plus pertinents à l’aide d’une mesure de similarité (généralement la similarité cosinus). Ces informations sont ensuite injectées dans le contexte du modèle, qui génère une réponse basée sur des données réelles et vérifiables.
 
@@ -301,14 +304,14 @@ Ainsi, le RAG peut être comparé à un assistant intelligent capable de consult
 
 Bien que l’architecture RAG améliore significativement la génération de réponses en intégrant des documents externes, elle présente encore certaines limites, notamment en termes de latence et de coût de calcul, dues aux requêtes répétées vers la base vectorielle.
 
-Pour répondre à ces contraintes, une évolution appelée \textit{CAG (Cache-Augmented Generation)} a été proposée. Le principe de cette approche repose sur l’introduction d’un mécanisme de cache intelligent permettant de stocker les résultats des requêtes précédentes ainsi que les documents fréquemment récupérés.
+Pour répondre à ces contraintes, une évolution appelée \textit{CAG (Cache-Augmented Generation)}~\cite{chan2024cag} a été proposée. Le principe de cette approche repose sur l’introduction d’un mécanisme de cache intelligent permettant de stocker les résultats des requêtes précédentes ainsi que les documents fréquemment récupérés.
 
 Ainsi, lorsqu’une requête similaire est posée, le système peut réutiliser directement les informations déjà calculées sans solliciter à nouveau la base vectorielle ou les modèles d’embedding. Cela permet de réduire le temps de réponse et d’améliorer l’efficacité globale du système.
 
 En comparaison avec le RAG classique, le CAG optimise le processus de génération en réduisant les redondances de calcul tout en conservant la pertinence des informations fournies. Cette approche est particulièrement utile dans les systèmes à forte charge ou dans les applications nécessitant une réponse en temps réel.
 \subsection{L'architecture de Fine-Tuning : personnalisation des modèles IA}
 
-En plus des approches RAG et CAG, le \textit{Fine-Tuning} est une autre méthode souvent utilisée pour améliorer les performances des modèles d'intelligence artificielle. Cette technique consiste à ré-entraîner un modèle de langage préexistant sur des données propres à un domaine ou à une organisation.
+En plus des approches RAG et CAG, le \textit{Fine-Tuning} est une autre méthode souvent utilisée pour améliorer les performances des modèles d'intelligence artificielle~\cite{devlin2019bert}. Cette technique consiste à ré-entraîner un modèle de langage préexistant sur des données propres à un domaine ou à une organisation.
 
 Le Fine-Tuning permet au modèle d’acquérir le vocabulaire métier, les structures de données et les connaissances spécifiques à une entreprise. Le Fine-Tuning, à la différence du RAG qui récupère des informations externes dynamiquement au moment de la requête, intègre directement ces connaissances dans les paramètres internes du modèle.
 
@@ -394,83 +397,6 @@ Dans le cadre de ce projet, l’architecture RAG avec le CAGa été retenue pour
 
 En outre, en l’absence de jeux de données annotés par des experts et compte tenu de la complexité des \textit{SAP Notes}, l’utilisation d’approches telles que la distillation de connaissances n’est pas adaptée. Le RAG constitue ainsi un compromis efficace entre flexibilité, précision et scalabilité, particulièrement pertinent pour les applications en entreprise.
 
-\subsection{Matrice de confusion}
-
-La matrice de confusion est un outil utilisé pour évaluer les performances d’un modèle de classification en comparant les valeurs prédites aux valeurs réelles. Elle permet d’identifier les bonnes prédictions ainsi que les erreurs effectuées par le modèle.
-
-La structure de base d’une matrice de confusion repose sur quatre éléments principaux :
-
-\begin{itemize}
-    \item \textbf{Vrai Positif (TP)} : le modèle prédit correctement la classe positive. Par exemple, un courriel de spam correctement identifié comme spam.
-    
-    \item \textbf{Vrai Négatif (TN)} : le modèle prédit correctement la classe négative. Par exemple, un courriel normal correctement identifié comme non spam.
-    
-    \item \textbf{Faux Positif (FP)} : le modèle prédit incorrectement la classe positive. Par exemple, un courriel normal identifié à tort comme spam.
-    
-    \item \textbf{Faux Négatif (FN)} : le modèle prédit incorrectement la classe négative. Par exemple, un courriel de spam identifié comme un courriel normal.
-\end{itemize}
-
-\begin{figure}[H]
-\centering
-\renewcommand{\arraystretch}{1.5}
-
-\begin{tabular}{|c|c|c|}
-\hline
-\multirow{2}{*}{\textbf{Valeurs réelles}} & \multicolumn{2}{c|}{\textbf{Valeurs prédites}} \\
-\cline{2-3}
- & Positif & Négatif \\
-\hline
-Positif & Vrai Positif (TP) & Faux Négatif (FN) \\
-\hline
-Négatif & Faux Positif (FP) & Vrai Négatif (TN) \\
-\hline
-\end{tabular}
-
-\caption{Structure d’une matrice de confusion}
-\label{fig:confusion_matrix}
-\end{figure}
-
-La matrice de confusion permet également de calculer plusieurs métriques importantes comme la précision (\textit{Precision}), le rappel (\textit{Recall}), l’exactitude (\textit{Accuracy}) et le score F1, qui sont utilisées pour mesurer la qualité des performances du modèle de Machine Learning.
-\vspace{0.3cm}
-
-Les métriques utilisées sont définies par les formules suivantes :
-
-\begin{itemize}
-    \item \textbf{Précision (Precision)} : mesure la proportion des prédictions positives correctes parmi toutes les prédictions positives.
-    
-    \[
-    Precision = \frac{TP}{TP + FP}
-    \]
-
-    \item \textbf{Rappel (Recall)} : mesure la capacité du modèle à retrouver toutes les instances positives réelles.
-    
-    \[
-    Recall = \frac{TP}{TP + FN}
-    \]
-
-    \item \textbf{Exactitude (Accuracy)} : mesure la proportion des prédictions correctes parmi l’ensemble des prédictions réalisées.
-    
-    \[
-    Accuracy = \frac{TP + TN}{TP + TN + FP + FN}
-    \]
-
-    \item \textbf{Score F1} : représente la moyenne harmonique entre la précision et le rappel.
-    
-    \[
-    F1\text{-}Score = 2 \times \frac{Precision \times Recall}{Precision + Recall}
-    \]
-
-\end{itemize}
-
-Pour évaluer l’efficacité de la solution proposée basée sur les approches RAG et CAG, une matrice de succès a été définie. Cette matrice permet de mesurer la qualité des réponses générées, la rapidité d’exécution et la pertinence des informations récupérées depuis les documents techniques SAP.
-
-Les critères retenus ont été choisis en fonction des objectifs fonctionnels et techniques du projet. Ils permettent d’évaluer les performances du système, ainsi que l’expérience utilisateur et la fiabilité des réponses produites. Cela implique notamment l’examen des faux positifs, c’est-à-dire les cas où le résultat est prédit correctement mais s’avère faux en réalité.
-
-\vspace{0.3cm}
-
-\textbf{Source :} 
-\href{https://www.datacamp.com/fr/tutorial/what-is-a-confusion-matrix-in-machine-learning}
-{DataCamp – What is a Confusion Matrix in Machine Learning?}
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 

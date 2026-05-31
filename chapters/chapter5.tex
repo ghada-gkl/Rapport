@@ -196,11 +196,11 @@ Le pipeline de préparation des données se compose de cinq étapes. Il démarre
 
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Nettoyage des données}
+\section{Nettoyage, normalisation et déduplication}
 \label{sec:nettoyage}
 % ─────────────────────────────────────────────────────────────────────────────
 
-Avant de fusionner et de normaliser les données, les deux sources documentaires — le portail SAP Help et les manuels techniques en format PDF — ont été soumises à des processus de nettoyage distincts, chacun étant adapté aux particularités et aux problèmes spécifiques à chaque source. Ce n'est qu'après ces étapes de prétraitement spécifiques que les données ont été rassemblées pour commencer la phase de normalisation globale.
+Cette section couvre les trois premières étapes du pipeline de préparation. Dans un premier temps, chaque source est nettoyée indépendamment selon ses anomalies propres (§\,\ref{subsec:nettoyage-saphelp} et §\,\ref{subsec:nettoyage-pdf}). Les fichiers sont ensuite fusionnés et soumis à une normalisation textuelle unifiée (§\,\ref{subsec:normalisation-commune}). Enfin, les doublons inter-sources et le bruit sémantique résiduel sont supprimés sur le corpus fusionné (§\,\ref{subsec:deduplication}).
 % ── 2.1 ──────────────────────────────────────────────────────────────────────
 \subsection{Nettoyage des données du portail SAP Help}
 \label{subsec:nettoyage-saphelp}
@@ -319,7 +319,7 @@ Le script reconstitue le contenu brut en concaténant le titre, le contenu princ
 \subsection{Normalisation commune des deux sources}
 \label{subsec:normalisation-commune}
 
-Une fois nettoyées séparément, les données des deux sources sont fusionnées et soumises à un pipeline de normalisation textuelle unifié, implémenté dans \texttt{text\_utils.py}. Ce pipeline garantit un schéma de sortie homogène, indépendamment de l’origine des documents.
+Une fois nettoyées \emph{séparément}, les données des deux sources sont \textbf{fusionnées} dans un corpus unique, puis soumises à un pipeline de normalisation textuelle unifié implémenté dans \texttt{text\_utils.py}. Contrairement au nettoyage source-spécifique des sections précédentes — qui traitait les anomalies propres à chaque format (balises HTML pour le web, caractères CID pour les PDF) — cette étape applique des transformations \emph{identiques} à tous les documents, indépendamment de leur origine, afin de garantir un schéma de sortie homogène.
 
 \begin{table}[H]
 \centering
@@ -331,14 +331,13 @@ Une fois nettoyées séparément, les données des deux sources sont fusionnées
 \midrule
 1 & Décodage HTML & Convertit les entités HTML en caractères réels & \texttt{\&nbsp;} → espace \\
 \addlinespace
-
-3 & Suppression bruit & Élimine les motifs de navigation (\textit{«~See also~»}, \textit{«~Rate this page~»}, etc.) & motifs \texttt{RE\_NOISE} → supprimés \\
+2 & Suppression bruit & Élimine les motifs de navigation (\textit{«~See also~»}, \textit{«~Rate this page~»}, etc.) & motifs \texttt{RE\_NOISE} → supprimés \\
 \addlinespace
-4 & Segmentation lexicale & Redécoupe les mots concaténés issus de l’extraction web ou PDF & \texttt{contentadmin} → \texttt{content admin} \\
+3 & Segmentation lexicale & Redécoupe les mots concaténés issus de l’extraction web ou PDF & \texttt{contentadmin} → \texttt{content admin} \\
 \addlinespace
-5 & Normalisation T-codes & Fusionne les codes transactionnels mal formatés & \texttt{"SM 37"} → \texttt{"SM37"} \\
+4 & Normalisation T-codes & Fusionne les codes transactionnels mal formatés & \texttt{"SM 37"} → \texttt{"SM37"} \\
 \addlinespace
-6 & Normalisation Unicode & Applique NFC, supprime les caractères invisibles, met en minuscules & \texttt{(cid:34)} → espace \\
+5 & Normalisation Unicode & Applique NFC, supprime les caractères invisibles, met en minuscules & \texttt{(cid:34)} → espace \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -365,12 +364,10 @@ Cette technique permet à un utilisateur posant la question
 \textit{«~comment vérifier mes jobs de nuit~?»} de retrouver les documents qui mentionnent
 SM37, même si sa question ne contient pas le code lui-même.
 
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Suppression des doublons et du bruit}
-\label{sec:deduplication}
-% ─────────────────────────────────────────────────────────────────────────────
+\subsection{Suppression des doublons et du bruit}
+\label{subsec:deduplication}
 
-\subsection{Stratégie de déduplication en deux passes}
+\subsubsection{Stratégie de déduplication en deux passes}
 
 Le processus de suppression des doublons se fait après la fusion des différentes sources de données pour éviter d’avoir des documents répétés dans la base de connaissances. Cette étape se déroule en deux phases.
 
@@ -461,7 +458,7 @@ premiers caractères, indépendamment de la source du document.}
 \label{fig:dedup}
 \end{figure}
 
-\subsection{Filtrage du bruit sémantique}
+\subsubsection{Filtrage du bruit sémantique}
 
 Certaines documents sont techniquement valides — sans doublons et avec un texte soigné — mais ne sont pas utiles pour un système RAG de support technique. C'est notamment le cas des pages de quiz et d'auto-évaluation sur le portail SAP Help, qui contiennent des questions à choix multiples telles que \textit{«~Déterminez si cette affirmation est vraie ou fausse~»}. Ces pages nuisent à la base de connaissances, car le moteur de recherche pourrait les afficher en réponse à des requêtes légitimes, fournissant ainsi des réponses de type examen plutôt que des réponses techniques. Un filtre basé sur des expressions régulières permet d'identifier et d'éliminer ces pages en repérant des motifs tels que \texttt{learning assessment}, \texttt{determine whether this statement} ou \texttt{choose the correct answer} dans le titre ou dans les 200 premiers caractères du contenu.
 
@@ -479,7 +476,7 @@ Doublon contenu & MD5 des 500 premiers caractères & Toutes sources \\
 \addlinespace
 Pages quiz & Regex sur titre et début de contenu & Toutes sources \\
 \addlinespace
-Contenu trop court & Longueur $<$ 50 caractères & Toutes sources \\
+Contenu trop court & Longueur $<$ 80 caractères & Toutes sources \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -493,9 +490,9 @@ Contenu trop court & Longueur $<$ 50 caractères & Toutes sources \\
 Le découpage consiste à découper de grands ensembles de texte ou de données en segments plus petits et plus faciles à gérer, appelés « chunks ». Cette technique est utile lorsqu’on travaille avec des modèles d’apprentissage automatique qui ont des limites de taille d’entrée. Elle est également efficace pour traiter de grands volumes de données transactionnelles, où chaque entrée doit être analysée séparément tout en contribuant à des analyses globales.
 \subsection{Pourquoi découper les documents~?}
 
-LLe modèle d'embedding  peut traiter un maximum de 512 tokens en entrée. Toutefois, la documentation SAP contient souvent des textes bien plus longs que cette limite, atteignant parfois plusieurs milliers de tokens. Dans ce cas, soumettre un document complet au modèle entraînerait une troncature automatique, ce qui provoquerait une perte d'informations, en particulier dans les sections finales du document.
+Le modèle d'embedding peut traiter un maximum de 512 tokens en entrée. Toutefois, la documentation SAP contient souvent des textes bien plus longs que cette limite, atteignant parfois plusieurs milliers de tokens. Dans ce cas, soumettre un document complet au modèle entraînerait une troncature automatique, ce qui provoquerait une perte d'informations, en particulier dans les sections finales du document.
 
-D'un autre côté, une segmentation simpliste ou non régulée des textes pourrait affecter la continuité sémantique des informations et réduire la qualité des représentations vectorielles générées. Il est donc nécessaire que le processus de découpage remplit deux buts : garantir que les morceaux sont compatibles avec la fenêtre de contexte du modèle et préserver la cohérence sémantique indispensable pour une représentation exacte du contenu.
+D'un autre côté, une segmentation simpliste ou non régulée des textes pourrait affecter la continuité sémantique des informations et réduire la qualité des représentations vectorielles générées. Il est donc nécessaire que le processus de découpage remplisse deux buts : garantir que les morceaux sont compatibles avec la fenêtre de contexte du modèle et préserver la cohérence sémantique indispensable pour une représentation exacte du contenu.
 \subsection{Stratégie hiérarchique parent-enfant}
 
 L'application de la base vectorielle s'appuie sur une méthode de découpage hiérarchique qui garantit la conservation de la structure des documents tout en améliorant l'efficacité de recherche et de récupération d'information. Cette approche a été spécifiquement élaborée pour gérer la complexité et l'imbrication de la documentation SAP.
@@ -584,14 +581,17 @@ sont les suivantes~:
 \toprule
 \textbf{Type d'enregistrement} & \textbf{Nombre} & \textbf{Description} \\
 \midrule
-Singles  & 73\,137 & Documents courts — un seul enregistrement embedded \\
-Parents  & 8\,795  & Documents longs — texte complet, stocké, non embedded \\
-Enfants  & 32\,194 & Fragments de documents longs, embedded et indexés \\
+Singles  & 73\,137 & Documents courts — un seul enregistrement, \textbf{vectorisé} \\
+Parents  & 8\,795  & Documents longs — texte complet, stocké, \textbf{non vectorisé} \\
+Enfants  & 32\,194 & Fragments de documents longs, \textbf{vectorisés} et indexés \\
 \midrule
-\textbf{Total} & \textbf{114\,126} & \textbf{Enregistrements } \\
+\textbf{Total enregistrements} & \textbf{114\,126} & Tous types confondus \\
+\textit{dont vectorisés (Singles + Enfants)} & \textit{105\,331} & \textit{Éligibles à l'embedding} \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+Les 8\,795 enregistrements de type \textit{Parent} sont conservés en base pour l'enrichissement de contexte lors de la récupération, mais ne portent pas de vecteur propre. Après application des filtres finaux de longueur et de qualité lors de l'ingestion dans PostgreSQL, \textbf{76\,463 vecteurs} sont effectivement indexés — ce chiffre constitue la taille opérationnelle de la base vectorielle utilisée dans toutes les évaluations ultérieures du rapport.
 
 
 
