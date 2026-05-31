@@ -2,9 +2,6 @@
 \chapter{Cadre général du projet}
 \label{chap:cadre_general}
 
-\section*{Objectifs du chapitre}
-Ce chapitre a pour objectif de présenter le cadre général dans lequel s'inscrit ce projet de fin d'études. Nous commençons par une présentation de l'organisme d'accueil, puis nous effectuons une étude de l'existant afin d'identifier les lacunes des solutions actuelles de surveillance des systèmes SAP. Nous détaillons ensuite la problématique retenue, avant de présenter la solution proposée et la méthodologie de développement adoptée.
-% ============================================================
 \section*{Introduction}
 \addcontentsline{toc}{section}{Introduction}
 
@@ -110,7 +107,7 @@ Pour chaque environnement, le consultant exécute plusieurs T-codes pour analyse
 Selon les anomalies détectées, il peut relancer certaines opérations échouées, suivre les incidents et collaborer avec les équipes concernées. 
 
 Par exemple, lorsque des traitements lourds ou des jobs affectant les performances sont identifiés dans le système SAP de production, le consultant BASIS discute avec les développeurs ABAP (langage de programmation propriétaire de SAP) pour apporter les corrections nécessaires. De même, certaines anomalies peuvent nécessiter l’intervention des consultants fonctionnels, notamment dans les domaines financiers, lorsque des changements liés aux règles de l’entreprise ou aux exigences du client doivent être pris en compte, comme des modifications de timbres fiscaux ou d’autres paramètres de gestion.
-La durée de surveillance varie selon l'état du système et le nombre d'alertes détectées. En moyenne, l'analyse complète d'un système peut prendre 30 minutes au plus cadepant des système production qui a. Étant donné que le client a environ dix systèmes, le monitoring global nécessite plusieurs heures de travail par shift.
+La durée de surveillance varie selon l'état du système et le nombre d'alertes détectées. En moyenne, l'analyse complète d'un système prend jusqu'à 30 minutes, davantage pour les systèmes de production critiques. Étant donné que le client a environ dix systèmes, le monitoring global nécessite plusieurs heures de travail par shift.
 
 
 Cependant, cette approche a ses limites. La multiplicité des systèmes et la répétition des tâches rendent le processus lourd et chronophage. Le consultant doit constamment naviguer entre plusieurs systèmes et transactions, ce qui augmente le risque d'oubli, de confusion ou de perte de temps dans le traitement des anomalies.
@@ -171,7 +168,6 @@ Enfin, les consultants passent une grande partie de leur temps sur des tâches r
 SAP, en plus des outils de supervision classiques tels que les tableaux de bord et les alertes techniques, propose désormais des solutions qui utilisent le Machine Learning et l'intelligence artificielle. Ces solutions permettent de surveiller les systèmes SAP en temps réel et d'analyser les données passées pour détecter des anomalies, prévoir des incidents et améliorer les décisions.
 Parmi ces solutions, on peut citer SAP Leonardo ML et SAP Joule.Elles offrent des fonctionnalités avancées pour une meilleure gestion des systèmes SAP.
 
-Ces nouvelles solutions viennent compléter les outils traditionnels de supervision des systèmes, tels que les tableaux de bord et les alertes techniques. Elles permettent aux entreprises de tirer parti des dernières technologies pour améliorer leur gestion des systèmes SAP.
 \subsubsection*{SAP Leonardo ML}
 SAP Leonardo ML est une solution de Machine Learning développée par SAP qui permet d'utiliser les données provenant des systèmes SAP. Elle détecte les comportements inhabituels et identifie des modèles récurrents. Puisqu'elle fait partie intégrante des systèmes ERP SAP, SAP Leonardo ML peut accéder directement aux données issues de divers départements de l'entreprise, comme la finance, les ressources humaines ou la logistique.
 
@@ -183,31 +179,13 @@ Cela signifie que les données peuvent être exploitées de manière continue et
     \label{fig:sap_leonardo}
 \end{figure}
 \subsubsection*{SAP JOULE}
-SAP intègre aussi des solutions récentes qui utilisent l'intelligence artificielle générative, comme SAP Joule. Cette solution est un copilote intelligent qui aide les utilisateurs à travailler avec les applications SAP. Elle permet de poser des questions ou de donner des instructions en langage naturel, sans avoir besoin de connaître des commandes techniques compliquées.
-
-SAP Joule utilise les données métier et les données techniques pour fournir des informations utiles.
-
-Elle aide aussi à automatiser certaines tâches et à analyser les données.
-
-Les utilisateurs peuvent ainsi trouver rapidement les informations dont ils ont besoin.
-
-Ils peuvent aussi améliorer leur productivité et comprendre plus facilement les données des systèmes SAP.
-
-Grâce à cette approche conversationnelle, les utilisateurs peuvent interagir plus facilement avec les systèmes SAP.
-
-Ils n'ont plus besoin de rechercher des informations dans des menus complexes ou de longues listes.
-
-SAP Joule est conçu pour aider les utilisateurs à tirer le meilleur parti des applications SAP.
-
-Elle leur permet de se concentrer sur leur travail, plutôt que de passer du temps à chercher des informations.
-
-En résumé, SAP Joule est une solution innovante qui utilise l'intelligence artificielle pour aider les utilisateurs à travailler plus efficacement avec les applications SAP.
+SAP Joule est un copilote génératif intégré à l'écosystème SAP. Il permet d'interroger les applications en langage naturel, sans connaître les commandes techniques, et s'appuie sur les données métier et techniques pour fournir des réponses, automatiser des tâches simples et faciliter l'analyse. Cette interaction conversationnelle réduit le temps de recherche et améliore la productivité des utilisateurs.
 % ============================================================
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.75\linewidth]{images/joule.png}
     \caption{joule dans les système SAP}
-    \label{fig:joule dans les système SAP}
+    \label{fig:SAP JOULE dans les système SAP}
 \end{figure}
 \begin{table}[H]
 \centering
@@ -373,7 +351,7 @@ Il est difficile d'estimer la durée des tâches expérimentales. Les résultats
 
 CRISP-DM (\textit{Cross-Industry Standard Process for Data Mining}) est une méthodologie
 éprouvée par l'industrie pour guider les projets de fouille de données. Son cycle de vie
-se compose de six phases interdépendantes (voir Figure 1.4)
+se compose de six phases interdépendantes (voir Figure~\ref{fig:crisp-dm})
 
 \begin{figure}[H]
 \centering
@@ -448,7 +426,13 @@ se compose de six phases interdépendantes (voir Figure 1.4)
 \paragraph{Limites de CRISP-DM}
 \begin{itemize}[leftmargin=*, label=\textbullet]
   \item \textbf{Absence de MLOps intégré :} Ne traite pas nativement les pratiques de
-        déploiement modernes (CI/CD, versionnage, surveillance).
+        déploiement modernes (CI/CD, versionnage, surveillance continue des modèles).
+  \item \textbf{Cadencement peu prescriptif :} CRISP-DM ne définit ni durée de phase ni
+        vélocité cible, ce qui peut rendre le suivi de l'avancement difficile dans un
+        contexte projet avec des échéances formelles.
+  \item \textbf{Absence de guidance sur la composition de l'équipe :} Contrairement à
+        Scrum ou TDSP, la méthodologie ne prescrit aucun rôle ni structure d'équipe,
+        laissant cette organisation entièrement à la charge du projet.
 \end{itemize}
 
 \subsubsection{KDD – Knowledge Discovery in Databases}
@@ -482,7 +466,7 @@ de la préparation des données jusqu'à l'interprétation des connaissances.
 
 Le TDSP (\textit{Team Data Science Process}) est un framework développé par Microsoft
 pour guider les projets de data science. Son cycle de vie comprend cinq étapes itératives,
-similaires à celles de CRISP-DM (voir Figure 1.6).
+similaires à celles de CRISP-DM (voir Figure~\ref{fig:tdsp}).
 
 \begin{figure}[htbp]
   \centering
@@ -500,6 +484,8 @@ similaires à celles de CRISP-DM (voir Figure 1.6).
   \item \textbf{Modélisation :} Ingénierie des fonctionnalités et entraînement des
         modèles.
   \item \textbf{Déploiement :} Mise en production dans un environnement opérationnel.
+  \item \textbf{Acceptation client (\textit{Customer Acceptance}) :} Valider que les
+        livrables répondent aux besoins du client et formaliser la clôture du projet.
 \end{enumerate}
 
 \paragraph{Avantages}
@@ -520,31 +506,6 @@ similaires à celles de CRISP-DM (voir Figure 1.6).
         parfaitement cohérente.
 \end{itemize}
 
-\subsubsection{Scrum}
-
-Scrum est un framework agile de gestion de projet conçu pour livrer des produits
-de manière incrémentale via des sprints courts (1 à 4 semaines). Il repose sur
-des rôles définis (Product Owner, Scrum Master, équipe) et des cérémonies
-régulières (sprint planning, daily stand-up, rétrospective).
-
-\paragraph{Avantages}
-\begin{itemize}[leftmargin=*, label=\textbullet]
-  \item \textbf{Livraisons fréquentes :} Incréments fonctionnels à chaque sprint,
-        favorisant un retour rapide des parties prenantes.
-  \item \textbf{Adaptabilité :} Le backlog produit peut être réordonné à tout moment
-        selon l'évolution des besoins.
-  \item \textbf{Transparence :} Les cérémonies Scrum favorisent la communication et
-        la visibilité sur l'avancement.
-\end{itemize}
-
-\paragraph{Limites}
-\begin{itemize}[leftmargin=*, label=\textbullet]
-  \item \textbf{Inadapté à la Data Science pure :} Scrum ne prévoit pas de phases
-        dédiées à l'exploration des données, à la modélisation ou à l'évaluation
-        des modèles.
-  \item \textbf{Planification difficile :} La nature exploratoire de la data science
-        rend difficile la définition d'un backlog et d'une vélocité prévisible.
-\end{itemize}
 
 \subsection{Comparaison des méthodologies}
 
@@ -590,7 +551,7 @@ régulières (sprint planning, daily stand-up, rétrospective).
    \includegraphics[width=0.65\textwidth]{images/comparaison.jpg}
 
   \caption{le processus utilisé le plus fréquemment dans les projets de data science}
-  \label{fig:tdsp}
+  \label{fig:ds_process_comparison}
 \end{figure}
 
 

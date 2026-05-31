@@ -58,11 +58,13 @@ La pertinence de chaque chunk récupéré est déterminée automatiquement par c
 
 Trois familles de métriques de recherche d'information ont été implémentées dans le script \texttt{eval\_pipeline.py}.
 
-Le \textbf{Recall@k} mesure la proportion de chunks pertinents retrouvés dans les $k$ premiers résultats par rapport au total des chunks pertinents existants~:
+Le \textbf{Recall@k} mesure la proportion de chunks pertinents retrouvés dans les $k$ premiers résultats par rapport au total des chunks pertinents~:
 
 \[
-\text{Recall@k} = \frac{|\{c \in \text{Top-}k \mid \text{label}(c) \geq 1\}|}{|\{c \in \text{Corpus} \mid \text{label}(c) \geq 1\}|}
+\text{Recall@k} = \frac{|\{c \in \text{Top-}k \mid \text{label}(c) \geq 1\}|}{|\{c \in \text{Pool} \mid \text{label}(c) \geq 1\}|}
 \]
+
+\noindent\textbf{Définition opératoire du dénominateur.} Les labels de pertinence n'étant calculés que sur les chunks effectivement récupérés (top\_k = 10), le dénominateur représente le nombre de chunks pertinents dans ce \emph{pool évalué}, et non dans l'intégralité des 76\,463 vecteurs indexés. En conséquence, un Recall@10 = 1.0 signifie que \emph{tous les chunks jugés pertinents dans la fenêtre de 10 résultats ont été retrouvés}, et non qu'aucun chunk pertinent du corpus entier ne manque. Cette définition par pool est une pratique courante dans les évaluations à grande échelle~\cite{thakur2021beir}, mais elle sous-estime potentiellement les cas où des chunks pertinents existent en dehors du pool récupéré.
 
 Le \textbf{Mean Reciprocal Rank (MRR)} évalue la position du premier chunk pertinent dans les résultats retournés. Un MRR = 1.0 indique qu'un résultat pertinent apparaît systématiquement en première position~:
 
@@ -79,7 +81,7 @@ Le \textbf{nDCG@k} (Normalized Discounted Cumulative Gain) prend en compte à la
 
 \subsection{Configuration d'évaluation}
 
-L'évaluation du retrieval utilise les paramètres suivants~: top\_k = 10 (les 10 premiers chunks sont récupérés et évalués), le reranker cross-encoder (\texttt{cross-encoder/ms-marco-MiniLM-L-6-v2}) est activé, et la baseline correspond à une recherche vectorielle pure sans BM25 ni RRF sur le même corpus de 124\,234 chunks.
+L'évaluation du retrieval utilise les paramètres suivants~: top\_k = 10 (les 10 premiers chunks sont récupérés et évalués), le reranker cross-encoder (\texttt{cross-encoder/ms-marco-MiniLM-L-6-v2}) est activé, et la baseline correspond à une recherche vectorielle pure sans BM25 ni RRF sur le même corpus de 76\,463 vecteurs indexés dans PostgreSQL (voir tableau~\ref{tab:stats-chunking} pour la décomposition enregistrements\,/\,chunks\,/\,vecteurs).
 
 \subsection{Résultats globaux}
 
@@ -103,7 +105,7 @@ nDCG@10   & \textbf{0.983} & 0.947 \\
 \end{tabular}
 \end{table}
 
-Le MRR = 1.0 signifie que pour toutes les 18 requêtes de test, au moins un chunk pertinent apparaît en première position dans les résultats retournés. Le Recall@10 = 1.0 garantit qu'aucune information pertinente n'est manquée dans les 10 premiers résultats.
+Sur cet échantillon de 18 requêtes, le MRR = 1.0 indique qu'au moins un chunk pertinent apparaît en première position pour chaque requête, et le Recall@10 = 1.0 signifie que tous les chunks jugés pertinents dans le pool évalué sont récupérés dans les 10 premiers résultats. Ces valeurs sont prometteuses, mais doivent être interprétées avec prudence~: l'échantillon est restreint ($n = 18$), les labels sont auto-générés par des signaux lexicaux alignés sur le corpus de retrieval (voir §~\ref{subsec:limites-validite}), et l'évaluation devra être confirmée sur un jeu de test plus large et indépendant.
 
 \subsection{Résultats par type d'intention}
 
@@ -127,9 +129,21 @@ explanation     & 0.511 & 1.000 & 0.900 & 0.968 \\
 
 Le type \textit{troubleshooting} obtient le Recall@5 le plus élevé (0.678) en raison de la présence de T-codes explicites dans ces requêtes (ex. \texttt{SM37}, \texttt{ST22}, \texttt{SU53}) qui permettent un filtre précis lors du retrieval. Les requêtes de type \textit{explanation} sont naturellement plus difficiles, car elles ne contiennent pas d'entités SAP directement adressables.
 
+\paragraph{Note sur la valeur du Recall@5.}
+Le Recall@5 = 0.574 s'explique par la structure du corpus~: le dénominateur de la formule comptabilise les chunks pertinents dans le pool de 10 résultats récupérés, et non dans l'intégralité des 76\,463 vecteurs indexés. Pour une requête sur \texttt{SM37}, le corpus peut contenir 8~à~10 chunks pertinents répartis sur plusieurs sections de la documentation SAP Help~; seuls 5 peuvent figurer dans les 5 premiers résultats, même si le système les détecte tous dans le top~10 (Recall@10 = 1.000). Ce comportement est structurel~: il traduit la densité du corpus et non une défaillance du retrieval. Pour un assistant conversationnel, le \textbf{MRR = 1.000} est la métrique opérationnelle pertinente~: il garantit qu'un chunk hautement pertinent apparaît systématiquement en première position, ce qui suffit pour construire une réponse de qualité.
+
 \subsection{Couverture des signaux}
 
-La couverture des signaux mesure combien de termes de référence ont été retrouvés dans les chunks récupérés, indépendamment du classement. Sur les 18 requêtes, 16 atteignent une couverture de 100\%, et 2 manquent d'un signal sur 5 (Q02 et Q04). Cette forte couverture valide la pertinence thématique de la base vectorielle construite à partir de la documentation SAP officielle.
+La couverture des signaux mesure combien de termes de référence ont été retrouvés dans les chunks récupérés, indépendamment du classement. Sur les 18 requêtes, 16 atteignent une couverture de 100\,\%, et 2 manquent d'un signal sur 5 (Q02 et Q04 — à distinguer des anomalies de classement Q04 et Q10 discutées à la section~\ref{sec:analyse-visuelle}).
+
+\subsection{Limites de validité du protocole d'évaluation}
+\label{subsec:limites-validite}
+
+\paragraph{Circularité de l'auto-labellisation.}
+La méthode d'évaluation présente un risque de circularité~: les labels de pertinence sont définis par la présence de signaux (T-codes, termes-clés), et le système de retrieval exploite précisément ces mêmes T-codes comme filtres de métadonnées et comme termes pondérés dans BM25. En conséquence, les scores élevés obtenus --- notamment le MRR = 1.0 --- mesurent en grande partie le \emph{recouvrement lexical} entre la requête et les documents, et non une pertinence sémantique plus profonde. Les requêtes de type \textit{troubleshooting}, qui contiennent des T-codes explicites, bénéficient particulièrement de cet alignement, ce qui explique leurs scores supérieurs. Pour lever cette circularité, un sous-ensemble de jugements humains sur des requêtes dépourvues de T-codes explicites serait nécessaire.
+
+\paragraph{Taille de l'échantillon.}
+L'évaluation du retrieval repose sur $n = 18$ requêtes, et l'évaluation de génération sur $n = 3$ requêtes seulement. Ces tailles sont insuffisantes pour tirer des conclusions statistiquement robustes. L'intervalle de confiance des métriques agrégées est large~; les résultats constituent une indication préliminaire à confirmer sur un jeu de test étendu (idéalement $n \geq 100$ pour le retrieval).
 
 % ─────────────────────────────────────────────────────────────
 \section{Niveau 2 — Évaluation LLM-as-Judge avec RAGAS}
@@ -137,7 +151,7 @@ La couverture des signaux mesure combien de termes de référence ont été retr
 
 \subsection{Présentation du framework RAGAS}
 
-RAGAS (\textit{Retrieval Augmented Generation Assessment}) est un framework d'évaluation automatique de pipelines RAG proposé par \citeauthor{es2023ragas} en 2023. Il repose sur le paradigme LLM-as-Judge~: un modèle de langage est soumis à un triplet (question, réponse, contexte) accompagné d'un prompt d'évaluation structuré, puis attribue un score continu entre 0 et 1 selon la métrique concernée. L'utilisation d'un LLM local garantit la reproductibilité complète sans dépendance à une API externe et sans coût d'inférence, en cohérence avec l'architecture offline-first du système évalué. Dans ce projet, le modèle-juge utilisé est \texttt{llama3.2:3b}, exécuté localement via Ollama.
+RAGAS (\textit{Retrieval Augmented Generation Assessment}) est un framework d'évaluation automatique de pipelines RAG proposé par Es et al.~\cite{es2023ragas} en 2023. Il repose sur le paradigme LLM-as-Judge~: un modèle de langage est soumis à un triplet (question, réponse, contexte) accompagné d'un prompt d'évaluation structuré, puis attribue un score continu entre 0 et 1 selon la métrique concernée. L'utilisation d'un LLM local garantit la reproductibilité complète sans dépendance à une API externe et sans coût d'inférence, en cohérence avec l'architecture offline-first du système évalué. Dans ce projet, le modèle-juge utilisé est \texttt{llama3.2:3b}, exécuté localement via Ollama.
 
 \subsection{Métriques RAGAS utilisées}
 
@@ -217,24 +231,6 @@ Context Precision
 \end{tabularx}
 \end{table}
 
-\begin{tcolorbox}[
-  enhanced, breakable,
-  colback=SAPLightOrange, colframe=SAPOrange,
-  fonttitle=\small\bfseries\color{white},
-  title={Limite du modèle-juge \texttt{llama3.2:3b} — métriques JSON-dépendantes},
-  attach boxed title to top left={yshift=-2mm, xshift=6mm},
-  boxed title style={colback=SAPOrange, rounded corners},
-  rounded corners, arc=3mm,
-  left=8pt, right=8pt, top=5pt, bottom=5pt
-]
-Les métriques \textbf{Faithfulness} et \textbf{Context Precision} nécessitent que le modèle-juge génère
-une sortie JSON strictement structurée. Le modèle \texttt{llama3.2:3b} (3\,Mds de paramètres) ne
-respecte pas ce schéma de manière fiable~: \textbf{100\,\% des appels échouent} avec une erreur de
-\textit{parsing}. Un modèle plus puissant (GPT-4, Claude Sonnet, ou Ollama $\geq$7\,B) est requis pour
-calculer ces métriques de manière fiable.
-\end{tcolorbox}
-
-\medskip
 \begin{table}[H]
 \centering
 \renewcommand{\arraystretch}{1.45}
@@ -278,7 +274,7 @@ couvrent principalement SM50 et ne contiennent qu'une couverture partielle des m
 
 \subsection{Analyse des résultats}
 
-Les deux métriques évaluables donnent des résultats satisfaisants. L'Answer Relevancy de \textbf{0.92} indique que les réponses générées adressent bien les questions posées, sans dériver vers des informations hors-sujet. Le Context Recall de \textbf{0.89} confirme que les chunks récupérés couvrent l'essentiel des informations nécessaires pour répondre correctement --- ce résultat est cohérent avec le MRR = 1.0 et le nDCG@3 = 0.959 observés au Niveau 1.
+Sur les deux métriques évaluables ($n = 3$ requêtes), les résultats sont encourageants mais insuffisants pour conclure de façon générale. L'Answer Relevancy de \textbf{0.92} suggère que les réponses adressent les questions posées sans dériver hors-sujet~; le Context Recall de \textbf{0.89} indique que le contexte récupéré couvre en grande partie les informations de référence --- cohérent avec le MRR = 1.0 et le nDCG@3 = 0.959 observés au Niveau 1. Ces chiffres doivent être lus comme des indicateurs préliminaires sur un sous-ensemble très réduit~: avec $n = 3$, un seul outlier modifie la moyenne de 0.33 point, et deux métriques sur quatre (Faithfulness, Context Precision) sont non calculables à cause des échecs de parsing JSON du juge.
 
 Le Context Recall de Q14 (0.667) est inférieur aux deux autres requêtes (1.0)~: la requête portant sur ST06 et SM50 requiert des informations sur les métriques OS (ST06) et sur le moniteur de processus (SM50), mais les chunks récupérés couvrent principalement SM50. Ce résultat illustre la limite des requêtes multi-entités, qui nécessitent plusieurs chunks complémentaires pour une couverture complète.
 
@@ -308,9 +304,10 @@ Le reranking par cross-encoder garantit qu'un chunk pertinent apparaît systéma
 
 % ─────────────────────────────────────────────────────────────
 \section{Analyse visuelle des performances}
+\label{sec:analyse-visuelle}
 % ─────────────────────────────────────────────────────────────
 
-La figure~\ref{fig:eval_performance} synthétise l'ensemble des résultats d'évaluation sous quatre angles complémentaires. Le premier graphique confirme l'apport mesurable du reranker~: le système avec reranker dépasse systématiquement la baseline sur les quatre métriques clés, avec la différence la plus marquée sur le nDCG@3 (+9,2\%). Le deuxième graphique présente la distribution des scores sur les 18 requêtes sous forme de boîtes à moustaches~: le nDCG@10 est très concentré près de 1.0, tandis que le Recall@1 montre une dispersion plus importante, confirmant que la première position brute est moins fiable que les positions agrégées. Le troisième graphique trace l'évolution du nDCG@10 requête par requête, coloré par type d'intention~; les deux anomalies (Q04 et Q10) y sont clairement identifiables~: Q10 correspond à une requête de configuration STMS dont les chunks pertinents étaient mal positionnés avant reranking, et Q04 à une requête HANA backup pour laquelle le corpus contient peu de documentation spécialisée. Enfin, la matrice de corrélation révèle deux clusters distincts~: les métriques de Recall (R@1, R@3, R@5) sont fortement corrélées entre elles mais quasi indépendantes des métriques nDCG, illustrant que la couverture brute et la qualité du classement mesurent deux propriétés orthogonales du retrieval.
+La figure~\ref{fig:eval_performance} synthétise l'ensemble des résultats d'évaluation sous quatre angles complémentaires. Le premier graphique confirme l'apport mesurable du reranker~: le système avec reranker dépasse systématiquement la baseline sur les quatre métriques clés, avec la différence la plus marquée sur le nDCG@3 (+9,2\%). Le deuxième graphique présente la distribution des scores sur les 18 requêtes sous forme de boîtes à moustaches~: le nDCG@10 est très concentré près de 1.0, tandis que le Recall@1 montre une dispersion plus importante, confirmant que la première position brute est moins fiable que les positions agrégées. Le troisième graphique trace l'évolution du nDCG@10 requête par requête, coloré par type d'intention~; les deux anomalies de \emph{classement} (Q04 et Q10) y sont clairement identifiables (à distinguer des requêtes Q02 et Q04 présentant des lacunes de \emph{couverture de signaux}, cf.\ §~7.3.5)~: Q10 correspond à une requête de configuration STMS dont les chunks pertinents étaient mal positionnés avant reranking, et Q04 à une requête HANA backup pour laquelle le corpus contient peu de documentation spécialisée. Enfin, la matrice de corrélation révèle deux clusters distincts~: les métriques de Recall (R@1, R@3, R@5) sont fortement corrélées entre elles mais quasi indépendantes des métriques nDCG, illustrant que la couverture brute et la qualité du classement mesurent deux propriétés orthogonales du retrieval.
 
 \begin{figure}[H]
   \centering
@@ -345,14 +342,18 @@ Toute réponse contenant un T-code connu non présent dans les chunks récupér�
 
 \subsection{Points forts du système}
 
-L'ensemble des résultats d'évaluation met en évidence plusieurs points forts. Le MRR = 1.0 et le Recall@10 = 1.0 signifient que le système ne manque aucune information pertinente sur les 18 requêtes de test~: tout utilisateur posant l'une de ces requêtes verra au moins un chunk hautement pertinent en première position. Le nDCG@3 = 0.959 confirme que les réponses sont construites à partir de sources de très haute qualité. Sur le plan de la génération, l'Answer Relevancy RAGAS de 0.92 indique que les réponses sont bien centrées sur les questions posées, et le Context Recall de 0.89 confirme l'adéquation du corpus documentaire avec les besoins informationnels des utilisateurs. Enfin, 16 requêtes sur 18 atteignent une couverture de signaux de 100\%, validant l'étendue thématique de la base de connaissances SAP constituée.
+Sur le jeu de test disponible ($n = 18$ pour le retrieval, $n = 3$ pour la génération), plusieurs résultats sont notables. L'approche hybride obtient un MRR = 1.0 et un nDCG@3 = 0.959, indiquant qu'un chunk pertinent apparaît systématiquement en première position et que le classement est de haute qualité dans les cas testés. Le gain de +9,2\,\% sur le nDCG@3 par rapport à la baseline valide l'apport du reranking cross-encoder. Sur le plan de la génération, l'Answer Relevancy de 0,92 ($n = 3$) suggère que les réponses restent centrées sur les questions posées. Ces résultats sont prometteurs, mais conditionnés par les limites de validité du protocole (taille de l'échantillon, circularité des labels, juge LLM identique au générateur) discutées à la section~\ref{subsec:limites-validite}.
 
 \subsection{Limites identifiées}
 
-Le Recall@1 de 0.122 indique que le premier résultat brut n'est pas toujours le plus pertinent~; ce comportement est attendu sur une base de 124\,234 chunks et est corrigé par le reranking (MRR = 1.0). L'évaluation porte uniquement sur des requêtes en anglais, le modèle d'embedding \texttt{BAAI/bge-large-en-v1.5} n'étant pas optimisé pour le français. Enfin, le modèle-juge \texttt{llama3.2:3b} ne permet pas d'évaluer les métriques Faithfulness et Context Precision~: 100\% des appels à ces métriques échouent avec une erreur de parsing JSON, ce qui nécessiterait un modèle plus puissant pour une couverture complète de l'évaluation RAGAS.
+Le Recall@1 de 0.122 indique que le premier résultat brut n'est pas toujours le plus pertinent~; ce comportement est attendu sur une base de 76\,463 vecteurs et est corrigé par le reranking (MRR = 1.0 sur $n = 18$). L'évaluation porte uniquement sur des requêtes en anglais, le modèle d'embedding \texttt{BAAI/bge-large-en-v1.5} n'étant pas optimisé pour le français.
+
+Le modèle-juge \texttt{llama3.2:3b} présente deux limites majeures. Premièrement, il est \textbf{identique au modèle générateur}~: évaluer ses propres réponses introduit un biais d'auto-évaluation systématique --- un modèle tend à juger favorablement le style de ses propres formulations. Deuxièmement, 100\,\% des appels aux métriques Faithfulness et Context Precision échouent avec une erreur de parsing JSON (le modèle ne produit pas la sortie structurée attendue)~; ces deux métriques sont donc entièrement manquantes. L'utilisation d'un juge plus puissant et indépendant du générateur (ex. \texttt{llama3.1:70b} ou un API LLM distinct) est indispensable pour une évaluation RAGAS fiable.
+
+Enfin, la circularité de l'auto-labellisation par signaux (détaillée au §~\ref{subsec:limites-validite}) constitue la limite de validité la plus structurelle~: elle favorise mécaniquement les requêtes contenant des T-codes explicites et produit des scores de retrieval optimistes sur ce type de corpus.
 
 % ─────────────────────────────────────────────────────────────
 \section{Conclusion}
 % ─────────────────────────────────────────────────────────────
 
-La phase d'évaluation confirme que le système RAG SAP développé dans ce projet atteint un niveau de qualité élevé~: un MRR de 1.0 et un nDCG@10 de 0.983 sur 18 requêtes de test couvrant 6 modules SAP. L'approche hybride (vectoriel + BM25 + RRF + cross-encoder) surpasse la baseline vectorielle pure sur toutes les métriques, avec un gain de +9.2\% sur le nDCG@3. L'évaluation LLM-as-Judge via RAGAS complète cette analyse~: l'Answer Relevancy de 0.92 et le Context Recall de 0.89 confirment que le pipeline produit des réponses pertinentes et ancrées dans des sources bien sélectionnées. La double approche adoptée permet d'identifier avec précision la source de tout défaut de qualité, qu'il se situe au niveau du retrieval ou de la génération.
+La phase d'évaluation fournit des résultats préliminaires encourageants. Sur un jeu de 18 requêtes ($n = 18$), l'approche hybride (vectoriel + BM25 + RRF + cross-encoder) surpasse la baseline vectorielle pure sur toutes les métriques, avec un gain de +9,2\,\% sur le nDCG@3 et un MRR = 1.0. Ces scores doivent cependant être interprétés en tenant compte de la circularité du protocole d'auto-labellisation~: les signaux utilisés pour annoter les chunks sont les mêmes termes et T-codes exploités par le retrieval, ce qui produit des scores structurellement favorables. L'évaluation de génération (RAGAS, $n = 3$) donne une Answer Relevancy de 0,92 et un Context Recall de 0,89, mais repose sur un échantillon trop réduit et un juge LLM identique au générateur pour constituer une conclusion définitive. Des travaux futurs devront étendre le jeu de test, introduire des jugements humains indépendants et utiliser un juge LLM plus puissant pour valider ces résultats. La double approche retrieval / génération adoptée reste pertinente pour isoler les sources de défaillance dans le pipeline.
