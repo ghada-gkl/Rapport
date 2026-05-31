@@ -189,7 +189,7 @@
 
 % ---- Hyperliens ----
 \usepackage[hidelinks]{hyperref}
-
+\usepackage{pdfpages}
 % ---- Titres personnalisés ----
 \usepackage{titlesec}
 \titleformat{\chapter}[display]
@@ -205,11 +205,15 @@
 % ============================================================
 \begin{document}
 
+\input{chapters/pagedegarde}
+\input{chapters/dedicace}
+
 % ---- Table des matières ----
 \tableofcontents
 \clearpage
 
 % ---- Chapitres ----
+
 \input{chapters/introduction_generale}
 \input{chapters/chapter1}
 \input{chapters/chapter2}
@@ -219,6 +223,7 @@
 \input{chapters/chapter6}
 \input{chapters/chapter7}
 \input{chapters/chapter8}
+\input{chapters/conclusion}
 % ---- Bibliographie ----
 \bibliographystyle{plainnat}
 \bibliography{references}

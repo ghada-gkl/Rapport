@@ -1,0 +1,43 @@
+% ============================================================
+%  Conclusion générale et perspectives
+% ============================================================
+
+\chapter*{Conclusion générale et perspectives}
+\addcontentsline{toc}{chapter}{Conclusion générale et perspectives}
+
+\section*{Bilan du projet}
+
+À l'issue de ce projet, nous avons réussi à créer un assistant conversationnel intelligent, destiné à satisfaire les exigences quotidiennes des administrateurs SAP BASIS et intégré directement sur la plateforme AutoMoni. La méthodologie CRISP-DM, adoptée dès le début, nous a permis de suivre un cheminement cohérent et itératif, de l'analyse des besoins jusqu'à la mise en œuvre effective de la solution. 
+Dans un premier temps, l'examen du contexte métier a montré que les administrateurs SAP consacrent beaucoup de temps à la recherche d'informations techniques dispersées dans une documentation abondante. Trois attentes principales ont émergé de cette analyse~: disposer d'une réponse rapide et précise lors des incidents, bénéficier d'une assistance contextuelle sans interrompre le flux de travail, et pouvoir naviguer intuitivement entre les différentes vues de l'application. Ces exigences ont directement guidé nos décisions de conception.
+
+La construction de la base documentaire a représenté un travail conséquent~: \textbf{76~463 fragments} extraits de la documentation SAP officielle ont été vectorisés à l'aide du modèle \texttt{BAAI/bge-large-en-v1.5} (vecteurs de dimension 1024), puis stockés dans PostgreSQL via l'extension pgvector. L'indexation HNSW adoptée garantit des temps de recherche inférieurs à 100~ms même sur un corpus de cette taille.
+Le cœur du projet réside dans le pipeline RAG élaboré spécifiquement pour la terminologie SAP. Au lieu de se baser sur une recherche uniquement sémantique, nous avons choisi d'adopter une approche hybride combinant BM25 et la recherche vectorielle, ajustée grâce à l'algorithme RRF. Un cross-encoder effectue ensuite un reranking précis des résultats, tandis qu'un module de validation déterministe vérifie la cohérence des T-codes et des numéros de notes SAP présents dans chaque réponse avant de les transmettre à l'utilisateur. Ce pipeline est disponible sous forme d'API REST grâce à FastAPI.
+Côté application, l'intégration dans AutoMoni s'est appuyée sur l'architecture SAP CAP pour exposer le service de chatbot en OData, et sur React pour les composants d'interface. Qu'il soit utilisé depuis le tiroir latéral \textit{ChatPanel} ou depuis la page dédiée, l'assistant reste joignable à tout moment sans perturber la consultation des données de monitoring. Les tests comparatifs menés entre LLaMA~3.2:3b et Qwen~2.5:7b ont mis en lumière les différences de comportement entre les deux modèles et ont permis d'ajuster les paramètres du pipeline en conséquence.
+
+\section*{Apports du projet}
+
+Ce travail apporte plusieurs contributions concrètes, tant sur le plan technique que sur le plan fonctionnel.
+
+\begin{itemize}[leftmargin=2em]
+  \item Un pipeline RAG hybride, pensé pour les particularités du vocabulaire SAP, qui combine efficacement recherche lexicale et recherche sémantique pour retrouver les passages documentaires les plus pertinents.
+  \item Une intégration transparente du chatbot dans une application métier en production, réalisée sans modification de l'expérience utilisateur existante, grâce au protocole OData et à l'architecture SAP CAP.
+  \item Un mécanisme de contrôle qualité léger, embarqué directement dans la boucle de traitement, qui détecte et filtre les affirmations non ancrées dans les sources sans nécessiter d'appel LLM supplémentaire.
+  \item Une fonctionnalité de navigation intelligente~: lorsque l'utilisateur mentionne un T-code dans son message, le chatbot peut le rediriger automatiquement vers la page de monitoring correspondante, fusionnant ainsi assistance documentaire et navigation applicative.
+\end{itemize}
+
+\section*{Perspectives}
+
+Les résultats enregistrés durant la phase de déploiement ouvrent la voie à plusieurs prolongements envisageables à différents horizons temporels.
+
+\textbf{Industrialisation de la solution.} Le passage vers une infrastructure cloud via SAP BTP et Cloud Foundry constitue la suite logique du projet. Les fichiers de déploiement (\texttt{mta.yaml}, \texttt{manifest.yml}) ont été préparés dans cette optique. Ce changement apporterait la haute disponibilité, l'authentification XSUAA et la montée en charge automatique, trois éléments indispensables pour un usage en production à grande échelle.
+
+\textbf{Amélioration des performances.} Le cache sémantique actuel, limité à la mémoire du processus, gagnerait à être externalisé dans une instance Redis partagée entre les différentes instances de l'API. Par ailleurs, l'utilisation d'un modèle LLM hébergé dans le cloud (tel que Qwen~2.5:7b ou un modèle GPT) permettrait d'élever le niveau de qualité rédactionnelle des réponses sur les requêtes les plus exigeantes.
+
+\textbf{Maintien de la base documentaire.} La documentation SAP évolue régulièrement avec la publication de nouvelles notes et mises à jour. Un processus de synchronisation incrémentale, déjà prototypé durant le projet, pourrait être mis en place pour enrichir continuellement le corpus sans repartir d'un indexage complet.
+
+\textbf{Retour utilisateur et amélioration continue.} Intégrer un système de notation directement dans l'interface du chatbot permettrait de recueillir des signaux qualitatifs en situation réelle. Ces retours constitueraient un jeu de données précieux pour affiner les paramètres du pipeline et détecter les cas où le système produit des réponses insatisfaisantes.
+
+\textbf{Extension du périmètre fonctionnel.} L'architecture développée n'est pas spécifique à SAP BASIS~; elle pourrait être adaptée à d'autres modules SAP comme FI/CO, MM ou SD, voire à des référentiels documentaires d'autres domaines métiers. Cette ouverture témoigne de la capacité de généralisation de l'approche retenue.
+
+En résumé, ce projet illustre qu'il est envisageable d'établir un système d'assistance intelligent, performant et en conformité avec les exigences de confidentialité des entreprises, en utilisant des modèles open-source déployés localement et une architecture modulaire bien conçue. Les opportunités d'amélioration relevées représentent simplement une suite logique, et chacune d'elles pourrait donner lieu à un développement ultérieur complet.
+
