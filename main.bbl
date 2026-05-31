@@ -1,0 +1,78 @@
+\begin{thebibliography}{9}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Brown et~al.(2020)Brown, Mann, Ryder, Subbiah, Kaplan, Dhariwal,
+  Neelakantan, Shyam, Sastry, Askell, Agarwal, Herbert-Voss, Krueger, Henighan,
+  Child, Ramesh, Ziegler, Wu, Winter, Hesse, Chen, Sigler, Litwin, Gray, Chess,
+  Clark, Berner, McCandlish, Radford, Sutskever, and Amodei]{brown2020gpt3}
+Tom~B. Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared Kaplan,
+  Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda
+  Askell, Sandhini Agarwal, Ariel Herbert-Voss, Gretchen Krueger, Tom Henighan,
+  Rewon Child, Aditya Ramesh, Daniel~M. Ziegler, Jeffrey Wu, Clemens Winter,
+  Christopher Hesse, Mark Chen, Eric Sigler, Mateusz Litwin, Scott Gray,
+  Benjamin Chess, Jack Clark, Christopher Berner, Sam McCandlish, Alec Radford,
+  Ilya Sutskever, and Dario Amodei.
+\newblock Language models are few-shot learners.
+\newblock \emph{Advances in Neural Information Processing Systems (NeurIPS)},
+  33, 2020.
+
+\bibitem[Chan et~al.(2024)Chan, Chen, Cheng, and Huang]{chan2024cag}
+Brian~J. Chan, Chao-Ting Chen, Jui-Hung Cheng, and Hen-Hsen Huang.
+\newblock Don't do {RAG}: When cache-augmented generation is better for
+  knowledge tasks.
+\newblock \emph{arXiv preprint arXiv:2412.15605}, 2024.
+
+\bibitem[Devlin et~al.(2019)Devlin, Chang, Lee, and Toutanova]{devlin2019bert}
+Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova.
+\newblock {BERT}: Pre-training of deep bidirectional transformers for language
+  understanding.
+\newblock \emph{Proceedings of NAACL-HLT}, 2019.
+
+\bibitem[Es et~al.(2023)Es, James, Espinosa-Anke, and Schockaert]{es2023ragas}
+Shahul Es, Jithin James, Luis Espinosa-Anke, and Steven Schockaert.
+\newblock {RAGAS}: Automated evaluation of retrieval augmented generation.
+\newblock \emph{arXiv preprint arXiv:2309.15217}, 2023.
+
+\bibitem[Jurafsky and Martin(2024)]{jurafsky2024slp}
+Daniel Jurafsky and James~H. Martin.
+\newblock \emph{Speech and Language Processing}.
+\newblock Stanford University, 3rd (online draft) edition, 2024.
+\newblock URL \url{https://web.stanford.edu/~jurafsky/slp3/}.
+
+\bibitem[Lewis et~al.(2020)Lewis, Perez, Piktus, Petroni, Karpukhin, Goyal,
+  K{\"u}ttler, Lewis, tau Yih, Rockt{\"a}schel, Riedel, and
+  Kiela]{lewis2020rag}
+Patrick Lewis, Ethan Perez, Aleksandra Piktus, Fabio Petroni, Vladimir
+  Karpukhin, Naman Goyal, Heinrich K{\"u}ttler, Mike Lewis, Wen tau Yih, Tim
+  Rockt{\"a}schel, Sebastian Riedel, and Douwe Kiela.
+\newblock Retrieval-augmented generation for knowledge-intensive {NLP} tasks.
+\newblock \emph{Advances in Neural Information Processing Systems (NeurIPS)},
+  33, 2020.
+
+\bibitem[Reimers and Gurevych(2019)]{reimers2019sbert}
+Nils Reimers and Iryna Gurevych.
+\newblock Sentence-{BERT}: Sentence embeddings using siamese {BERT}-networks.
+\newblock \emph{Proceedings of EMNLP-IJCNLP}, 2019.
+
+\bibitem[Thakur et~al.(2021)Thakur, Reimers, R{\"u}ckl{\'e}, Srivastava, and
+  Gurevych]{thakur2021beir}
+Nandan Thakur, Nils Reimers, Andreas R{\"u}ckl{\'e}, Abhishek Srivastava, and
+  Iryna Gurevych.
+\newblock {BEIR}: A heterogeneous benchmark for zero-shot evaluation of
+  information retrieval models.
+\newblock \emph{Advances in Neural Information Processing Systems (NeurIPS)},
+  35, 2021.
+
+\bibitem[Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez,
+  Kaiser, and Polosukhin]{vaswani2017attention}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
+  Aidan~N. Gomez, {\L}ukasz Kaiser, and Illia Polosukhin.
+\newblock Attention is all you need.
+\newblock \emph{Advances in Neural Information Processing Systems (NeurIPS)},
+  30, 2017.
+
+\end{thebibliography}
