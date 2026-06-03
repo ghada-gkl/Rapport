@@ -221,12 +221,12 @@ Context Recall
 Faithfulness
   & \textcolor{SAPGray}{\bfseries N/A}
   & \textcolor{SAPRed}{\bfseries Non}
-  & \textcolor{SAPGray}{Requiert une sortie JSON stricte du juge LLM} \\
+  & \textcolor{SAPGray}{Non calculable~: \texttt{llama3.2:3b} ne produit pas la sortie JSON structurée requise par RAGAS (100\,\% d'échecs de parsing). Un juge LLM plus puissant est nécessaire (voir §~\ref{subsec:limites-ragas})} \\
 \rowcolor{SAPLightGray}
 Context Precision
   & \textcolor{SAPGray}{\bfseries N/A}
   & \textcolor{SAPRed}{\bfseries Non}
-  & \textcolor{SAPGray}{Requiert une sortie JSON stricte du juge LLM} \\
+  & \textcolor{SAPGray}{Non calculable pour la même raison~: dépendance au format JSON strict du juge LLM (voir §~\ref{subsec:limites-ragas})} \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -345,10 +345,19 @@ Toute réponse contenant un T-code connu non présent dans les chunks récupér�
 Sur le jeu de test disponible ($n = 18$ pour le retrieval, $n = 3$ pour la génération), plusieurs résultats sont notables. L'approche hybride obtient un MRR = 1.0 et un nDCG@3 = 0.959, indiquant qu'un chunk pertinent apparaît systématiquement en première position et que le classement est de haute qualité dans les cas testés. Le gain de +9,2\,\% sur le nDCG@3 par rapport à la baseline valide l'apport du reranking cross-encoder. Sur le plan de la génération, l'Answer Relevancy de 0,92 ($n = 3$) suggère que les réponses restent centrées sur les questions posées. Ces résultats sont prometteurs, mais conditionnés par les limites de validité du protocole (taille de l'échantillon, circularité des labels, juge LLM identique au générateur) discutées à la section~\ref{subsec:limites-validite}.
 
 \subsection{Limites identifiées}
+\label{subsec:limites-ragas}
 
 Le Recall@1 de 0.122 indique que le premier résultat brut n'est pas toujours le plus pertinent~; ce comportement est attendu sur une base de 76\,463 vecteurs et est corrigé par le reranking (MRR = 1.0 sur $n = 18$). L'évaluation porte uniquement sur des requêtes en anglais, le modèle d'embedding \texttt{BAAI/bge-large-en-v1.5} n'étant pas optimisé pour le français.
 
-Le modèle-juge \texttt{llama3.2:3b} présente deux limites majeures. Premièrement, il est \textbf{identique au modèle générateur}~: évaluer ses propres réponses introduit un biais d'auto-évaluation systématique --- un modèle tend à juger favorablement le style de ses propres formulations. Deuxièmement, 100\,\% des appels aux métriques Faithfulness et Context Precision échouent avec une erreur de parsing JSON (le modèle ne produit pas la sortie structurée attendue)~; ces deux métriques sont donc entièrement manquantes. L'utilisation d'un juge plus puissant et indépendant du générateur (ex. \texttt{llama3.1:70b} ou un API LLM distinct) est indispensable pour une évaluation RAGAS fiable.
+\paragraph{Non-calculabilité de Faithfulness et Context Precision.}
+Le modèle-juge \texttt{llama3.2:3b} présente deux limites majeures qui rendent les métriques Faithfulness et Context Precision entièrement non calculables dans ce contexte.
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Défaut de format de sortie.} RAGAS requiert que le juge LLM produise une réponse au format JSON strict (\texttt{\{"score": 0.x, "statements": [...]\}}). Le modèle \texttt{llama3.2:3b} — un modèle à 3 milliards de paramètres — échoue systématiquement à respecter ce format~: 100\,\% des appels concernant ces deux métriques se terminent par une \texttt{JSONDecodeError}. Ce comportement est documenté dans la littérature pour les modèles de petite taille~\cite{es2023ragas}.
+  \item \textbf{Biais d'auto-évaluation.} Le modèle \texttt{llama3.2:3b} est à la fois le générateur des réponses évaluées et le juge. Cette identité introduit un biais systématique~: un modèle tend à juger favorablement des formulations proches des siennes, gonflant artificiellement les scores de fidélité.
+\end{itemize}
+
+Ces deux métriques restent donc volontairement déclarées \textit{N/A} plutôt que de présenter des scores non fiables. Pour une évaluation RAGAS complète, l'utilisation d'un modèle-juge indépendant et de taille suffisante (par exemple \texttt{llama3.1:70b} ou un service API externe tel que GPT-4) est indispensable~; cette amélioration est identifiée comme une priorité dans les perspectives du projet.
 
 Enfin, la circularité de l'auto-labellisation par signaux (détaillée au §~\ref{subsec:limites-validite}) constitue la limite de validité la plus structurelle~: elle favorise mécaniquement les requêtes contenant des T-codes explicites et produit des scores de retrieval optimistes sur ce type de corpus.
 

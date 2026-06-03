@@ -245,14 +245,15 @@ Le système déployé repose sur une architecture à trois couches distinctes co
 
 \section{Diagramme de cas d'utilisation général}
 
-Dans cette section, les exigences fonctionnelles du système sont représentées à l'aide d'un diagramme de cas d'utilisation conforme au langage de modélisation UML. Ce diagramme (voir figure 2.1) met en évidence les différents acteurs du système ainsi que les interactions possibles entre ces acteurs et les fonctionnalités offertes par l'application. Il permet ainsi de fournir une vision globale du comportement du système et des services qu'il propose aux utilisateurs.
+Dans cette section, les exigences fonctionnelles du système déployé sont représentées à l'aide d'un diagramme de cas d'utilisation conforme au langage de modélisation UML. Ce diagramme (voir figure~\ref{fig:usecase_deploy}) met en évidence les différents acteurs du système ainsi que les interactions possibles entre ces acteurs et les fonctionnalités offertes par l'application. Il permet ainsi de fournir une vision globale du comportement du système et des services qu'il propose aux utilisateurs.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{images/casutilisation.png}
-    \caption{Diagramme de cas d'utilisation général du système}
-    \label{fig:usecase_ch8}
+    \caption{Diagramme de cas d'utilisation général du système déployé}
+    \label{fig:usecase_deploy}
 \end{figure}
+
 \subsection{Technologies utilisées}
 
 L'ensemble de la pile technologique mise en œuvre est résumé dans le tableau~\ref{tab:tech_stack}.
@@ -295,15 +296,11 @@ Le système RAG est configuré à travers un fichier \texttt{.env} qui centralis
 
 \subsection{Infrastructure de la base de données vectorielle}
 
-La base de données PostgreSQL hébergée à l'adresse \texttt{45.159.228.43:5432} contient la table \texttt{sap\_chunks} avec \textbf{76~463 vecteurs} indexés. L'index HNSW (\textit{Hierarchical Navigable Small World}) a été créé avec les paramètres suivants~:
-
 \begin{lstlisting}[language=SQL, caption={Création de l'index vectoriel HNSW sur la table sap\_chunks}]
 CREATE INDEX sap_chunks_hnsw ON sap_chunks
     USING hnsw (embedding vector_cosine_ops)
     WITH (m = 16, ef_construction = 64);
 \end{lstlisting}
-
-Cet index permet une recherche approximative du plus proche voisin en temps sous-linéaire, avec un temps de réponse moyen inférieur à 100~ms pour une collection de 76~463 vecteurs de dimension 1024.
 
 % ─────────────────────────────────────────────────────────────
 \subsection{Schéma de la base de données PostgreSQL}

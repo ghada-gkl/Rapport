@@ -3,22 +3,22 @@
 \addcontentsline{toc}{chapter}{Introduction Générale}
 \label{chap:intro_generale}
 
-% ============================================================
+Dans un environnement où la transformation numérique est devenue cruciale pour les organisations, les systèmes SAP se sont affirmés comme des outils stratégiques pour la gestion des processus commerciaux. En tant que logiciels de gestion intégrés (SGI), ils pilotent des activités essentielles telles que la gestion des finances, la logistique, les ressources humaines, la production et la chaîne d'approvisionnement. Leur accessibilité et leur bon fonctionnement sont donc vitaux pour la continuité des opérations de nombreuses entreprises dans le monde entier.
 
-Dans le contexte actuel des entreprises, les systèmes SAP représentent bien plus qu'un simple logiciel : ils constituent l'ossature des opérations les plus essentielles dans divers secteurs. En tant que solutions de progiciel de gestion intégré (PGI), ces plateformes gèrent des processus clés liés à la chaîne d'approvisionnement, à la logistique, aux ressources humaines et aux activités financières de milliers d'organisations dans le monde entier.
-
-La gestion de ces environnements constitue néanmoins un défi constant pour les équipes responsables. Les administrateurs BASIS et les consultants SAP doivent en même temps suivre de nombreuses métriques système — tâches en arrière-plan (SM37), processus en cours (SM66), blocages de tables (SM12), erreurs ABAP (ST22), files d'attente RFC (SM58), performances applicatives (ST03N), espace disque (DB02), et beaucoup d'autres — tout en étant capables d'analyser rapidement les incidents en se basant sur une documentation technique très vaste.
-Cette double exigence — la supervision en temps réel et la maîtrise du corpus documentaire — est essentielle à la problématique industrielle qui sous-tend ce projet. La documentation SAP se compose de centaines de manuels de formation officielles, de millions de pages d’aide en ligne, et d’un réservoir de Notes SAP en constante mutation. En cas d’incident, un consultant se doit de repérer la bonne procédure de résolution au milieu de cette vaste quantité d'informations, souvent dans des délais serrés et sous pression opérationnelle.
-
-Dans les faits, qu'il s'agisse d'administrateurs SAP ou de consultants chevronnés, plusieurs problèmes reviennent fréquemment :
+Néanmoins, l'administration et la surveillance de ces systèmes restent des tâches difficiles. Les administrateurs BASIS et les consultants SAP doivent constamment surveiller un grand nombre d'indicateurs techniques concernant l'état du système, tout en étant en mesure d'identifier et de résoudre rapidement les problèmes.
+Cette obligation est accentuée par la richesse de la documentation technique SAP. Celle-ci se compose de plusieurs centaines de manuels de formation officiels, d'une documentation en ligne particulièrement vaste ainsi que d'un ensemble de notes techniques mises à jour régulièrement. Lorsqu'un incident se produit, les équipes doivent fréquemment rechercher, analyser et interpréter rapidement les informations pertinentes pour déterminer la procédure de résolution appropriée.
+ Dans ce cadre, plusieurs difficultés majeures peuvent être mises en évidence :
 
 \begin{itemize}[leftmargin=*, label=\textbullet]
-  \item \textbf{Allier monitoring et documentation :} pour analyser une anomalie — un job en attente, un dump ABAP, une saturation de l'espace disque — il est nécessaire de lire les indicateurs actuels et de consulter la procédure de résolution dans la documentation, deux sources actuellement totalement séparées.
-  \item \textbf{Se repérer dans un vaste corpus :} avec plus de 300 manuels de formation SAP officiels, le portail \texttt{help.sap.com} et les Notes SAP constituent un ensemble dont l'exploration manuelle est longue, laborieuse et peu fiable.
-  \item \textbf{Exploiter les connaissances spécialisées :} le savoir des consultants expérimentés demeure souvent implicite et mal accessible pour les équipes moins aguerries, engendrant des silos de connaissances difficiles à combler.
-   \item \textbf{Maintenir une réactivité élevée :} la détection tardive d'une anomalie dans un système SAP de production peut engendrer des coûts opérationnels considérables et
-des interruptions de service pour l'ensemble de l'organisation cliente.    
+
+\item \textbf{Centralisation des informations de supervision et de la documentation :} l'analyse d'un incident requiert généralement la consultation simultanée des données de monitoring et des ressources documentaires correspondantes. Étant souvent éparpillées dans divers outils, leur utilisation devient plus compliquée et prend plus de temps.
+\item \textbf{Gestion d'un volume conséquent de connaissances :} la richesse du corpus documentaire SAP complique la recherche d'informations pertinentes, surtout lorsqu'une réponse rapide est nécessaire dans un cadre opérationnel.
+
+\item \textbf{Mise en valeur de l'expertise métier :} une grande partie des connaissances accumulées par les consultants expérimentés reste difficile à accéder pour les nouveaux employés, ce qui entrave la diffusion et la capitalisation du savoir au sein des équipes.
+
+\item \textbf{Diminution du temps de réponse face aux incidents :} toute baisse de performances ou indisponibilité d'un système SAP en production peut entraîner des impacts significatifs sur les activités de l'entreprise. Par conséquent, il est crucial de disposer de mécanismes permettant d'identifier rapidement les anomalies et d'assister efficacement les équipes dans leur résolution.
 \end{itemize}
+
   
 
 % ============================================================
@@ -49,32 +49,16 @@ Du point de vue scientifique, le paradigme de la \textbf{Génération Augmentée
 % ============================================================
  \section*{Objectifs du projet}
 \addcontentsline{toc}{section}{Objectifs du projet}
-L'objectif principal de ce projet de fin d'études, mené au sein d'AVAXIA GROUP, consiste à créer et à mettre en place un \textbf{assistant intelligent de supervision SAP} --- nommé \textit{AutoMoni} --- qui sera capable de fournir des réponses en langage naturel aux interrogations des administrateurs BASIS et des consultants SAP, en s'appuyant sur un corpus de connaissances tiré de la documentation officielle SAP ainsi que sur des données de surveillance recueillies en temps réel.
-Pour atteindre cet objectif, le projet se structure autour de trois axes complémentaires :  
-\begin{itemize}[leftmargin=*, label=\textbullet]  
-  \item \textbf{Élaboration d’une base de connaissances SAP :} recueil et organisation de plus de 297 manuels de formation SAP officiels (extraction PDF à l'aide de \texttt{pdfplumber}) ainsi que du portail \texttt{help.sap.com}, suivis d'un processus de nettoyage, de découpage hiérarchique parent-enfant en segments de 512 tokens, et de vectorisation utilisant le modèle \texttt{BAAI/bge-large-en-v1.5} (1\,024 dimensions), ce qui conduit à 76\,463 vecteurs indexés dans PostgreSQL par le biais de l’extension \texttt{pgvector} avec un index HNSW.  
-\item \textbf{Pipeline RAG à récupération hybride :} un système de recherche qui associe
 
-la recherche sémantique vectorielle à la recherche lexicale BM25, combinées grâce
-
-à l'algorithme RRF (\textit{Reciprocal Rank Fusion}), puis réévaluées par un
-
-cross-encodeur (\texttt{ms-marco-MiniLM}), avant de générer la réponse finale par
-
-le modèle \texttt{llama3.2:3b} via Ollama. Le système comprend un mécanisme de cache
-
-sémantique (CAG), la gestion de l'historique des conversations multi-tours ainsi qu'une boucle
-
-de rétroaction permettant aux administrateurs de rectifier les réponses jugées insatisfaisantes.
-
-\item \textbf{Intégration dans l'application AutoMoni :} mise en œuvre du pipeline RAG sous
-
-forme d'API REST (FastAPI) et incorporation d'un chatbot conversationnel dans l'interface
-
-web de supervision SAP, créée avec React et les composants SAP UI5, fournissant aux
-
-utilisateurs un accès centralisé aux tableaux de bord de suivi et à l'assistance
-
-documentaire intelligente.\end{itemize}
+Le but principal de ce projet de fin d'études, réalisé dans le cadre d'AVAXIA GROUP, est de concevoir et développer un assistant intelligent de supervision SAP, dénommé \textit{AutoMoni}. Cet assistant vise à soutenir les administrateurs BASIS ainsi que les consultants SAP en offrant des réponses pertinentes en langage naturel, basées à la fois sur la documentation officielle de SAP et sur les données de supervision recueillies en temps réel.
+Pour atteindre cet objectif, les travaux menés se concentrent sur trois axes principaux :
 
 
+
+\begin{itemize}[leftmargin=*, label=\textbullet]
+
+\item \textbf{Élaboration d'une base de connaissances SAP :} cette phase consiste à rassembler, organiser et référencer les connaissances provenant de la documentation officielle de SAP. Le corpus est composé de plus de 297 manuels de formation ainsi que de contenus provenant du portail \texttt{help.sap.com}. Après extraction, les documents sont nettoyés, segmentés selon une structure hiérarchique de type parent-enfant, et ensuite convertis en représentations vectorielles grâce au modèle d'embedding \texttt{BAAI/bge-large-en-v1.5}. Les vecteurs générés sont ensuite stockés et indexés dans PostgreSQL à l'aide de l'extension \texttt{pgvector}, ce qui permet une recherche efficace à grande échelle.
+\item \textbf{Création d’un pipeline RAG avec récupération hybride :} cet axe a pour objectif d’établir un système de recherche et de génération de réponses qui allie les méthodes sémantiques et lexicales. La collecte d’informations se fonde sur la combinaison de la recherche vectorielle et de l’algorithme BM25, amalgamées via la méthode \textit{Reciprocal Rank Fusion} (RRF). Les résultats obtenus sont ensuite réévalués par un modèle de reranking, avant que le modèle de langage de grande taille, exécuté localement, ne génère la réponse finale. De plus, le système intègre un mécanisme de cache sémantique, la gestion d’un contexte de conversation multi-tours, ainsi qu’un dispositif de rétroaction permettant l'amélioration continue des réponses produites.
+\item \textbf{Intégration au sein de la plateforme AutoMoni :} le pipeline RAG est exposé sous forme d’API REST à l’aide du framework FastAPI et intégré dans une interface web de supervision SAP développée avec React et les composants SAP UI5. Cette intégration offre aux utilisateurs un environnement centralisé permettant à la fois le suivi des indicateurs de supervision et l’accès à une assistance documentaire intelligente.
+
+\end{itemize}

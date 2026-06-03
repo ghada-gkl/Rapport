@@ -108,7 +108,6 @@ une r\'{e}ponse structur\'{e}e \`{a} l'aide d'un LLM.
 
 % ─────────────────────────────────────────────────────────────────────────────
 
-\
 \subsection{Flux de données}
 Le flux global d'une requête utilisateur peut être résumé comme suit : la question brute de l'utilisateur transite d'abord par une étape de compréhension sémantique (NLP), qui extrait l'intention, les entités SAP (T-codes, numéros de notes) et reformule la requête. La requête enrichie est ensuite vectorisée, puis soumise simultanément à une recherche vectorielle (similarité cosinus via pgvector) et à une recherche plein texte (BM25 via PostgreSQL \texttt{ts\_rank}). Les résultats des deux recherches sont fusionnés par \textbf{Reciprocal Rank Fusion (RRF)}, une technique qui combine les classements issus de sources hétérogènes en attribuant à chaque résultat un score inversement proportionnel à sa position dans chaque liste, favorisant ainsi les chunks bien classés dans plusieurs recherches simultanément. Ces résultats fusionnés sont ensuite reranqués par un \textbf{cross-encoder}, un modèle qui, contrairement aux embeddings calculés indépendamment, évalue la paire (requête, chunk) conjointement pour produire un score de pertinence plus fin et contextuellement précis. Les chunks retenus sont injectés dans un prompt structuré, puis transmis au LLM pour génération de la réponse finale. Un mécanisme de détection d'hallucinations valide la cohérence de la réponse avant son renvoi à l'utilisateur.
 \subsection{Diagramme d'architecture}

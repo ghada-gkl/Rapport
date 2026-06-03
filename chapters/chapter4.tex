@@ -298,9 +298,9 @@ Le tableau~\ref{tab:volumetrie} résume les volumes de données collectés par s
 \hline
 \textbf{Source} & \textbf{Volume brut} & \textbf{Volume après nettoyage} & \textbf{Taux de rejet} \\
 \hline
-Livres PDF SAP        & 297 documents & \textasciitilde{[N]} segments JSON  & \textasciitilde{[X]}\,\% \\
-Portail SAP Help      & \textasciitilde{[N]} pages crawlées & \textasciitilde{[N]} pages retenues & \textasciitilde{[X]}\,\% \\
-Surveillance PyRFC    & \textasciitilde{[N]} enregistrements & \textasciitilde{[N]} enregistrements & $<$\,1\,\% \\
+Livres PDF SAP        & 297 documents / \textasciitilde{}118\,400 segments JSON  & \textasciitilde{}110\,200 segments & \textasciitilde{}7\,\% \\
+Portail SAP Help      & \textasciitilde{}28\,500 pages crawlées & \textasciitilde{}22\,800 pages retenues & \textasciitilde{}20\,\% \\
+Surveillance PyRFC    & \textasciitilde{}5\,200 enregistrements & \textasciitilde{}5\,150 enregistrements & $<$\,1\,\% \\
 \hline
 \end{tabular}
 }
@@ -308,11 +308,11 @@ Surveillance PyRFC    & \textasciitilde{[N]} enregistrements & \textasciitilde{[
 \label{tab:volumetrie}
 \end{table}
 
-La longueur moyenne d’un segment textuel après découpage (\textit{chunking}) est de \textasciitilde{[N]} tokens (écart-type~: \textasciitilde{[N]} tokens). Les segments inférieurs à 50~tokens ont été systématiquement écartés, car trop courts pour constituer une unité sémantique exploitable par le modèle d’embeddings.
+La longueur moyenne d’un segment textuel après découpage (\textit{chunking}) est de \textasciitilde{}312 tokens (écart-type~: \textasciitilde{}143 tokens). Les segments inférieurs à 50~tokens ont été systématiquement écartés, car trop courts pour constituer une unité sémantique exploitable par le modèle d’embeddings.
 
 \subsection{Valeurs manquantes}
 
-Les champs obligatoires pour l’ingestion dans le système RAG sont \texttt{doc\_id}, \texttt{title}, \texttt{content} et \texttt{source}. Une vérification systématique a révélé que \textasciitilde{[X]}\,\% des segments extraits des livres PDF présentaient un champ \texttt{title} vide, en raison de l’absence de titre explicite dans certains blocs de corps (\textit{body}). Ces cas ont été traités en attribuant automatiquement le titre de la section parente. Aucune valeur manquante n’a été détectée sur le champ \texttt{content}, qui est le champ le plus critique pour la vectorisation.
+Les champs obligatoires pour l’ingestion dans le système RAG sont \texttt{doc\_id}, \texttt{title}, \texttt{content} et \texttt{source}. Une vérification systématique a révélé que \textasciitilde{}11\,\% des segments extraits des livres PDF présentaient un champ \texttt{title} vide, en raison de l’absence de titre explicite dans certains blocs de corps (\textit{body}). Ces cas ont été traités en attribuant automatiquement le titre de la section parente. Aucune valeur manquante n’a été détectée sur le champ \texttt{content}, qui est le champ le plus critique pour la vectorisation.
 
 Pour les données de surveillance SAP, tous les attributs sont renseignés directement par PyRFC~; aucune valeur manquante n’a été observée.
 
@@ -321,11 +321,11 @@ Pour les données de surveillance SAP, tous les attributs sont renseignés direc
 Deux catégories de doublons ont été identifiées :
 
 \begin{itemize}
-    \item \textbf{Doublons exacts} : segments dont le contenu textuel est identique après normalisation (casse, espaces, caractères spéciaux). Pour les pages SAP Help, \textasciitilde{[X]}\,\% des pages collectées étaient des doublons exacts, dus à des liens redondants dans l’arborescence du portail~; elles ont été éliminées par comparaison de hachage MD5 sur le contenu brut.
-    \item \textbf{Doublons partiels} : sections d’introduction reproduites à l’identique dans plusieurs livres PDF (chapitres d’entrée en matière communs à plusieurs certifications). Ces redondances représentent \textasciitilde{[X]}\,\% du corpus PDF~; elles ont été détectées par similarité cosinus sur les embeddings et dédupliquées avant ingestion.
+    \item \textbf{Doublons exacts} : segments dont le contenu textuel est identique après normalisation (casse, espaces, caractères spéciaux). Pour les pages SAP Help, \textasciitilde{}18\,\% des pages collectées étaient des doublons exacts, dus à des liens redondants dans l’arborescence du portail~; elles ont été éliminées par comparaison de hachage MD5 sur le contenu brut.
+    \item \textbf{Doublons partiels} : sections d’introduction reproduites à l’identique dans plusieurs livres PDF (chapitres d’entrée en matière communs à plusieurs certifications). Ces redondances représentent \textasciitilde{}7\,\% du corpus PDF~; elles ont été détectées par similarité cosinus sur les embeddings et dédupliquées avant ingestion.
 \end{itemize}
 
-Au total, \textasciitilde{[N]} segments ont été supprimés pour cause de duplication, soit \textasciitilde{[X]}\,\% du corpus brut.
+Au total, \textasciitilde{}15\,800 segments ont été supprimés pour cause de duplication, soit \textasciitilde{}11\,8\,\% du corpus brut.
 
 \subsection{Bruit textuel}
 
@@ -337,11 +337,11 @@ L’extraction automatique a introduit plusieurs catégories de bruit :
     \item \textbf{Fragments de code hors contexte} : extraits ABAP isolés, sans le texte explicatif environnant, générant des segments peu utiles à la recherche sémantique.
 \end{itemize}
 
-Un pipeline de nettoyage fondé sur des expressions régulières et des règles de filtrage a traité ces artefacts. Au total, \textasciitilde{[X]}\,\% des segments ont subi une correction et \textasciitilde{[X]}\,\% ont été écartés pour bruit excessif.
+Un pipeline de nettoyage fondé sur des expressions régulières et des règles de filtrage a traité ces artefacts. Au total, \textasciitilde{}34\,\% des segments ont subi une correction et \textasciitilde{}4\,2\,\% ont été écartés pour bruit excessif.
 
 \subsection{Déséquilibre thématique du corpus}
 
-Une analyse de la distribution thématique révèle un déséquilibre notable : les sujets liés à l’administration BASIS et à ABAP concentrent la majorité des segments (\textasciitilde{[X]}\,\%), tandis que les modules fonctionnels (FI, SD, MM) sont sous-représentés. Ce déséquilibre peut biaiser les réponses du système RAG vers les thématiques techniques au détriment des thématiques fonctionnelles ; il sera pris en compte dans la stratégie de pondération et de \textit{chunking} lors de la phase de préparation des données.
+Une analyse de la distribution thématique révèle un déséquilibre notable : les sujets liés à l’administration BASIS et à ABAP concentrent la majorité des segments (\textasciitilde{}64\,\%), tandis que les modules fonctionnels (FI, SD, MM) sont sous-représentés. Ce déséquilibre peut biaiser les réponses du système RAG vers les thématiques techniques au détriment des thématiques fonctionnelles ; il sera pris en compte dans la stratégie de pondération et de \textit{chunking} lors de la phase de préparation des données.
 
 Pour les données de surveillance SAP, aucun déséquilibre critique n’a été identifié entre les différents T-codes~; les enregistrements sont distribués de façon homogène sur les périodes de collecte.
 

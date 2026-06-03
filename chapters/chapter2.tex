@@ -4,26 +4,6 @@
 
 \chapter{Planification et spécification des besoins}
 
-\vspace{1.5cm}
-
-\noindent \textbf{Introduction}
-
-\vspace{0.8cm}
-
-\begin{enumerate}
-\item Visions et objectifs du système futur
-\item Spécification des besoins
-\item Diagramme de cas d'utilisation général
-\item Gestion de projet avec la méthode CRISP-DM
-\item Diagramme de Gantt
-\end{enumerate}
-
-\vspace{0.8cm}
-
-\noindent \textbf{Conclusion}
-
-\clearpage
-
 \section*{Objectifs du chapitre}
 Ce chapitre a pour objectif de présenter la planification et la spécification des besoins pour le développement du système proposé. 
 \section*{Introduction}
@@ -69,6 +49,31 @@ Pour déterminer les besoins fonctionnels et non fonctionnels, nous débutons pa
 l'identification des acteurs impliqués dans le système, en précisant le rôle spécifique
 de chacun. Ainsi, nous identifions trois rôles distincts qui interagissent avec le
 système :
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.45}
+\caption{Acteurs du système AutoMoni et leurs responsabilités}
+\label{tab:acteurs}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{primaryblue}}p{3.2cm} p{3cm} X@{}}
+\toprule
+\normalfont\textbf{\color{primaryblue}Acteur} & \textbf{Type} & \textbf{Responsabilités principales} \\
+\midrule
+Administrateur système
+  & Acteur principal
+  & Gère la plateforme AutoMoni dans son ensemble~: configuration des alertes et des règles métier, gestion des comptes utilisateurs, accès à l'historique global des conversations, supervision des performances du pipeline RAG et administration des paramètres système. Il dispose des droits les plus étendus et cumule toutes les fonctionnalités de l'Administrateur SAP. \\
+\addlinespace
+Administrateur SAP (consultant BASIS)
+  & Acteur principal
+  & Surveille les environnements SAP à travers les données de monitoring collectées en temps réel. Interagit avec l'assistant intelligent pour poser des questions techniques en langage naturel, consulter les alertes T-code, accéder aux journaux de transactions et visualiser les graphiques d'analyse. Peut également configurer les paramètres de surveillance propres à son périmètre client. Soumet des feedbacks sur les réponses du chatbot (notation et correction) afin d'améliorer la qualité du système RAG. \\
+\addlinespace
+Système SAP (source externe)
+  & Acteur secondaire
+  & Fournit les données de surveillance opérationnelle via les appels RFC (PyRFC). Ne déclenche pas d'interactions directes avec l'interface, mais alimente en continu la base de données de monitoring qui est interrogée par les deux acteurs humains. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
 \subsection{Besoins fonctionnels}
 
 Les besoins fonctionnels définissent l'ensemble des fonctionnalités que le système doit
@@ -168,13 +173,58 @@ Maintenabilité          & Pipeline rejouable & Git + scripts versionnés \\
 \end{table}
 
 
-\section{Diagramme de cas d'utilisation général}
 
-Dans cette section, les exigences fonctionnelles du système sont représentées à l'aide d'un diagramme de cas d'utilisation conforme au langage de modélisation UML. Ce diagramme (voir figure 2.1) met en évidence les différents acteurs du système ainsi que les interactions possibles entre ces acteurs et les fonctionnalités offertes par l'application. Il permet ainsi de fournir une vision globale du comportement du système et des services qu'il propose aux utilisateurs.
+% ─────────────────────────────────────────────────────────────
+\section{Gestion de projet avec la méthode CRISP-DM}
+\label{sec:crisp_planification}
+% ─────────────────────────────────────────────────────────────
+
+La méthodologie CRISP-DM (\textit{Cross-Industry Standard Process for Data Mining}) a été
+adoptée pour structurer et piloter ce projet. Cette démarche itérative, éprouvée dans les
+projets de science des données, organise le travail en six phases successives~:
+\textit{Business Understanding}, \textit{Data Understanding}, \textit{Data Preparation},
+\textit{Modeling}, \textit{Evaluation} et \textit{Deployment}. Chaque phase produit des
+livrables concrets qui servent d'entrée à la phase suivante, garantissant ainsi une
+progression maîtrisée du projet.
+
+Dans le cadre de ce projet, les six phases se déclinent comme suit~:
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Business Understanding (chapitre~2)~:} définition des objectifs métiers,
+        des besoins fonctionnels et non fonctionnels, et des critères de réussite.
+  \item \textbf{Data Understanding (chapitre~4)~:} exploration des sources de données SAP
+        (portail Help, manuels PDF, extractions PyRFC) et analyse de leur qualité.
+  \item \textbf{Data Preparation (chapitre~5)~:} nettoyage, normalisation, découpage
+        hiérarchique et vectorisation du corpus documentaire.
+  \item \textbf{Modeling (chapitre~6)~:} conception et assemblage du pipeline RAG hybride
+        (BM25 + vectoriel + RRF + cross-encoder + LLM).
+  \item \textbf{Evaluation (chapitre~7)~:} mesure des performances du pipeline selon les
+        métriques RAGAS et les indicateurs de récupération (MRR, Recall@k).
+  \item \textbf{Deployment (chapitre~8)~:} intégration dans l'application AutoMoni
+        (FastAPI + React + SAP UI5) et mise en production.
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────
+\section{Diagramme de Gantt}
+\label{sec:gantt}
+% ─────────────────────────────────────────────────────────────
+
+Le diagramme de Gantt ci-dessous illustre la planification temporelle du projet selon les
+phases CRISP-DM. Il met en évidence les différentes tâches, leur durée estimée et les
+dépendances entre les phases tout au long du cycle de développement.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{Diagramme vierge.png}
-    \caption{Diagramme de cas d'utilisation général du système}
-    \label{fig:usecase}
+    \includegraphics[width=\textwidth]{images/diagramme-de-gant.jpeg}
+    \caption{Diagramme de Gantt }
+    \label{fig:gantt}
 \end{figure}
+
+\section*{Conclusion}
+
+Ce chapitre a posé les bases fonctionnelles et organisationnelles du projet. Les besoins
+fonctionnels et non fonctionnels ont été formalisés, les acteurs identifiés et le diagramme
+de cas d'utilisation a fourni une vue synthétique des interactions système. L'adoption de
+la méthodologie CRISP-DM a permis de structurer le projet en phases cohérentes, dont la
+planification temporelle est synthétisée dans le diagramme de Gantt. Le chapitre suivant
+présente le contexte métier SAP et l'état de l'art des technologies d'IA mobilisées.
