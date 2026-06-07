@@ -7,11 +7,14 @@
 
 \section*{Bilan du projet}
 
-À l'issue de ce projet, nous avons réussi à créer un assistant conversationnel intelligent, destiné à satisfaire les exigences quotidiennes des administrateurs SAP BASIS et intégré directement sur la plateforme AutoMoni. La méthodologie CRISP-DM, adoptée dès le début, nous a permis de suivre un cheminement cohérent et itératif, de l'analyse des besoins jusqu'à la mise en œuvre effective de la solution. 
+À l'issue de ce projet, nous avons réussi à créer un assistant conversationnel intelligent, destiné à satisfaire les exigences quotidiennes des administrateurs SAP BASIS et intégré directement sur la plateforme AutoMoni. La méthodologie CRISP-DM, adoptée dès le début, nous a permis de suivre un cheminement cohérent et itératif, de l'analyse des besoins jusqu'à la mise en œuvre effective de la solution.
+
 Dans un premier temps, l'examen du contexte métier a montré que les administrateurs SAP consacrent beaucoup de temps à la recherche d'informations techniques dispersées dans une documentation abondante. Trois attentes principales ont émergé de cette analyse~: disposer d'une réponse rapide et précise lors des incidents, bénéficier d'une assistance contextuelle sans interrompre le flux de travail, et pouvoir naviguer intuitivement entre les différentes vues de l'application. Ces exigences ont directement guidé nos décisions de conception.
 
 La construction de la base documentaire a représenté un travail conséquent~: \textbf{76~463 fragments} extraits de la documentation SAP officielle ont été vectorisés à l'aide du modèle \texttt{BAAI/bge-large-en-v1.5} (vecteurs de dimension 1024), puis stockés dans PostgreSQL via l'extension pgvector. L'indexation HNSW adoptée garantit des temps de recherche inférieurs à 100~ms même sur un corpus de cette taille.
+
 Le cœur du projet réside dans le pipeline RAG élaboré spécifiquement pour la terminologie SAP. Au lieu de se baser sur une recherche uniquement sémantique, nous avons choisi d'adopter une approche hybride combinant BM25 et la recherche vectorielle, ajustée grâce à l'algorithme RRF. Un cross-encoder effectue ensuite un reranking précis des résultats, tandis qu'un module de validation déterministe vérifie la cohérence des T-codes et des numéros de notes SAP présents dans chaque réponse avant de les transmettre à l'utilisateur. Ce pipeline est disponible sous forme d'API REST grâce à FastAPI.
+
 Côté application, l'intégration dans AutoMoni s'est appuyée sur l'architecture SAP CAP pour exposer le service de chatbot en OData, et sur React pour les composants d'interface. Qu'il soit utilisé depuis le tiroir latéral \textit{ChatPanel} ou depuis la page dédiée, l'assistant reste joignable à tout moment sans perturber la consultation des données de monitoring. Les tests comparatifs menés entre LLaMA~3.2:3b et Qwen~2.5:7b ont mis en lumière les différences de comportement entre les deux modèles et ont permis d'ajuster les paramètres du pipeline en conséquence.
 
 \section*{Apports du projet}

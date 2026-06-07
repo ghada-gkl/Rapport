@@ -49,7 +49,7 @@ système :
 \renewcommand{\arraystretch}{1.45}
 \caption{Acteurs du système AutoMoni et leurs responsabilités}
 \label{tab:acteurs}
-\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{primaryblue}}p{3.2cm} p{3cm} X@{}}
+\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{primaryblue}}p{4.5cm} p{3.5cm} X@{}}
 \toprule
 \normalfont\textbf{\color{primaryblue}Acteur} & \textbf{Type} & \textbf{Responsabilités principales} \\
 \midrule
@@ -114,57 +114,27 @@ L'utilisateur SAP constitue l'acteur principal de l'application. Il peut exploit
 \item Consulter l'historique des interactions avec le chatbot.
 \end{itemize}
 \subsection{Besoins Non Fonctionnels}
+Les besoins non fonctionnels définissent les critères de qualité et les contraintes que le système doit respecter afin de garantir son bon fonctionnement. Contrairement aux besoins fonctionnels, ils ne décrivent pas les services offerts aux utilisateurs, mais les caractéristiques attendues en matière de performance, de fiabilité, de sécurité et d’évolutivité.
 
-Les besoins non fonctionnels définissent les contraintes qualité du
-système indépendamment des fonctionnalités métier. Pour un système RAG
-déployé en environnement SAP BASIS de production, ces exigences sont
-critiques car une réponse incorrecte sur une procédure de configuration
-peut provoquer des incidents système graves.
+\subsubsection{Performance}
 
-\subsubsection*{Performance}
-Le pipeline complet (retrieval + génération) doit retourner une réponse
-en moins de \textbf{5 secondes} pour 95\% des requêtes. Ce seuil justifie
-le choix de l'index HNSW (recherche en $O(\log n)$) et le déploiement
-local du LLM via Ollama pour éliminer toute latence réseau.
+Le système doit fournir des réponses dans un délai raisonnable afin d’assurer une expérience utilisateur fluide et efficace. La rapidité d’exécution constitue un critère essentiel pour permettre aux administrateurs et consultants SAP d’obtenir les informations nécessaires sans interruption de leurs activités.
 
-\subsubsection*{Fiabilité}
-Le taux d'hallucination doit rester inférieur à \textbf{5\%}, garanti
-par une validation déterministe par règles à chaque réponse générée : les
-T-codes SAP et numéros de notes SAP présents dans la réponse sont comparés
-par expressions régulières à ceux effectivement présents dans les chunks
-récupérés ; toute entité non ancrée dans le contexte est supprimée avant
-renvoi à l'utilisateur. Si aucun chunk pertinent n'est trouvé (score
-similarité $< 0.5$), le système retourne explicitement une absence de
-réponse plutôt que d'inventer une information.
+\subsubsection{Fiabilité}
 
-\subsubsection*{Confidentialité}
-L'intégralité du pipeline tourne en local — LLM via Ollama, base
-vectorielle via pgvector. Aucune donnée SAP (configurations, credentials,
-topologie réseau) n'est transmise à des APIs cloud externes. C'est un
-prérequis non négociable pour les environnements d'entreprise SAP.
+Les réponses générées doivent être précises, cohérentes et basées sur des sources fiables. Le système doit limiter au maximum les erreurs et garantir la pertinence des informations fournies afin d’assurer un niveau élevé de confiance auprès des utilisateurs.
 
-\subsubsection*{Scalabilité}
-L'index HNSW supporte l'insertion incrémentale sans reconstruction,
-ce qui permet d'ajouter de nouvelles SAP Notes ou de nouveaux modules
-sans réindexer l'intégralité du corpus.
+\subsubsection{Confidentialité}
+
+La protection des données constitue une exigence fondamentale du projet. Les informations manipulées par le système doivent être sécurisées et traitées de manière à préserver la confidentialité des données de l’entreprise et des environnements SAP supervisés.
+
+\subsubsection{Scalabilité}
+
+Le système doit être capable d’évoluer en fonction de l’augmentation du volume de données et de l’enrichissement de la base de connaissances. Cette capacité d’adaptation permettra d’intégrer de nouvelles ressources et fonctionnalités sans dégrader les performances globales de la solution.
 
 
-\begin{table}[H]
-\centering
-\caption{Synthèse des besoins non fonctionnels}
-\begin{tabular}{lll}
-\toprule
-\textbf{Catégorie} & \textbf{Seuil cible} & \textbf{Mécanisme} \\
-\midrule
-Temps de réponse        & $\leq$ 5s (p95)   & HNSW + Ollama local \\
-Taux hallucination      & $\leq$ 5\%        & Validation déterministe par règles \\
-MRR / Recall@10         & 1.000 / 1.000     & BM25 + vecteur hybride + reranking \\
-Confidentialité données & 100\% local       & Ollama on-premise \\
-Insertion incrémentale  & Sans rebuild      & Index HNSW \\
-Maintenabilité          & Pipeline rejouable & Git + scripts versionnés \\
-\bottomrule
-\end{tabular}
-\end{table}
+
+
 
 
 
@@ -184,19 +154,22 @@ progression maîtrisée du projet.
 Dans le cadre de ce projet, les six phases se déclinent comme suit~:
 
 \begin{itemize}[leftmargin=2em]
-  \item \textbf{Business Understanding (chapitre~2)~:} définition des objectifs métiers,
-        des besoins fonctionnels et non fonctionnels, et des critères de réussite.
-  \item \textbf{Data Understanding (chapitre~4)~:} exploration des sources de données SAP
-        (portail Help, manuels PDF, extractions PyRFC) et analyse de leur qualité.
-  \item \textbf{Data Preparation (chapitre~5)~:} nettoyage, normalisation, découpage
-        hiérarchique et vectorisation du corpus documentaire.
-  \item \textbf{Modeling (chapitre~6)~:} conception et assemblage du pipeline RAG hybride
-        (BM25 + vectoriel + RRF + cross-encoder + LLM).
-  \item \textbf{Evaluation (chapitre~7)~:} mesure des performances du pipeline selon les
-        métriques RAGAS et les indicateurs de récupération (MRR, Recall@k).
-  \item \textbf{Deployment (chapitre~8)~:} intégration dans l'application AutoMoni
-        (FastAPI + React + SAP UI5) et mise en production.
+\item \textbf{Business Understanding :} identification du contexte du projet, analyse des besoins de l’entreprise, définition des objectifs à atteindre ainsi que des exigences fonctionnelles et non fonctionnelles du système.
+
+```
+\item \textbf{Data Understanding :} étude et analyse des différentes sources d’information exploitées pour la constitution de la base de connaissances SAP.
+
+\item \textbf{Data Preparation :} préparation et structuration des données afin de les rendre exploitables par le système de recherche et de génération de réponses.
+
+\item \textbf{Modeling :} conception et mise en place de la solution intelligente permettant la recherche d’informations pertinentes et la génération de réponses adaptées aux besoins des utilisateurs.
+
+\item \textbf{Evaluation :} évaluation des performances de la solution développée afin de vérifier sa capacité à fournir des réponses pertinentes et fiables.
+
+\item \textbf{Deployment :} intégration de l’assistant intelligent au sein de la plateforme AutoMoni et mise à disposition de la solution dans son environnement d’utilisation.
+```
+
 \end{itemize}
+
 
 % ─────────────────────────────────────────────────────────────
 \section{Diagramme de Gantt}
@@ -216,9 +189,6 @@ dépendances entre les phases tout au long du cycle de développement.
 
 \section*{Conclusion}
 
-Ce chapitre a posé les bases fonctionnelles et organisationnelles du projet. Les besoins
-fonctionnels et non fonctionnels ont été formalisés, les acteurs identifiés et le diagramme
-de cas d'utilisation a fourni une vue synthétique des interactions système. L'adoption de
-la méthodologie CRISP-DM a permis de structurer le projet en phases cohérentes, dont la
-planification temporelle est synthétisée dans le diagramme de Gantt. Le chapitre suivant
-présente le contexte métier SAP et l'état de l'art des technologies d'IA mobilisées.
+Ce chapitre a formalisé les besoins fonctionnels et non fonctionnels, identifié les acteurs
+et structuré la démarche selon la méthodologie CRISP-DM et son calendrier Gantt.
+Le chapitre suivant présente le contexte métier SAP et les technologies d'IA mobilisées.

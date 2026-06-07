@@ -56,19 +56,13 @@ domaines fonctionnels. Parmi ses modules les plus utilisés :
 % ============================================================
 \subsection{Le consultant SAP BASIS}
 
-Le consultant SAP BASIS est responsable de l'infrastructure technique de l'environnement
-SAP : installations, mises à jour et application des correctifs. Il assure la résolution
-des problèmes de connectivité, les ajustements de composants et l'assistance aux systèmes
-externes et aux bases de données. Ses principales responsabilités englobent
-l'administration des systèmes, la surveillance des performances, la sécurité et
-la gestion des bases de données, ainsi que la résolution des incidents techniques.
-Il prend également en charge la sauvegarde et la récupération des données, la gestion
-des intégrations et des interfaces, les mises à jour et migrations des systèmes,
-et veille à maintenir une documentation à jour tout en assurant la formation
-des équipes concernées. Dans le cadre du suivi opérationnel, il surveille en continu
-les performances et le bon fonctionnement des systèmes SAP à l'aide des transactions
-\textit{(T-Codes)} dédiées, et applique les correctifs nécessaires via les
-\textit{SAP Notes} afin de garantir la stabilité et la fiabilité de l'environnement.
+Le consultant SAP BASIS est responsable de l'infrastructure technique de l'environnement SAP : installations, mises à jour et application des correctifs. Il assure la résolution des problèmes de connectivité, les ajustements de composants et l'assistance aux systèmes externes et aux bases de données.
+
+Ses principales responsabilités englobent l'administration des systèmes, la surveillance des performances, la sécurité et la gestion des bases de données, ainsi que la résolution des incidents techniques.
+
+Il prend également en charge la sauvegarde et la récupération des données, la gestion des intégrations et des interfaces, les mises à jour et migrations des systèmes, et veille à maintenir une documentation à jour tout en assurant la formation des équipes concernées.
+
+Dans le cadre du suivi opérationnel, il surveille en continu les performances et le bon fonctionnement des systèmes SAP à l'aide des transactions \textit{(T-Codes)} dédiées, et applique les correctifs nécessaires via les \textit{SAP Notes} afin de garantir la stabilité et la fiabilité de l'environnement.
 
 % ============================================================
 \subsection{Les codes de transaction SAP (T-codes)}
@@ -316,6 +310,8 @@ En plus des approches RAG et CAG, le \textit{Fine-Tuning} est une autre méthode
 Le Fine-Tuning permet au modèle d’acquérir le vocabulaire métier, les structures de données et les connaissances spécifiques à une entreprise. Le Fine-Tuning, à la différence du RAG qui récupère des informations externes dynamiquement au moment de la requête, intègre directement ces connaissances dans les paramètres internes du modèle.
 
 Cette approche a plusieurs avantages, notamment une meilleure spécialisation du modèle, une génération de réponses plus cohérente et une réduction de la dépendance aux bases documentaires externes. Mais, elle demande beaucoup de ressources lors de l’entraînement, des mises à jour fréquentes des données et un coût de calcul plus lourd.
+
+\subsection{Comparaison des approches Fine-Tuning, RAG et CAG}
 
 Afin de mieux positionner ces trois approches les unes par rapport aux autres, il convient de les comparer selon plusieurs critères déterminants. Chacune d’elles présente un profil distinct en termes de flexibilité, de coût et de précision. Le Fine-Tuning offre une très haute spécialisation métier, mais au prix d’un entraînement coûteux et d’une mise à jour manuelle des connaissances. Le RAG classique permet une adaptation dynamique aux nouvelles informations grâce à la base documentaire, mais peut souffrir de latences liées aux requêtes vectorielles répétées. Le RAG enrichi du mécanisme de cache (CAG) combine la pertinence documentaire du RAG avec une réduction significative des délais de calcul, ce qui le rend particulièrement adapté aux environnements à forte charge comme les systèmes SAP en production. Le tableau~\ref{tab:comparaison_rag_cag_finetuning} synthétise cette comparaison selon les principaux critères d’évaluation.
 

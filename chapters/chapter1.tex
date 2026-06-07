@@ -106,7 +106,9 @@ Pour chaque environnement, le consultant exécute plusieurs T-codes pour analyse
 
 Selon les anomalies détectées, il peut relancer certaines opérations échouées, suivre les incidents et collaborer avec les équipes concernées. 
 
-Par exemple, lorsque des traitements lourds ou des jobs affectant les performances sont identifiés dans le système SAP de production, le consultant BASIS discute avec les développeurs ABAP (langage de programmation propriétaire de SAP) pour apporter les corrections nécessaires. De même, certaines anomalies peuvent nécessiter l’intervention des consultants fonctionnels, notamment dans les domaines financiers, lorsque des changements liés aux règles de l’entreprise ou aux exigences du client doivent être pris en compte, comme des modifications de timbres fiscaux ou d’autres paramètres de gestion.
+Par exemple, lorsque des traitements lourds ou des jobs affectant les performances sont identifiés dans le système SAP de production, le consultant BASIS discute avec les développeurs ABAP pour apporter les corrections nécessaires.
+
+De même, certaines anomalies peuvent nécessiter l’intervention des consultants fonctionnels, notamment dans les domaines financiers, lorsque des changements liés aux règles de l’entreprise ou aux exigences du client doivent être pris en compte.
 La durée de surveillance varie selon l'état du système et le nombre d'alertes détectées. En moyenne, l'analyse complète d'un système prend jusqu'à 30 minutes, davantage pour les systèmes de production critiques. Étant donné que le client a environ dix systèmes, le monitoring global nécessite plusieurs heures de travail par shift.
 
 
@@ -150,20 +152,6 @@ Ces transactions sont utilisées par les consultants BASIS\footnotemark[1] pour 
 \caption{Processus de surveillance manuelle des systèmes SAP}
 \label{fig:surveillance-manuelle}
 \end{figure}
-
-\subsection{Critique de l'existant}
-L’étude de l’existant a montré que le processus de surveillance des environnements SAP demande beaucoup d’efforts de la part des consultants SAP BASIS. La surveillance repose surtout sur des tâches manuelles répétées plusieurs fois par jour via différents T-codes et plusieurs systèmes SAP.
-
-Chez Quadient, les consultants doivent superviser environ dix systèmes répartis sur différents serveurs comme P01, PWD et PW1. Cette diversité des environnements rend le monitoring long et difficile à gérer, surtout lorsque plusieurs incidents surviennent en même temps. Le consultant passe alors beaucoup de temps à naviguer entre les systèmes pour vérifier les informations et analyser les résultats.
-
-Le principal problème de cette approche est le temps nécessaire pour réaliser les contrôles quotidiens. Comme les mêmes opérations se répètent chaque shift, le travail devient rapidement lourd et fatigant. Cette répétition peut entraîner des oublis, des erreurs de vérification ou des retards dans la détection d’anomalies importantes.
-
-De plus, les informations étant dispersées entre plusieurs T-codes et plusieurs systèmes, il devient difficile d’avoir une vue globale et rapide de l’état des environnements SAP. Lorsqu’un problème est détecté, le consultant doit souvent effectuer plusieurs vérifications avant d’identifier l’origine de l’incident et de contacter les équipes concernées, comme les développeurs ABAP ou les consultants fonctionnels.
-
-L’étude a également révélé une autre difficulté liée au niveau d’expérience des consultants SAP BASIS. Un consultant débutant peut avoir besoin de beaucoup plus de temps pour analyser les résultats des T-codes, comprendre certaines anomalies ou identifier les actions à prendre. L'interprétation des informations dépend souvent de l’expérience acquise sur les différents systèmes SAP et des connaissances métier du client. Cela peut ralentir le traitement des incidents et rendre la surveillance moins efficace.
-
-Enfin, les consultants passent une grande partie de leur temps sur des tâches répétitives de contrôle au lieu de se concentrer sur l’analyse et l’anticipation des problèmes. Ces limites montrent donc la nécessité d’une solution intelligente et centralisée pour aider les consultants dans leurs activités de surveillance, réduire les tâches manuelles et faciliter la détection rapide des anomalies.
-
 \subsection{Solutions existantes}
 SAP, en plus des outils de supervision classiques tels que les tableaux de bord et les alertes techniques, propose désormais des solutions qui utilisent le Machine Learning et l'intelligence artificielle. Ces solutions permettent de surveiller les systèmes SAP en temps réel et d'analyser les données passées pour détecter des anomalies, prévoir des incidents et améliorer les décisions.
 Parmi ces solutions, on peut citer SAP Leonardo ML et SAP Joule.Elles offrent des fonctionnalités avancées pour une meilleure gestion des systèmes SAP.
@@ -187,10 +175,30 @@ SAP Joule est un copilote génératif intégré à l'écosystème SAP. Il permet
     \caption{SAP Joule au sein de l'écosystème SAP}
     \label{fig:SAP Joule au sein de l'écosystème SAP}
 \end{figure}
+
+\subsection{Critique de l'existant}
+L’étude de l’existant a montré que le processus de surveillance des environnements SAP demande beaucoup d’efforts de la part des consultants SAP BASIS. La surveillance repose surtout sur des tâches manuelles répétées plusieurs fois par jour via différents T-codes et plusieurs systèmes SAP.
+
+Chez Quadient, les consultants doivent superviser environ dix systèmes répartis sur différents serveurs comme P01, PWD et PW1. Cette diversité des environnements rend le monitoring long et difficile à gérer, surtout lorsque plusieurs incidents surviennent en même temps. Le consultant passe alors beaucoup de temps à naviguer entre les systèmes pour vérifier les informations et analyser les résultats.
+
+Le principal problème de cette approche est le temps nécessaire pour réaliser les contrôles quotidiens. Comme les mêmes opérations se répètent chaque shift, le travail devient rapidement lourd et fatigant. Cette répétition peut entraîner des oublis, des erreurs de vérification ou des retards dans la détection d’anomalies importantes.
+
+De plus, les informations étant dispersées entre plusieurs T-codes et plusieurs systèmes, il devient difficile d’avoir une vue globale et rapide de l’état des environnements SAP. Lorsqu’un problème est détecté, le consultant doit souvent effectuer plusieurs vérifications avant d’identifier l’origine de l’incident et de contacter les équipes concernées, comme les développeurs ABAP ou les consultants fonctionnels.
+
+L’étude a également révélé une autre difficulté liée au niveau d’expérience des consultants SAP BASIS. Un consultant débutant peut avoir besoin de beaucoup plus de temps pour analyser les résultats des T-codes, comprendre certaines anomalies ou identifier les actions à prendre. L'interprétation des informations dépend souvent de l’expérience acquise sur les différents systèmes SAP et des connaissances métier du client. Cela peut ralentir le traitement des incidents et rendre la surveillance moins efficace.
+
+Enfin, les consultants passent une grande partie de leur temps sur des tâches répétitives de contrôle au lieu de se concentrer sur l’analyse et l’anticipation des problèmes. Ces limites montrent donc la nécessité d’une solution intelligente et centralisée pour aider les consultants dans leurs activités de surveillance, réduire les tâches manuelles et faciliter la détection rapide des anomalies.
+
+\subsubsection{Comparaison des approches de supervision et d’assistance dans les environnements SAP}
+
+Dans le cadre de l’évolution des outils de supervision SAP vers des solutions plus intelligentes et automatisées, il est important d’analyser les approches existantes.
+
+La comparaison entre la supervision manuelle, SAP Leonardo Machine Learning et SAP Joule permet de mettre en évidence les limites des méthodes traditionnelles ainsi que les avantages offerts par les technologies basées sur l’intelligence artificielle. Le tableau suivant présente une comparaison selon plusieurs critères clés.
+
 \begin{table}[H]
 \centering
 \small
-\caption{Comparaison entre la supervision manuelle, SAP Leonardo ML et SAP Joule}
+\caption{Comparatif  entre la supervision manuelle, SAP Leonardo ML et SAP Joule}
 \label{tab:comparaison_sap}
 
 \resizebox{\textwidth}{!}{%
@@ -562,4 +570,10 @@ similaires à celles de CRISP-DM (voir Figure~\ref{fig:tdsp}).
 % ============================================================
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
-Ce chapitre a souligné l'importance stratégique de développer une solution d'assistance intelligente pour les consultants SAP BASIS, afin de pallier les limites des méthodes traditionnelles de recherche et d'utilisation de la documentation technique SAP. En utilisant la méthodologie CRISP-DM, le projet a permis de créer une architecture hybride RAG qui combine la recherche vectorielle, l'algorithme BM25, la fusion des résultats par RRF (Reciprocal Rank Fusion), ainsi qu'un mécanisme de reranking. Basée sur la documentation technique SAP, cette solution offre aux consultants BASIS la possibilité d'obtenir rapidement des réponses fiables, pertinentes et sourcées concernant l'état des systèmes SAP et les procédures d'intervention appropriées. L'approche suggérée repose sur des technologies open source performantes, garantissant ainsi une solution solide, accessible et facilement intégrable dans l'environnement.
+
+Ce chapitre a présenté AVAXIA GROUP et le contexte opérationnel du projet. L'analyse de
+l'existant a révélé les limites d'une surveillance SAP manuelle et fragmentée, sans solution
+centralisée ni assistance contextuelle adaptée aux contraintes de l'équipe BASIS.
+
+Ces constats motivent le développement d'un assistant intelligent. Le chapitre suivant en
+définit les exigences et la méthodologie de réalisation.

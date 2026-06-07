@@ -3,9 +3,12 @@
 \addcontentsline{toc}{chapter}{Introduction Générale}
 \label{chap:intro_generale}
 
-Dans un environnement où la transformation numérique est devenue cruciale pour les organisations, les systèmes SAP se sont affirmés comme des outils stratégiques pour la gestion des processus commerciaux. En tant que logiciels de gestion intégrés (SGI), ils pilotent des activités essentielles telles que la gestion des finances, la logistique, les ressources humaines, la production et la chaîne d'approvisionnement. Leur accessibilité et leur bon fonctionnement sont donc vitaux pour la continuité des opérations de nombreuses entreprises dans le monde entier.
+Dans un environnement où la transformation numérique est devenue cruciale pour les organisations, les systèmes SAP se sont affirmés comme des outils stratégiques pour la gestion des processus commerciaux.
+
+En tant que logiciels de gestion intégrés (SGI), ils pilotent des activités essentielles telles que la gestion des finances, la logistique, les ressources humaines, la production et la chaîne d'approvisionnement. Leur accessibilité et leur bon fonctionnement sont donc vitaux pour la continuité des opérations de nombreuses entreprises dans le monde entier.
 
 Néanmoins, l'administration et la surveillance de ces systèmes restent des tâches difficiles. Les administrateurs BASIS et les consultants SAP doivent constamment surveiller un grand nombre d'indicateurs techniques concernant l'état du système, tout en étant en mesure d'identifier et de résoudre rapidement les problèmes.
+
 Cette obligation est accentuée par la richesse de la documentation technique SAP. Celle-ci se compose de plusieurs centaines de manuels de formation officiels, d'une documentation en ligne particulièrement vaste ainsi que d'un ensemble de notes techniques mises à jour régulièrement. Lorsqu'un incident se produit, les équipes doivent fréquemment rechercher, analyser et interpréter rapidement les informations pertinentes pour déterminer la procédure de résolution appropriée.
  Dans ce cadre, plusieurs difficultés majeures peuvent être mises en évidence :
 
@@ -22,43 +25,17 @@ Cette obligation est accentuée par la richesse de la documentation technique SA
   
 
 % ============================================================
-\section*{Motivation et contexte industriel}
-\addcontentsline{toc}{section}{Motivation et contexte industriel}
 
-L'incorporation de l'intelligence artificielle dans les systèmes organisationnels constitue actuellement l'une des transformations les plus marquantes dans le développement des technologies de gestion. D'après le Hype Cycle de Gartner pour l'intelligence artificielle en 2024\footnote{Gartner Inc., \textit{Hype Cycle for Artificial Intelligence 2024} Disponible sur :
-\url{https://www.gartner.com/en/articles/hype-cycle-for-artificial-intelligence}},
-plusieurs technologies centrales de ce projet occupent des positions stratégiques sur la courbe
-d'innovation.
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.80\textwidth]{images/hype_cycle_2024.png}
-  \caption{Hype Cycle de Gartner pour l'Intelligence Artificielle, 2024}
-  \label{fig:hype_cycle_2024}
-\end{figure}
 
-L'\textbf{IA générative}, et plus spécifiquement les grands modèles de langage (LLM ---
-\textit{Large Language Models}), se trouve à proximité du \textit{Peak of Inflated Expectations},
-le sommet des attentes démesurées. Bien que ces modèles affichent des compétences impressionnantes en
-ce qui concerne la compréhension et la production du langage naturel, ils sont confrontés à des limitations bien identifiées
-dans un contexte professionnel : tendance aux erreurs de faits, connaissance figée à leur période d'entraînement, et incapacité à accéder à des données privées ou récentes. Notre initiative
-prend en considération ce cadre en adoptant une méthode pragmatique : tirer parti des atouts
-des LLM tout en enracinant leurs réponses dans une base de connaissances qui est vérifiable et maîtrisée.
-Les \textbf{Applications Intelligentes} - des systèmes d'entreprise qui unissent diverses composantes d'IA pour faciliter ou gérer des processus d'affaires complexes - se positionnent sur la \textit{Slope of Enlightenment}, un indicateur marquant une maturité en progression et une aptitude démontrée à produire de la valeur opérationnelle tangible. Cette orientation renforce l'ambition de ce projet : élaborer une application intelligente spécialisée, directement utilisable en conditions pratiques par des équipes SAP.
-Du point de vue scientifique, le paradigme de la \textbf{Génération Augmentée par Récupération} (RAG — \textit{Retrieval-Augmented Generation}) est apparu comme une réaction directe face aux limites des LLM. Cela offre au modèle langagier la possibilité d'obtenir, durant le processus d'inférence, des extraits provenant d'une base de connaissances externe, ancrant ainsi ses réponses sur des faits vérifiables plutôt que sur sa simple mémoire paramétrique. Des améliorations récentes, telles que la \textbf{Génération Augmentée par Cache} (CAG - \textit{Cache-Augmented Generation}), viennent compléter cette architecture pour les réponses existantes déjà structurées en réponse à des requêtes courantes, diminuant ainsi les délais de latence et la charge de calcul.
-% ============================================================
+
  \section*{Objectifs du projet}
 \addcontentsline{toc}{section}{Objectifs du projet}
 
-Le but principal de ce projet de fin d'études, réalisé dans le cadre d'AVAXIA GROUP, est de concevoir et développer un assistant intelligent de supervision SAP, dénommé \textit{AutoMoni}. Cet assistant vise à soutenir les administrateurs BASIS ainsi que les consultants SAP en offrant des réponses pertinentes en langage naturel, basées à la fois sur la documentation officielle de SAP et sur les données de supervision recueillies en temps réel.
-Pour atteindre cet objectif, les travaux menés se concentrent sur trois axes principaux :
+L’objectif principal de ce projet de fin d’études, réalisé au sein d’AVAXIA GROUP, est  de développer un assistant intelligent destiné à la supervision des systèmes SAP. Cet assistant a pour vocation d’accompagner les administrateurs et les consultants SAP dans leurs activités quotidiennes en leur fournissant une assistance rapide et pertinente basée sur les connaissances métier et les informations de supervision disponibles.
 
+Ce projet vise également à intégrer cet assistant au sein de la plateforme de supervision \textbf{AutoMoni}, déjà utilisée par l’entreprise. Cette intégration permettra d’enrichir les fonctionnalités existantes de la plateforme en offrant aux utilisateurs un accès centralisé aux outils de supervision ainsi qu’à une assistance documentaire intelligente.
 
-
-\begin{itemize}[leftmargin=*, label=\textbullet]
-
-\item \textbf{Élaboration d'une base de connaissances SAP :} cette phase consiste à rassembler, organiser et référencer les connaissances provenant de la documentation officielle de SAP. Le corpus est composé de plus de 297 manuels de formation ainsi que de contenus provenant du portail \texttt{help.sap.com}. Après extraction, les documents sont nettoyés, segmentés selon une structure hiérarchique de type parent-enfant, et ensuite convertis en représentations vectorielles grâce au modèle d'embedding \texttt{BAAI/bge-large-en-v1.5}. Les vecteurs générés sont ensuite stockés et indexés dans PostgreSQL à l'aide de l'extension \texttt{pgvector}, ce qui permet une recherche efficace à grande échelle.
-\item \textbf{Création d’un pipeline RAG avec récupération hybride :} cet axe a pour objectif d’établir un système de recherche et de génération de réponses qui allie les méthodes sémantiques et lexicales. La collecte d’informations se fonde sur la combinaison de la recherche vectorielle et de l’algorithme BM25, amalgamées via la méthode \textit{Reciprocal Rank Fusion} (RRF). Les résultats obtenus sont ensuite réévalués par un modèle de reranking, avant que le modèle de langage de grande taille, exécuté localement, ne génère la réponse finale. De plus, le système intègre un mécanisme de cache sémantique, la gestion d’un contexte de conversation multi-tours, ainsi qu’un dispositif de rétroaction permettant l'amélioration continue des réponses produites.
-\item \textbf{Intégration au sein de la plateforme AutoMoni :} le pipeline RAG est exposé sous forme d’API REST à l’aide du framework FastAPI et intégré dans une interface web de supervision SAP développée avec React et les composants SAP UI5. Cette intégration offre aux utilisateurs un environnement centralisé permettant à la fois le suivi des indicateurs de supervision et l’accès à une assistance documentaire intelligente.
+Afin d’atteindre cet objectif, les travaux réalisés portent sur la constitution d’une base de connaissances SAP, le développement d’un mécanisme intelligent de recherche et de génération de réponses, ainsi que son intégration dans l’environnement AutoMoni.
 
 \end{itemize}

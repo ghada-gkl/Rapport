@@ -239,7 +239,7 @@ Le système déployé repose sur une architecture à trois couches distinctes co
 
 \end{tikzpicture}%
 }
-\caption{Architecture globale de déploiement du système RAG intégré dans AutoMoni}
+\caption[Architecture de déploiement AutoMoni]{Architecture globale de déploiement du système RAG intégré dans AutoMoni}
 \label{fig:deploy_arch}
 \end{figure}
 
@@ -250,7 +250,7 @@ Dans cette section, les exigences fonctionnelles du système déployé sont repr
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{images/casutilisation.png}
-    \caption{Diagramme de cas d'utilisation général du système déployé}
+    \caption[Diagramme de cas d'utilisation]{Diagramme de cas d'utilisation général du système déployé}
     \label{fig:usecase_deploy}
 \end{figure}
 
@@ -333,7 +333,7 @@ un format compact.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.90\textwidth]{images/diagramme_classes_rag.png}
-\caption{Diagramme de classes --- Tables fondamentales du système RAG (PostgreSQL)}
+\caption[Diagramme de classes (PostgreSQL)]{Diagramme de classes --- Tables fondamentales du système RAG (PostgreSQL)}
 \label{fig:class_core}
 \end{figure}
 
@@ -384,7 +384,7 @@ class QueryRequest(BaseModel):
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/sequence_chatbot_fr.png}
-\caption{Diagramme de séquence — cycles complets d'interaction~: initialisation de session, surveillance SAP et chatbot RAG}
+\caption[Diagramme de séquence — interaction complète]{Diagramme de séquence — cycles complets d'interaction~: initialisation de session, surveillance SAP et chatbot RAG}
 \label{fig:sequence_requete}
 \end{figure}
 
@@ -579,14 +579,14 @@ Le composant \texttt{ChatPanel} est directement intégré au sein du shell appli
 \begin{figure}[H]
 \centering
  \includegraphics[width=0.9\textwidth]{images/chat.png}
-\caption{Interface de la page chatbot dédiée avec historique de conversations}
+\caption[Interface chatbot avec historique]{Interface de la page chatbot dédiée avec historique de conversations}
 \label{fig:chatbot_page}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{images/lateral.png}
-\caption{ChatPanel intégré en tiroir latéral sur une page de monitoring SAP}
+\caption[ChatPanel en tiroir latéral]{ChatPanel intégré en tiroir latéral sur une page de monitoring SAP}
 \label{fig:chatpanel}
 \end{figure}
 
@@ -620,7 +620,7 @@ La figure~\ref{fig:benchmark} présente les résultats visuels du benchmark comp
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{images/bench.png}
-\caption{Résultats du benchmark RAG — LLaMA 3.2:3b vs Qwen 2.5:7b (12 mai 2026, 76~463 vecteurs)}
+\caption[Benchmark RAG — LLaMA 3.2:3b vs Qwen 2.5:7b]{Résultats du benchmark RAG — LLaMA 3.2:3b vs Qwen 2.5:7b (12 mai 2026, 76~463 vecteurs)}
 \label{fig:benchmark}
 \end{figure}
 
