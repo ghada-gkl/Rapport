@@ -326,20 +326,20 @@ Une fois nettoyées \emph{séparément}, les données des deux sources sont \tex
 \centering
 \caption{Les opérations de normalisation appliquées à chaque document}
 \label{tab:six-ops}
-\begin{tabularx}{\textwidth}{@{}clXl@{}}
-\toprule
+\begin{tabularx}{\textwidth}{|c|l|X|l|}
+\hline
 \textbf{N°} & \textbf{Opération} & \textbf{Description} & \textbf{Exemple} \\
-\midrule
+\hline
 1 & Décodage HTML & Convertit les entités HTML en caractères réels & \texttt{\&nbsp;} → espace \\
-\addlinespace
-2 & Suppression bruit & Élimine les motifs de navigation (\textit{«~See also~»}, \textit{«~Rate this page~»}, etc.) & motifs \texttt{RE\_NOISE} → supprimés \\
-\addlinespace
+\hline
+2 & Suppression bruit & Élimine les motifs de navigation (\textit{«~See also~»}, \textit{«~Rate this page~»}, etc.) & supprimés \\
+\hline
 3 & Segmentation lexicale & Redécoupe les mots concaténés issus de l’extraction web ou PDF & \texttt{contentadmin} → \texttt{content admin} \\
-\addlinespace
+\hline
 4 & Normalisation T-codes & Fusionne les codes transactionnels mal formatés & \texttt{"SM 37"} → \texttt{"SM37"} \\
-\addlinespace
+\hline
 5 & Normalisation Unicode & Applique NFC, supprime les caractères invisibles, met en minuscules & \texttt{(cid:34)} → espace \\
-\bottomrule
+\hline
 \end{tabularx}
 \end{table}
 
@@ -469,18 +469,18 @@ Certaines documents sont techniquement valides — sans doublons et avec un text
 \centering
 \caption{Filtres de qualité appliqués après fusion des sources}
 \label{tab:filtres}
-\begin{tabularx}{\textwidth}{@{}lXl@{}}
-\toprule
+\begin{tabularx}{\textwidth}{|l|X|l|}
+\hline
 \textbf{Type de filtre} & \textbf{Méthode} & \textbf{Portée} \\
-\midrule
+\hline
 Doublon exact (web) & Empreinte (titre + URL) & Documents web uniquement \\
-\addlinespace
+\hline
 Doublon contenu & MD5 des 500 premiers caractères & Toutes sources \\
-\addlinespace
+\hline
 Pages quiz & Regex sur titre et début de contenu & Toutes sources \\
-\addlinespace
+\hline
 Contenu trop court & Longueur $<$ 80 caractères & Toutes sources \\
-\bottomrule
+\hline
 \end{tabularx}
 \end{table}
 
@@ -560,14 +560,16 @@ Pour éviter toute perte de contexte aux frontières entre deux fragments succes
 \centering
 \caption{Niveaux de découpage par ordre de priorité}
 \label{tab:niveaux-decoupage}
-\begin{tabular}{@{}clll@{}}
-\toprule
+\begin{tabular}{|c|l|l|l|}
+\hline
 \textbf{Priorité} & \textbf{Niveau} & \textbf{Déclencheur} & \textbf{Séparateur} \\
-\midrule
+\hline
 1 & Paragraphe & Paragraphe seul $>$ 512 tokens & \texttt{\textbackslash n\textbackslash n} \\
+\hline
 2 & Phrase & Phrase seule $>$ 512 tokens & \texttt{. ! ?} \\
+\hline
 3 & Mot & Phrase extrêmement longue & espace \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
@@ -580,17 +582,20 @@ sont les suivantes~:
 \centering
 \caption{Statistiques de découpage du corpus SAP}
 \label{tab:stats-chunking}
-\begin{tabular}{@{}lrp{6cm}@{}}
-\toprule
+\begin{tabular}{|l|r|p{6cm}|}
+\hline
 \textbf{Type d'enregistrement} & \textbf{Nombre} & \textbf{Description} \\
-\midrule
-Singles  & 73\,137 & Documents courts — un seul enregistrement, \textbf{vectorisé} \\
-Parents  & 8\,795  & Documents longs — texte complet, stocké, \textbf{non vectorisé} \\
+\hline
+Singles  & 73\,137 & Documents courts, un seul enregistrement, \textbf{vectorisé} \\
+\hline
+Parents  & 8\,795  & Documents longs, texte complet, stocké, \textbf{non vectorisé} \\
+\hline
 Enfants  & 32\,194 & Fragments de documents longs, \textbf{vectorisés} et indexés \\
-\midrule
+\hline
 \textbf{Total enregistrements} & \textbf{114\,126} & Tous types confondus \\
+\hline
 \textit{dont vectorisés (Singles + Enfants)} & \textit{105\,331} & \textit{Éligibles à l'embedding} \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 

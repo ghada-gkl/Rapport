@@ -202,86 +202,53 @@ La comparaison entre la supervision manuelle, SAP Leonardo Machine Learning et S
 \label{tab:comparaison_sap}
 
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{
->{\bfseries}p{3cm}
-p{4.2cm}
-p{4.2cm}
-p{4.2cm}
-}
-\toprule
-
+\begin{tabular}{|p{3cm}|p{4.2cm}|p{4.2cm}|p{4.2cm}|}
+\hline
 \textbf{Critères} &
 \textbf{Supervision manuelle} &
 \textbf{SAP Leonardo ML} &
-\textbf{SAP Joule}
-\\
-
-\midrule
-
+\textbf{SAP Joule} \\
+\hline
 Temps de réaction &
 La détection des problèmes prend du temps et dépend des consultants. &
 Les anomalies sont détectées rapidement grâce à l’analyse automatique des systèmes SAP. &
-Les utilisateurs obtiennent des réponses immédiates via une interface de communication.
-\\
-
-\midrule
-
+Les utilisateurs obtiennent des réponses immédiates via une interface de communication. \\
+\hline
 Coût de gestion &
 Mobilise beaucoup de ressources humaines et techniques. &
 Réduit certains coûts grâce à l’automatisation et à l’analyse prédictive. &
-Diminue le temps de recherche d’informations et améliore l’efficacité des utilisateurs.
-\\
-
-\midrule
-
+Diminue le temps de recherche d’informations et améliore l’efficacité des utilisateurs. \\
+\hline
 Qualité des analyses &
 Les analyses restent limitées et peuvent contenir des erreurs humaines. &
 Propose des analyses plus fiables avec détection des anomalies. &
-Fournit des réponses adaptées au contexte métier et technique.
-\\
-
-\midrule
-
+Fournit des réponses adaptées au contexte métier et technique. \\
+\hline
 Niveau d’automatisation &
 Les tâches sont principalement effectuées manuellement. &
 Automatise plusieurs opérations de surveillance et d’analyse. &
-Automatise l’assistance et simplifie les interactions avec les systèmes SAP.
-\\
-
-\midrule
-
+Automatise l’assistance et simplifie les interactions avec les systèmes SAP. \\
+\hline
 Facilité d’utilisation &
 Demande une bonne maîtrise technique des outils SAP. &
 Nécessite des connaissances en configuration et en Machine Learning. &
-Offre une utilisation simple grâce au langage naturel.
-\\
-
-\midrule
-
+Offre une utilisation simple grâce au langage naturel. \\
+\hline
 Gestion des données &
 Les données sont souvent analysées de manière séparée et indépendante. &
 Centralise et exploite les données des différents modules SAP. &
-Analyse les données métier et techniques en temps réel.
-\\
-
-\midrule
-
+Analyse les données métier et techniques en temps réel. \\
+\hline
 Capacité d’anticipation &
 Il est difficile de prévoir les incidents avant leur apparition. &
 Permet d’anticiper certains problèmes à partir des données historiques. &
-Peut proposer des recommandations et des suggestions intelligentes.
-\\
-
-\midrule
-
+Peut proposer des recommandations et des suggestions intelligentes. \\
+\hline
 Impact sur la productivité &
-Les interventions manuelles ralentissent parfois les opérations et augmentent le risque d'erreurs. &
+Les interventions manuelles ralentissent parfois les opérations et augmentent le risque d’erreurs. &
 Améliore les processus et réduit le temps d’analyse. &
-Aide les utilisateurs à travailler plus rapidement et efficacement.
-\\
-
-\bottomrule
-
+Aide les utilisateurs à travailler plus rapidement et efficacement. \\
+\hline
 \end{tabular}%
 }
 \end{table}
@@ -523,34 +490,34 @@ similaires à celles de CRISP-DM (voir Figure~\ref{fig:tdsp}).
   \caption{Comparaison des méthodologies CRISP-DM, TDSP, KDD et Scrum}
   \label{tab:methodo_comparison}
   \resizebox{\textwidth}{!}{%
-  \begin{tabular}{>{\bfseries}p{2.8cm} p{3.4cm} p{3.4cm} p{3.4cm} p{3.4cm}}
-    \toprule
+  \begin{tabular}{|p{2.8cm}|p{3.4cm}|p{3.4cm}|p{3.4cm}|p{3.4cm}|}
+    \hline
     \textbf{Critère} & \textbf{CRISP-DM} & \textbf{TDSP} & \textbf{KDD} & \textbf{Scrum} \\
-    \midrule
+    \hline
     Objectif principal
       & Processus structuré et itératif pour la fouille de données orientée métier
       & Cycle de vie agile pour projets ML scalables en équipe
       & Extraction de patterns et connaissances depuis des données brutes
       & Livraison incrémentale de produits via des sprints courts et itératifs \\
-    \midrule
+    \hline
     Intégration métier
       & Forte : la compréhension métier est le point de départ du cycle
       & Forte : phase d'alignement métier intégrée dès le départ
       & Limitée : centrée sur les données et les patterns
       & Modérée : assurée par le Product Owner, sans phase dédiée \\
-    \midrule
+    \hline
     Gestion itérative
       & Itérations libres entre les phases, sans cadre temporel imposé
       & Sprints définis avec livrables et métriques de performance clairs
       & Processus globalement séquentiel, peu itératif
       & Sprints fixes (1--4 semaines) avec cérémonies Scrum structurées \\
-    \midrule
+    \hline
     Meilleur cas d'usage
       & Projets data science avec fort contexte métier et phases exploratoires
       & Flux ML collaboratifs nécessitant reproductibilité et traçabilité
       & Découverte de connaissances dans de larges volumes de données brutes
       & Développement logiciel agile avec livraisons fréquentes et besoins évolutifs \\
-    \bottomrule
+    \hline
   \end{tabular}%
   }
 \end{table}
