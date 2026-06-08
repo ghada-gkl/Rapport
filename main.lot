@@ -19,16 +19,16 @@
 \contentsline {table}{\numberline {5.7}{\ignorespaces Champs de structure hiérarchique et d'entités SAP}}{75}{table.caption.51}%
 \contentsline {table}{\numberline {5.8}{\ignorespaces Champs de liaison parent-enfant}}{76}{table.caption.52}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {6.1}{\ignorespaces Colonnes de la table \texttt {sap\_chunks}}}{84}{table.caption.54}%
+\contentsline {table}{\numberline {6.1}{\ignorespaces Colonnes de la table \texttt {sap\_chunks}}}{85}{table.caption.54}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {7.1}{\ignorespaces Distribution du dataset de test par type d'intention et module SAP}}{96}{table.caption.56}%
-\contentsline {table}{\numberline {7.2}{\ignorespaces Résultats du retrieval : Système hybride vs baseline vectorielle pure}}{98}{table.caption.57}%
-\contentsline {table}{\numberline {7.3}{\ignorespaces Performance du retrieval décomposée par type d'intention}}{99}{table.caption.58}%
-\contentsline {table}{\numberline {7.4}{\ignorespaces Description des métriques RAGAS utilisées}}{101}{table.caption.59}%
-\contentsline {table}{\numberline {7.5}{\ignorespaces Résultats RAGAS — Évaluation LLM-as-Judge (\texttt {llama3.2:3b}) sur 3 requêtes SAP}}{102}{table.caption.60}%
-\contentsline {table}{\numberline {7.6}{\ignorespaces Résultats RAGAS détaillés par requête}}{102}{table.caption.61}%
-\contentsline {table}{\numberline {7.7}{\ignorespaces Gain apporté par le système hybride par rapport à la baseline}}{103}{table.caption.62}%
+\contentsline {table}{\numberline {7.1}{\ignorespaces Distribution du dataset de test par type d'intention et module SAP}}{99}{table.caption.57}%
+\contentsline {table}{\numberline {7.2}{\ignorespaces Résultats du retrieval : Système hybride vs baseline vectorielle pure}}{103}{table.caption.58}%
+\contentsline {table}{\numberline {7.3}{\ignorespaces Performance du retrieval décomposée par type d'intention}}{104}{table.caption.59}%
+\contentsline {table}{\numberline {7.4}{\ignorespaces Description des métriques RAGAS utilisées}}{106}{table.caption.60}%
+\contentsline {table}{\numberline {7.5}{\ignorespaces Résultats RAGAS — Évaluation LLM-as-Judge (\texttt {llama3.2:3b}) sur 3 requêtes SAP}}{107}{table.caption.61}%
+\contentsline {table}{\numberline {7.6}{\ignorespaces Résultats RAGAS détaillés par requête}}{108}{table.caption.62}%
+\contentsline {table}{\numberline {7.7}{\ignorespaces Gain apporté par le système hybride par rapport à la baseline}}{109}{table.caption.63}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {8.1}{\ignorespaces Pile technologique du système déployé}}{110}{table.caption.65}%
-\contentsline {table}{\numberline {8.2}{\ignorespaces Endpoints de l'API RAG (api.py)}}{115}{table.caption.69}%
-\contentsline {table}{\numberline {8.3}{\ignorespaces Paramètres de configuration du pipeline RAG (rag\_pipeline.py)}}{116}{table.caption.70}%
+\contentsline {table}{\numberline {8.1}{\ignorespaces Pile technologique du système déployé}}{116}{table.caption.66}%
+\contentsline {table}{\numberline {8.2}{\ignorespaces Endpoints de l'API RAG (api.py)}}{121}{table.caption.70}%
+\contentsline {table}{\numberline {8.3}{\ignorespaces Paramètres de configuration du pipeline RAG (rag\_pipeline.py)}}{122}{table.caption.71}%

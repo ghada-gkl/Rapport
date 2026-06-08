@@ -107,7 +107,23 @@ une r\'{e}ponse structur\'{e}e \`{a} l'aide d'un LLM.
 % ─────────────────────────────────────────────────────────────────────────────
 
 \subsection{Flux de données}
-Le flux global d'une requête utilisateur peut être résumé comme suit : la question brute de l'utilisateur transite d'abord par une étape de compréhension sémantique (NLP), qui extrait l'intention, les entités SAP (T-codes, numéros de notes) et reformule la requête. La requête enrichie est ensuite vectorisée, puis soumise simultanément à une recherche vectorielle (similarité cosinus via pgvector) et à une recherche plein texte (BM25 via PostgreSQL \texttt{ts\_rank}). Les résultats des deux recherches sont fusionnés par \textbf{Reciprocal Rank Fusion (RRF)}, une technique qui combine les classements issus de sources hétérogènes en attribuant à chaque résultat un score inversement proportionnel à sa position dans chaque liste, favorisant ainsi les chunks bien classés dans plusieurs recherches simultanément. Ces résultats fusionnés sont ensuite reranqués par un \textbf{cross-encoder}, un modèle qui, contrairement aux embeddings calculés indépendamment, évalue la paire (requête, chunk) conjointement pour produire un score de pertinence plus fin et contextuellement précis. Les chunks retenus sont injectés dans un prompt structuré, puis transmis au LLM pour génération de la réponse finale. Un mécanisme de détection d'hallucinations valide la cohérence de la réponse avant son renvoi à l'utilisateur.
+ 
+Lorsqu'un utilisateur pose une question dans le chatbot SAP, celle-ci traverse plusieurs étapes avant qu'une réponse lui soit renvoyée. Ce flux peut se décomposer en six grandes phases.
+
+\paragraph{1. Compréhension de la question}
+La question brute est d'abord analysée par un module NLP (\textit{Natural Language Processing}) qui identifie l'intention de l'utilisateur (cherche-t-il à résoudre un problème, à comprendre un concept, à suivre une procédure ?), extrait les entités SAP présentes (T-codes, numéros de notes), et reformule la question de manière enrichie pour améliorer la recherche.
+
+\paragraph{2. Recherche hybride dans la base documentaire}
+La question enrichie est convertie en vecteur numérique, puis soumise simultanément à deux types de recherche complémentaires~: une \textbf{recherche sémantique} (qui compare le sens de la question avec celui des documents) et une \textbf{recherche par mots-clés} (qui repère les documents contenant exactement les termes SAP de la question). Cette double recherche permet de ne manquer ni les documents conceptuellement proches ni ceux qui contiennent des identifiants exacts.
+
+\paragraph{3. Fusion et classement des résultats}
+Les résultats des deux recherches sont fusionnés par un algorithme appelé \textbf{RRF} (\textit{Reciprocal Rank Fusion}), qui combine les classements en favorisant les documents bien placés dans les deux listes à la fois. Un second modèle, le \textbf{cross-encoder}, affine ensuite ce classement en lisant conjointement la question et chaque document candidat pour produire un score de pertinence plus précis.
+
+\paragraph{4. Construction de la réponse.}
+Les documents les mieux classés sont injectés dans un prompt structuré transmis au modèle de langage (LLM), qui génère une réponse synthétique en citant ses sources.
+
+\paragraph{5. Contrôle anti-hallucination}
+Avant d'être renvoyée à l'utilisateur, la réponse est vérifiée automatiquement~: tout T-code ou numéro de note mentionné dans la réponse mais absent des documents sources est détecté et supprimé.
 
 % ─────────────────────────────────────────────────────────────
 \section{Pipeline RAG: Description détaillée}
@@ -143,35 +159,21 @@ La fonction renvoie un objet qui inclut plusieurs attributs essentiels :
     \item \textbf{min\_score} : seuil minimal de similarité cosinus utilisé lors de la recherche vectorielle. Ce seuil est adaptatif : il est fixé à \texttt{0.05} lorsqu’un T-code est détecté dans une requête de type \texttt{lookup}, et à \texttt{0.30} pour les autres cas.
 \end{itemize}
 
-La reconnaissance des intentions s'appuie sur une liste structurée de règles regex désignée par \texttt{\_INTENT\_RULES}. Le système utilise les règles selon un ordre de priorité : le premier modèle trouvé détermine immédiatement l'intention finale. Les catégories principales sont :
-\begin{itemize}
-    \item \texttt{troubleshoot} : détection des erreurs et incidents techniques ;
-    \item \texttt{how-to} : demandes de procédures ou d’actions ;
-    \item \texttt{lookup} : requêtes de définition ou d’identification ;
-    \item \texttt{explain} : catégorie par défaut lorsqu’aucune règle spécifique n’est détectée.
-\end{itemize}
-
-Par ailleurs, lorsqu’un T-code SAP est identifié dans la requête, l’intention est automatiquement forcée à \texttt{lookup}, car ces requêtes correspondent généralement à des demandes d’information ciblées.
-
-L’identification du module SAP s’appuie sur deux mécanismes complémentaires :
+\paragraph{Détection de l’intention.}
+La détection de l’intention repose sur un ensemble de règles linguistiques appliquées par ordre de priorité~: la première règle qui correspond détermine immédiatement la catégorie. Quatre catégories ont été définies en fonction des besoins réels des utilisateurs SAP~:
 
 \begin{itemize}
-    \item le dictionnaire \texttt{\_MODULE\_KEYWORDS}, qui associe des expressions régulières à chaque module SAP ;
-    
-    \item le dictionnaire statique \texttt{\_TCODE\_TO\_MODULE}, permettant de mapper directement un T-code vers son module fonctionnel.
+  \item \textbf{troubleshoot}~: l’utilisateur signale une erreur ou un dysfonctionnement et cherche à le résoudre~;
+  \item \textbf{how-to}~: l’utilisateur demande comment effectuer une procédure ou une action~;
+  \item \textbf{lookup}~: l’utilisateur cherche la définition ou le rôle d’un élément précis~; cette catégorie est également assignée automatiquement lorsqu’un T-code est présent dans la question, car une question contenant un T-code est presque toujours une demande d’information ciblée~;
+  \item \textbf{explain}~: catégorie par défaut pour toute question conceptuelle ne correspondant pas aux trois cas précédents.
 \end{itemize}
 
-Le pipeline intègre également un mécanisme de résolution des pronoms anaphoriques via la fonction \texttt{\_resolve\_pronouns()}. Ce mécanisme améliore la continuité conversationnelle en réinjectant automatiquement le dernier T-code mentionné dans l’historique lorsque la requête contient un pronom.
+\paragraph{Identification du module SAP.}
+En parallèle de l’intention, le système identifie le module SAP concerné (BASIS, ABAP, SECURITY, etc.) à partir des mots-clés présents dans la question ou du T-code détecté. Cette information est utilisée comme filtre lors de la recherche documentaire, afin de limiter les résultats aux documents du module pertinent et d’améliorer la précision des réponses.
 
-Par exemple :
-
-\begin{quote}
-``Qu’est-ce qu’il fait ?''
-\end{quote}
-
-sera automatiquement transformé en une requête contenant le T-code précédemment mentionné dans la conversation.
-
-La fonction \texttt{enrich\_expanded\_query()} complète ensuite cette phase en enrichissant la requête avec des descriptions sémantiques prédéfinies pour chaque T-code connu, à l’aide du dictionnaire \texttt{\_TCODE\_EXPANSIONS}.
+\paragraph{Continuité conversationnelle.}
+Dans un échange multi-tours, l’utilisateur peut poser une question de suivi sans répéter le sujet~: par exemple, après avoir demandé des informations sur \texttt{SM37}, il peut enchaîner avec «~Qu’est-ce qu’il fait~?~». Le système résout automatiquement ce type de pronom en réinjectant le dernier T-code mentionné dans l’historique de conversation, maintenant ainsi la cohérence entre les tours.
 
 Cette étape améliore fortement la qualité des embeddings pour les transactions SAP spécialisées. Par exemple, le T-code \texttt{SMQ1} peut être enrichi par des termes tels que :
 
@@ -207,7 +209,13 @@ Les résultats BM25 des deux variantes sont fusionnés par score maximum (\textt
 
 \subsection{Fusion par Reciprocal Rank Fusion (RRF)}
 
-La fonction \texttt{rrf\_fuse()} implémente l'algorithme RRF avec une pondération asymétrique favorable au BM25~:
+La recherche hybride produit deux listes de résultats indépendantes~: une issue de la recherche vectorielle, l'autre de la recherche BM25. Le problème est de les combiner intelligemment~: un document peut être en position~3 dans la première liste et en position~1 dans la seconde. Quelle liste croire~?
+
+L'algorithme \textbf{RRF} (\textit{Reciprocal Rank Fusion}) résout ce problème en attribuant à chaque document un score basé sur sa \emph{position} dans chaque liste, et non sur son score brut. Plus un document est bien classé dans \emph{plusieurs} listes à la fois, plus son score RRF est élevé. Un document médiocre dans les deux listes ne peut pas compenser en étant excellent dans une seule.
+
+Dans ce projet, la pondération est délibérément asymétrique~: la recherche BM25 est favorisée ($W_{\text{BM25}} = 0.6$) par rapport à la recherche vectorielle ($W_{\text{vec}} = 0.4$). Ce choix est justifié par la nature du corpus SAP~: les T-codes, noms de modules et numéros de notes sont des identifiants exacts que la recherche par mots-clés repère mieux que la similarité sémantique.
+
+La fonction \texttt{rrf\_fuse()} implémente cet algorithme selon la formule suivante~:
 
 \begin{equation}
   \text{score\_RRF}(d) = \frac{W_{\text{vec}}}{k + r_{\text{vec}}(d)} + \frac{W_{\text{BM25}}}{k + r_{\text{BM25}}(d)}
@@ -219,7 +227,11 @@ où $W_{\text{vec}} = 0.4$, $W_{\text{BM25}} = 0.6$, $k = 60$, et $r(d)$ désign
 
 \subsection{Injection CAG (Context-Augmented Generation)}
 
-Après la fusion RRF et avant le reranking, un mécanisme de \textbf{CAG} (\textit{Context-Augmented Generation}) injecte des chunks pré-chargés pour les requêtes de type \texttt{lookup} portant sur un T-code connu. La fonction \texttt{get\_cag\_context(tcode, conn\_str)} interroge la base de données pour récupérer les chunks les plus ciblés sur ce T-code (triés par nombre croissant de T-codes mentionnés, pour favoriser les chunks les plus spécifiques)~:
+Pour certaines questions très ciblées, la recherche dynamique n'est pas toujours nécessaire. Lorsqu'un utilisateur demande directement des informations sur un T-code connu (par exemple \texttt{SM37} ou \texttt{ST22}), les documents les plus pertinents sont prévisibles et peuvent être pré-chargés depuis la base de données, plutôt que recalculés à chaque fois.
+
+C'est le rôle du mécanisme \textbf{CAG} (\textit{Context-Augmented Generation})~: pour les requêtes de type \texttt{lookup} portant sur un T-code identifié, des chunks spécifiques à ce T-code sont récupérés en base et injectés directement en tête du contexte, \emph{avant} les résultats de la recherche hybride. Cela garantit que le contenu le plus autoritaire sur ce T-code est toujours visible par le LLM, même si la recherche dynamique l'aurait classé en dehors des cinq premiers résultats. Ces chunks sont mis en cache après le premier accès, de sorte que chaque T-code ne déclenche qu'une seule requête base de données, quelle que soit la fréquence des questions posées.
+
+Après la fusion RRF et avant le reranking, ce mécanisme injecte des chunks pré-chargés pour les requêtes de type \texttt{lookup} portant sur un T-code connu. La fonction \texttt{get\_cag\_context(tcode, conn\_str)} interroge la base de données pour récupérer les chunks les plus ciblés sur ce T-code (triés par nombre croissant de T-codes mentionnés, pour favoriser les chunks les plus spécifiques)~:
 
 \begin{lstlisting}[language=SQL, caption={Requête CAG : chunks les plus ciblés pour un T-code}]
 SELECT ... FROM sap_chunks
@@ -329,7 +341,15 @@ Référence au chunk parent (si enfant) \\
 \end{table}
 \subsection{Hiérarchie des chunks et stratégie Small-to-Big}
 
-La colonne \texttt{is\_parent} et \texttt{parent\_chunk\_id} révèlent l'implémentation d'une stratégie de chunking hiérarchique (\textit{Small-to-Big Retrieval}). Les chunks enfants (petits, précis) sont indexés pour la recherche, tandis que les chunks parents (plus larges, plus contextuels) peuvent être retournés au LLM pour une meilleure cohérence de contexte. Les requêtes de retrieval filtrent systématiquement les chunks parents (\texttt{is\_parent IS NOT TRUE}) afin de ne récupérer que des chunks feuilles lors de la recherche.
+Un problème classique dans les systèmes RAG est le suivant~: pour bien retrouver un document, il vaut mieux des \emph{petits} fragments très précis~; mais pour bien répondre, le LLM a besoin de \emph{grands} blocs de texte avec suffisamment de contexte. Ces deux besoins sont contradictoires si l'on n'utilise qu'un seul niveau de découpage.
+
+La stratégie \textbf{Small-to-Big Retrieval} résout ce problème avec une hiérarchie à deux niveaux~:
+\begin{itemize}
+  \item Les \textbf{chunks enfants} (petits, ciblés) sont utilisés pour la recherche~: leur précision maximise la pertinence des résultats trouvés.
+  \item Les \textbf{chunks parents} (plus larges, plus contextuels) sont transmis au LLM pour la génération~: leur taille fournit suffisamment de contexte pour construire une réponse cohérente.
+\end{itemize}
+
+Les colonnes \texttt{is\_parent} et \texttt{parent\_chunk\_id} dans la base de données matérialisent cette hiérarchie. Les requêtes de recherche filtrent systématiquement les chunks parents (\texttt{is\_parent IS NOT TRUE}) pour ne travailler qu'avec les chunks feuilles lors du retrieval.
 
 \section{Techniques d'Embeddings}
 % ─────────────────────────────────────────────────────────────
@@ -407,6 +427,7 @@ La recherche vectorielle représente le premier axe du retrieval hybride. Elle r
 \section{Mécanisme de Reranking par Cross-Encoder}
 % ─────────────────────────────────────────────────────────────
 
+\clearpage
 \subsection{Modèle cross-encoder ms-marco-MiniLM-L-6-v2}
 
 Le reranking constitue la troisième couche de filtrage du pipeline. Contrairement au bi-encodeur BGE qui encode requête et document séparément, le cross-encoder \texttt{cross-encoder/ms-marco-MiniLM-L-6-v2} analyse conjointement la paire (requête, chunk) pour produire un score de pertinence fine. Ce modèle, entraîné sur le dataset MS-MARCO de recherche de passages, produit des scores sur une échelle approximative de $-10$ à $+10$.
@@ -488,7 +509,11 @@ L’en-tête contient~: le numéro de citation \texttt{[N]}, le nom du livre sou
 
 \subsection{Pré-synthèse des chunks (\texttt{synthesis\_text})}
 
-Avant la construction du prompt, chaque chunk subit une étape de \textbf{pré-synthèse sémantique} réalisée par la fonction \texttt{synthesize\_chunks()}. Cette étape extrait, par similarité cosinus avec le vecteur de la requête, uniquement les phrases les plus pertinentes du chunk~:
+Un document récupéré par le moteur de recherche peut contenir dix phrases~: certaines directement utiles à la question posée, d'autres hors-sujet. Si l'on injecte le document entier dans le prompt du LLM, les phrases inutiles consomment de l'espace et peuvent distraire le modèle. La fenêtre de contexte du LLM étant limitée, chaque phrase compte.
+
+La \textbf{pré-synthèse} résout ce problème~: avant d'injecter un document dans le prompt, on filtre ses phrases pour ne garder que celles qui sont réellement utiles à la question posée. Ce filtrage se fait automatiquement par similarité sémantique~: chaque phrase du document est comparée à la question, et seules les phrases dont le score de pertinence dépasse un seuil sont conservées.
+
+Concrètement, la fonction \texttt{synthesize\_chunks()} applique les étapes suivantes~:
 
 \begin{enumerate}[leftmargin=2em]
   \item Les phrases du chunk sont découpées et vectorisées individuellement avec BGE-large.
@@ -522,7 +547,11 @@ Chaque message est tronqué à 150 caractères afin de contenir la taille totale
 
 \subsection{Contrôle anti-hallucination post-génération}
 
-Le contrôle anti-hallucination opère en deux étapes complémentaires après la génération~:
+Un modèle de langage peut parfois inventer des informations qui semblent plausibles mais sont factuellement incorrectes~: on parle d'\textbf{hallucination}. Dans le contexte SAP, ce risque est particulièrement problématique~: un T-code inventé ou un numéro de note inexistant peut induire un technicien en erreur directement dans son environnement de production.
+
+Pour limiter ce risque, un mécanisme de vérification automatique est appliqué après chaque génération. Son principe est simple~: tout T-code ou numéro de note SAP mentionné dans la réponse du LLM est comparé à ceux présents dans les documents sources récupérés. Si le LLM cite un identifiant qui n'apparaît dans aucun des documents fournis, cela constitue une hallucination probable.
+
+Ce contrôle opère en deux étapes complémentaires~:
 
 \begin{itemize}
   \item \textbf{Étape 1. Détection par \texttt{check\_hallucinations()}.} La fonction compare les T-codes et numéros de notes SAP présents dans la réponse générée avec ceux effectivement contenus dans les chunks récupérés. Tout T-code connu (\texttt{KNOWN\_TCODES}) mentionné dans la réponse sans apparaître dans le contexte est signalé comme hallucination potentielle~:
@@ -534,9 +563,6 @@ Le contrôle anti-hallucination opère en deux étapes complémentaires après l
   \item \textbf{Étape 2. Sanitisation par \texttt{sanitize\_answer()}.} Les phrases de la réponse dont \textit{tous} les T-codes mentionnés sont hallucinés (non présents dans le contexte) sont supprimées de la réponse finale avant renvoi à l’utilisateur. Les phrases mixtes (T-codes halluc. + T-codes légitimes) sont conservées et signalées en \texttt{warnings} dans la réponse API.
 \end{itemize}
 
-\begin{definitionbox}{Choix de conception — Contrôle déterministe vs RAGAS}
-La détection d’hallucinations par correspondance T-code est délibérément déterministe, contrairement aux métriques LLM-as-Judge (Faithfulness RAGAS). Ce choix garantit une vérification instantanée ($<$1 ms), sans appel LLM supplémentaire, avec un comportement prévisible et explicable. Les deux approches sont complémentaires~: le contrôle déterministe attrape les hallucinations d’entités SAP précises~; RAGAS évalue la fidélité sémantique globale.
-\end{definitionbox}
 
 % ───────────────────────────────────────────────────
 \section{Workflow global d’une requête utilisateur}

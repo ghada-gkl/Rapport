@@ -7,11 +7,12 @@
 
 % ─────────────────────────────────────────────────────────────
 \section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
 % ─────────────────────────────────────────────────────────────
 
-L'évaluation d'un système RAG ne peut se réduire à un seul score global. La chaîne de traitement implique deux composants distincts --- le retrieval et la génération --- chacun pouvant être la source d'une défaillance indépendante. Un retrieval parfait combiné à une génération médiocre produit une mauvaise réponse, et inversement. Il est donc indispensable d'évaluer les deux niveaux séparément.
+L’évaluation d’un système RAG est une étape essentielle pour vérifier la qualité des réponses fournies aux utilisateurs. Étant donné que ce type de système repose à la fois sur la recherche d’informations et sur la génération de réponses, il est nécessaire d’évaluer ces deux aspects afin de mesurer son efficacité globale.
 
-Ce chapitre présente une stratégie d'évaluation à deux niveaux. Le premier niveau repose sur les métriques classiques de recherche d'information (Recall@k, MRR, nDCG@k), implémentées entièrement à la main sans bibliothèque externe. Le second niveau utilise le framework RAGAS pour mesurer la fidélité, la pertinence et la couverture des réponses générées via le paradigme LLM-as-Judge. Cette double approche est cohérente avec les bonnes pratiques académiques du domaine~: les métriques de retrieval mesurent l'\textit{utilité des sources retrouvées}, tandis que les métriques LLM-as-Judge évaluent la \textit{qualité sémantique des réponses}.
+Dans ce chapitre, nous présentons l’approche adoptée pour évaluer la performance de la solution développée. Cette évaluation porte à la fois sur la pertinence des informations retrouvées et sur la qualité des réponses générées, afin de garantir une assistance fiable et adaptée aux besoins des utilisateurs.
 
 % ─────────────────────────────────────────────────────────────
 \section{Protocole d'évaluation}
@@ -19,84 +20,155 @@ Ce chapitre présente une stratégie d'évaluation à deux niveaux. Le premier n
 
 \subsection{Dataset de test}
 
-Un dataset de 18 requêtes de test a été constitué manuellement pour couvrir les quatre types d'intention identifiés dans le pipeline~:
+Pour évaluer un système RAG, il faut disposer d'un ensemble de questions de test représentatives (appelé \textit{dataset de test}), accompagnées d'informations permettant de juger la qualité des réponses produites. Ce dataset joue le rôle d'un examen~: il soumet au système des questions variées et mesure si ses réponses sont correctes et bien fondées.
+
+\paragraph{Quelles questions tester~?}
+Le pipeline développé reconnaît quatre grandes catégories de questions SAP, appelées \textit{types d'intention}~:
+\begin{itemize}
+  \item \textbf{troubleshooting}~: l'utilisateur rencontre une erreur et cherche à la résoudre (ex.~: \textit{«~Why does job SM37 fail with status cancelled?~»})~;
+  \item \textbf{configuration}~: l'utilisateur veut paramétrer un composant SAP (ex.~: \textit{«~How to configure SSL certificates in SAP BASIS?~»})~;
+  \item \textbf{how-to}~: l'utilisateur cherche une procédure à suivre étape par étape (ex.~: \textit{«~How to transport objects using STMS?~»})~;
+  \item \textbf{explanation}~: l'utilisateur veut comprendre un concept ou un mécanisme SAP (ex.~: \textit{«~What is the role of the ABAP dispatcher?~»}).
+\end{itemize}
+Pour que l'évaluation soit équilibrée, le dataset doit contenir des questions de chacune de ces catégories, et couvrir plusieurs modules SAP (ABAP, BASIS, SECURITY, HANA, FIORI, BW).
+
+\paragraph{Pourquoi 18 requêtes~?}
+Le nombre de 18 questions résulte de quatre contraintes pratiques cumulées~:
+
+\begin{enumerate}
+  \item \textbf{Couverture minimale.} Avec quatre types d'intention et six modules SAP à couvrir, il faut au minimum trois questions par catégorie pour obtenir des résultats représentatifs~; on arrive ainsi naturellement à un total compris entre 15 et 20 questions.
+  \item \textbf{Effort d'annotation.} Chaque question nécessite qu'un expert SAP définisse manuellement ses \textit{signaux de pertinence}, c'est-à-dire les mots-clés et T-codes qui doivent figurer dans un bon document de réponse. C'est ce travail d'expertise, et non le simple volume de questions, qui limite la taille du dataset.
+  \item \textbf{Contrainte matérielle.} L'évaluation de la génération (présentée en section~\ref{sec:ragas}) mobilise simultanément le modèle d'embedding et le modèle de langage, saturant la mémoire disponible de la machine dès trois requêtes traitées en parallèle. Un dataset plus grand n'aurait pu être évalué à ce niveau sans ressources supplémentaires.
+  \item \textbf{Objectif de validation préliminaire.} Ce dataset vise à détecter d'éventuels dysfonctionnements majeurs du pipeline avant déploiement, et non à établir des conclusions statistiquement définitives. Cette limitation est discutée à la section~\ref{subsec:limites-validite}.
+\end{enumerate}
+
+La répartition finale des 18 requêtes est présentée dans le tableau~\ref{tab:dataset-distribution}.
 
 \begin{table}[H]
 \centering
 \caption{Distribution du dataset de test par type d'intention et module SAP}
 \label{tab:dataset-distribution}
-\begin{tabular}{lcc}
-\toprule
+\begin{tabular}{|l|c|c|}
+\hline
 \textbf{Type d'intention} & \textbf{Nombre de requêtes} & \textbf{Modules couverts} \\
-\midrule
+\hline
 \texttt{troubleshooting} & 5  & ABAP, BASIS, SECURITY, HANA \\
+\hline
 \texttt{configuration}   & 3  & BASIS, SECURITY \\
+\hline
 \texttt{how-to}          & 5  & BASIS, FIORI, ABAP \\
+\hline
 \texttt{explanation}     & 5  & BASIS, HANA, ABAP, SECURITY, BW \\
-\midrule
+\hline
 \textbf{Total}           & \textbf{18} & \textbf{6 modules} \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
-Chaque requête est annotée avec un ensemble de \textit{signaux} --- termes ou T-codes qui doivent impérativement apparaître dans les chunks récupérés pour que ceux-ci soient considérés pertinents. Ces signaux servent de référence pour l'auto-labellisation automatique, évitant ainsi un étiquetage manuel coûteux sur 18 × 10 = 180 paires (requête, chunk).
+Chaque requête est accompagnée d'une liste de \textit{signaux}, c'est-à-dire des termes ou T-codes qui doivent impérativement apparaître dans les documents récupérés pour que ceux-ci soient considérés pertinents. Ces signaux servent de référence pour l'évaluation automatique, présentée dans la section suivante.
 
 \subsection{Méthode d'auto-labellisation}
 
-La pertinence de chaque chunk récupéré est déterminée automatiquement par correspondance de signaux. Un chunk obtient un score 2 (très pertinent) si 3 signaux ou plus y sont présents, un score 1 (partiellement pertinent) si 1 ou 2 signaux y figurent, et un score 0 (non pertinent) si aucun signal n'est détecté. Cette approche est reconnue dans la littérature comme un substitut acceptable au jugement humain lorsque les signaux sont définis avec soin par des experts du domaine~\cite{thakur2021beir}.
+Pour évaluer si le système retrouve les bons documents, il faut savoir à l'avance quels documents sont «~corrects~» pour chaque question. Dans un projet classique, cette annotation est réalisée manuellement par des experts~: pour chaque question, un spécialiste lit chaque document récupéré et décide s'il est pertinent ou non. Avec 18 questions et 10 documents récupérés par question, cela représenterait 180 jugements humains, ce qui représente un travail fastidieux et difficile à reproduire.
 
-% ─────────────────────────────────────────────────────────────
-\section{Niveau 1 : Évaluation du Retrieval}
+Pour éviter ce coût, on utilise une \textbf{méthode d'auto-labellisation par signaux}. Le principe est simple~: pour chaque requête, on définit à l'avance une liste de \textit{signaux}, c'est-à-dire les mots-clés ou codes SAP (T-codes) qui \emph{doivent} obligatoirement figurer dans un document pour qu'il soit considéré comme pertinent. Ces signaux sont définis par un expert SAP au moment de la rédaction des questions.
+
+\paragraph{Exemple concret.}
+Pour la question \textit{«~How to analyze ABAP short dumps in ST22?~»}, les signaux définis sont~: \texttt{ST22}, \texttt{short dump}, \texttt{ABAP runtime error}, \texttt{dump analysis}. Un document récupéré par le système est ensuite comparé automatiquement à cette liste~:
+
+\begin{itemize}
+  \item s'il contient \textbf{3 signaux ou plus}, il est jugé \textbf{très pertinent} (score~2)~;
+  \item s'il contient \textbf{1 ou 2 signaux}, il est jugé \textbf{partiellement pertinent} (score~1)~;
+  \item s'il ne contient \textbf{aucun signal}, il est jugé \textbf{non pertinent} (score~0).
+\end{itemize}
+
+Cette comparaison est entièrement automatique et ne nécessite aucune intervention humaine après la définition initiale des signaux. Elle produit un score gradué (0, 1 ou 2) qui reflète le degré de pertinence, et non un simple oui/non, ce qui permet aux métriques comme le nDCG de tenir compte de la qualité du classement, pas seulement de la présence ou l'absence d'un résultat pertinent.
+
+Cette approche est reconnue dans la littérature comme un substitut acceptable au jugement humain lorsque les signaux sont définis avec soin par des experts du domaine~\cite{thakur2021beir}. Sa principale limite (la circularité entre les signaux utilisés pour annoter et les termes exploités par le retrieval) est discutée à la section~\ref{subsec:limites-validite}.
+
+
+\section{Évaluation du Retrieval}
 % ─────────────────────────────────────────────────────────────
 
 \subsection{Métriques implémentées}
 
-Trois familles de métriques de recherche d'information ont été implémentées dans le script \texttt{eval\_pipeline.py}.
+Une fois le dataset de test constitué et les labels de pertinence calculés automatiquement, il faut des \textit{métriques} pour mesurer objectivement si le système retrouve les bons documents. Une métrique est simplement une formule mathématique qui transforme les résultats du système en un score entre 0 et 1~: plus le score est proche de 1, meilleures sont les performances.
 
-Le \textbf{Recall@k} mesure la proportion de chunks pertinents retrouvés dans les $k$ premiers résultats par rapport au total des chunks pertinents~:
+Trois familles de métriques complémentaires ont été retenues, chacune répondant à une question différente sur la qualité du retrieval.
 
-\[
-\text{Recall@k} = \frac{|\{c \in \text{Top-}k \mid \text{label}(c) \geq 1\}|}{|\{c \in \text{Pool} \mid \text{label}(c) \geq 1\}|}
-\]
+\paragraph{Recall@k : «~Combien de bons documents sont retrouvés~?~»}
 
-\noindent\textbf{Définition opératoire du dénominateur.} Les labels de pertinence n'étant calculés que sur les chunks effectivement récupérés (top\_k = 10), le dénominateur représente le nombre de chunks pertinents dans ce \emph{pool évalué}, et non dans l'intégralité des 76\,463 vecteurs indexés. En conséquence, un Recall@10 = 1.0 signifie que \emph{tous les chunks jugés pertinents dans la fenêtre de 10 résultats ont été retrouvés}, et non qu'aucun chunk pertinent du corpus entier ne manque. Cette définition par pool est une pratique courante dans les évaluations à grande échelle~\cite{thakur2021beir}, mais elle sous-estime potentiellement les cas où des chunks pertinents existent en dehors du pool récupéré.
-
-Le \textbf{Mean Reciprocal Rank (MRR)} évalue la position du premier chunk pertinent dans les résultats retournés. Un MRR = 1.0 indique qu'un résultat pertinent apparaît systématiquement en première position~:
+Le Recall@k mesure la proportion de documents pertinents que le système a réussi à retrouver parmi les $k$ premiers résultats. Par exemple, si pour une question donnée il existe 4 documents pertinents dans les 10 résultats récupérés, et que le système en place les 3 en tête de liste, alors le Recall@3 = 3/4 = 0.75.
 
 \[
-\text{MRR} = \frac{1}{|Q|} \sum_{q=1}^{|Q|} \frac{1}{\text{rank}_q}
+\text{Recall@k} = \frac{\text{nombre de documents pertinents dans les } k \text{ premiers}}{\text{nombre total de documents pertinents dans les 10 résultats récupérés}}
 \]
 
-Le \textbf{nDCG@k} (Normalized Discounted Cumulative Gain) prend en compte à la fois la pertinence graduée (scores 0, 1, 2) et la position dans le classement. Un résultat très pertinent en première position contribue plus qu'en cinquième position~:
+\noindent\textbf{Remarque importante.} Le dénominateur ne compte que les documents pertinents parmi les 10 résultats récupérés, et non parmi les 76\,463 documents du corpus entier. Un Recall@10 = 1.0 signifie donc que \emph{tous les documents jugés pertinents dans cette fenêtre de 10 résultats ont été retrouvés}, pas qu'aucun document utile n'existe ailleurs dans le corpus. Cette convention par \textit{pool} est une pratique standard dans les évaluations à grande échelle~\cite{thakur2021beir}.
+
+\paragraph{MRR : «~Le premier bon document arrive-t-il en tête~?~»}
+
+Le Mean Reciprocal Rank (MRR) mesure la position du \emph{premier} document pertinent dans la liste de résultats, moyennée sur toutes les questions. Si le premier document pertinent est en position~1, la contribution est 1/1 = 1.0~; s'il est en position~3, la contribution est 1/3 $\approx$ 0.33. Un MRR = 1.0 signifie que pour chaque question, un document pertinent apparaît \emph{systématiquement} en première position, ce qui est la situation idéale pour un assistant conversationnel, où l'utilisateur ne lit généralement que la première source citée.
 
 \[
-\text{DCG@k} = \sum_{i=1}^{k} \frac{\text{label}_i}{\log_2(i+1)}, \qquad
-\text{nDCG@k} = \frac{\text{DCG@k}}{\text{IDCG@k}}
+\text{MRR} = \frac{1}{|Q|} \sum_{q=1}^{|Q|} \frac{1}{\text{rang du premier document pertinent pour la question } q}
 \]
+
+\paragraph{nDCG@k : «~Les meilleurs documents sont-ils bien classés en premier~?~»}
+
+Le nDCG@k (Normalized Discounted Cumulative Gain) est la métrique la plus complète des trois~: elle tient compte à la fois du \emph{degré de pertinence} (un document très pertinent vaut plus qu'un document partiellement pertinent) et de la \emph{position dans le classement} (un bon document en première position vaut plus qu'en cinquième position). C'est cette pénalité de position, appelée «~discount~», qui rend le nDCG particulièrement adapté aux systèmes de recherche, où l'ordre des résultats est aussi important que leur présence.
+
+\[
+\text{nDCG@k} = \frac{\displaystyle\sum_{i=1}^{k} \frac{\text{score de pertinence du document en position } i}{\log_2(i+1)}}{\text{score idéal théorique si tous les meilleurs documents étaient en tête}}
+\]
+
+Un nDCG@k = 1.0 correspond au classement parfait~: les documents les plus pertinents sont tous placés en première position. Un nDCG@k proche de 0 indique que les documents retrouvés sont peu pertinents ou mal ordonnés.
 
 \subsection{Configuration d'évaluation}
 
-L'évaluation du retrieval utilise les paramètres suivants~: top\_k = 10 (les 10 premiers chunks sont récupérés et évalués), le reranker cross-encoder (\texttt{cross-encoder/ms-marco-MiniLM-L-6-v2}) est activé, et la baseline correspond à une recherche vectorielle pure sans BM25 ni RRF sur le même corpus de 76\,463 vecteurs indexés dans PostgreSQL (voir tableau~\ref{tab:stats-chunking} pour la décomposition enregistrements\,/\,chunks\,/\,vecteurs).
+Avant de présenter les résultats, il est nécessaire de préciser dans quelles conditions l'évaluation a été réalisée. Ces paramètres permettent au lecteur de reproduire l'expérience et d'interpréter correctement les scores obtenus.
+
+\paragraph{Nombre de résultats récupérés (top\_k = 10).}
+Pour chaque question du dataset, le système récupère les \textbf{10 documents les plus pertinents} du corpus. Ce paramètre, noté \texttt{top\_k = 10}, définit la fenêtre d'évaluation~: seuls ces 10 documents sont analysés et notés. Augmenter ce nombre améliorerait mécaniquement le Recall, mais au prix d'un contexte plus bruité transmis au modèle de langage.
+
+\paragraph{Activation du reranker.}
+Le reranker est un second modèle (\texttt{cross-encoder/ms-marco-MiniLM-L-6-v2}) qui intervient \emph{après} la recherche hybride pour réordonner les 10 résultats récupérés. Contrairement au moteur de recherche initial qui compare chaque document à la question de manière indépendante, le reranker analyse la paire (question, document) conjointement, ce qui lui permet d'affiner le classement avec une meilleure compréhension du contexte. C'est son impact sur les métriques de classement (MRR, nDCG) qui est mesuré ici.
+
+\paragraph{Comparaison avec une baseline.}
+Pour mesurer l'apport réel du système hybride, les résultats sont comparés à une \textbf{baseline}~: une recherche vectorielle pure, sans BM25 ni fusion de scores RRF, appliquée sur le même corpus de 76\,463 vecteurs indexés dans PostgreSQL. Cette baseline représente ce que le système produirait si l'on retirait toutes les améliorations hybrides~; tout gain observé dans le tableau de résultats est donc directement attribuable à ces améliorations.
 
 \subsection{Résultats globaux}
+
+Le tableau~\ref{tab:retrieval-results} compare deux versions du système sur les mêmes 18 questions.
+
+La colonne \textbf{«~Hybride + Reranking~»} représente le système complet tel qu'il a été développé~: il combine la recherche sémantique par vecteurs, la recherche par mots-clés (BM25), la fusion des deux scores (RRF), puis un reranker qui affine le classement final.
+
+La colonne \textbf{«~Baseline (vecteur pur)~»} représente une version simplifiée du système, utilisée comme point de référence. Elle repose uniquement sur la recherche sémantique par vecteurs, sans aucune des améliorations ajoutées. Concrètement, c'est ce que le système aurait produit si l'on n'avait utilisé qu'un moteur de recherche standard basé sur la similarité de sens entre la question et les documents. La comparer au système complet permet de mesurer précisément le gain apporté par chaque amélioration.
 
 \begin{table}[H]
 \centering
 \caption{Résultats du retrieval : Système hybride vs baseline vectorielle pure}
 \label{tab:retrieval-results}
-\begin{tabular}{lcc}
-\toprule
+\begin{tabular}{|l|c|c|}
+\hline
 \textbf{Métrique} & \textbf{Hybride + Reranking} & \textbf{Baseline (vecteur pur)} \\
-\midrule
+\hline
 Recall@1  & 0.122 & 0.103 \\
+\hline
 Recall@3  & 0.367 & 0.330 \\
+\hline
 Recall@5  & 0.574 & 0.526 \\
+\hline
 Recall@10 & \textbf{1.000} & \textbf{1.000} \\
+\hline
 MRR       & \textbf{1.000} & 0.972 \\
+\hline
 nDCG@3    & \textbf{0.959} & 0.878 \\
+\hline
 nDCG@5    & \textbf{0.959} & 0.891 \\
+\hline
 nDCG@10   & \textbf{0.983} & 0.947 \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
@@ -104,21 +176,32 @@ Sur cet échantillon de 18 requêtes, le MRR = 1.0 indique qu'au moins un chunk 
 
 \subsection{Résultats par type d'intention}
 
+Le tableau précédent donnait une moyenne globale sur l'ensemble des 18 questions. Ce tableau va plus loin~: il décompose les performances selon les quatre catégories de questions définies dans le dataset, afin de vérifier si le système se comporte de manière homogène ou si certains types de questions lui posent plus de difficultés que d'autres.
+
+\begin{itemize}
+  \item Les questions de \textbf{troubleshooting} contiennent souvent des T-codes explicites (par exemple \texttt{SM37}, \texttt{ST22}, \texttt{SU53}). Ces codes agissent comme des marqueurs précis~: le système peut les repérer directement dans les documents et les utiliser comme filtre. C'est pourquoi ces questions obtiennent le meilleur Recall@5.
+  \item Les questions de \textbf{configuration} et \textbf{how-to} portent sur des procédures bien documentées dans le corpus SAP. Les documents pertinents sont en général peu nombreux mais ciblés, ce qui favorise un classement précis (nDCG@3 = 1.000 pour ces deux types).
+  \item Les questions d'\textbf{explanation} sont les plus difficiles~: elles demandent de comprendre un concept (par exemple «~What is the role of the ABAP dispatcher?~») sans contenir d'entité SAP précise. Le système ne peut pas s'appuyer sur un T-code pour filtrer les résultats, ce qui explique le Recall@5 et le nDCG@3 légèrement inférieurs.
+\end{itemize}
+
 \begin{table}[H]
 \centering
 \caption{Performance du retrieval décomposée par type d'intention}
 \label{tab:retrieval-by-type}
-\begin{tabular}{lcccc}
-\toprule
+\begin{tabular}{|l|c|c|c|c|}
+\hline
 \textbf{Type} & \textbf{Recall@5} & \textbf{MRR} & \textbf{nDCG@3} & \textbf{nDCG@10} \\
-\midrule
+\hline
 troubleshooting & 0.678 & 1.000 & 0.953 & 0.978 \\
+\hline
 configuration   & 0.590 & 1.000 & 1.000 & 0.996 \\
+\hline
 how-to          & 0.525 & 1.000 & 1.000 & 0.997 \\
+\hline
 explanation     & 0.511 & 1.000 & 0.900 & 0.968 \\
-\midrule
+\hline
 \textbf{Moyenne} & \textbf{0.574} & \textbf{1.000} & \textbf{0.959} & \textbf{0.983} \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
@@ -142,46 +225,51 @@ L'évaluation du retrieval repose sur $n = 18$ requêtes, et l'évaluation de g�
 
 % ─────────────────────────────────────────────────────────────
 \section{Niveau 2 : Évaluation LLM-as-Judge avec RAGAS}
-% ─────────────────────────────────────────────────────────────
+\label{sec:ragas}
+\subsection{Présentation et métriques RAGAS}
 
-\subsection{Présentation du framework RAGAS}
+Le Niveau~1 mesurait si les \emph{bons documents} étaient retrouvés, en comparant les résultats du moteur de recherche à une liste de signaux attendus. Mais il ne disait rien sur la \emph{réponse finale}~: le modèle de langage a-t-il bien utilisé ces documents~? A-t-il inventé des informations~? Sa réponse répond-elle vraiment à la question posée~?
 
-RAGAS (\textit{Retrieval Augmented Generation Assessment}) est un framework d'évaluation automatique de pipelines RAG proposé par Es et al.~\cite{es2023ragas} en 2023. Il repose sur le paradigme LLM-as-Judge~: un modèle de langage est soumis à un triplet (question, réponse, contexte) accompagné d'un prompt d'évaluation structuré, puis attribue un score continu entre 0 et 1 selon la métrique concernée. L'utilisation d'un LLM local garantit la reproductibilité complète sans dépendance à une API externe et sans coût d'inférence, en cohérence avec l'architecture offline-first du système évalué. Dans ce projet, le modèle-juge utilisé est \texttt{llama3.2:3b}, exécuté localement via Ollama.
+Pour répondre à ces questions, on utilise une approche différente appelée \textbf{LLM-as-Judge}~: un second modèle de langage joue le rôle d'un correcteur automatique. On lui soumet la question, la réponse générée, et les documents sources récupérés, et il attribue un score entre 0 et 1 selon des critères précis. Cette approche est automatisée grâce au framework \textbf{RAGAS}~\cite{es2023ragas}, un outil open-source conçu spécifiquement pour évaluer les pipelines RAG.
 
-\subsection{Métriques RAGAS utilisées}
+Dans ce projet, le modèle-juge utilisé est \texttt{llama3.2:3b}, exécuté localement via Ollama, sans appel à une API externe, ce qui garantit la reproductibilité complète de l'évaluation et reste cohérent avec l'architecture hors-ligne du système.
 
-Quatre métriques ont été sélectionnées, chacune ciblant un aspect distinct de la qualité d'un pipeline RAG~:
+Quatre métriques complémentaires ont été retenues, chacune évaluant un aspect distinct~:
 
 \begin{table}[H]
 \centering
 \caption{Description des métriques RAGAS utilisées}
 \label{tab:ragas-metrics-desc}
-\begin{tabular}{p{3.8cm}p{4.2cm}p{5.5cm}}
-\toprule
+\begin{tabular}{|p{3.8cm}|p{4.2cm}|p{5.5cm}|}
+\hline
 \textbf{Métrique} & \textbf{Entrées requises} & \textbf{Ce qu'elle mesure} \\
-\midrule
+\hline
 \textbf{Faithfulness} &
   Réponse + contextes &
   Chaque affirmation de la réponse est-elle ancrée dans le contexte fourni~? Détecte les hallucinations. \\
-\addlinespace
+\hline
 \textbf{Answer Relevancy} &
   Question + réponse &
   La réponse adresse-t-elle bien la question posée~? Pénalise les réponses hors-sujet. \\
-\addlinespace
+\hline
 \textbf{Context Recall} &
   Question + contextes + référence &
   Le contexte récupéré contient-il les informations nécessaires pour répondre correctement~? \\
-\addlinespace
+\hline
 \textbf{Context Precision} &
   Question + contextes + référence &
   Les contextes récupérés sont-ils précis et peu bruités~? Mesure le rapport signal/bruit. \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
 \subsection{Configuration de l'évaluation RAGAS}
 
-L'évaluation utilise \texttt{llama3.2:3b} via Ollama comme juge LLM (local, CPU, température = 0) et \texttt{BAAI/bge-large-en-v1.5} comme modèle d'embedding, réutilisé depuis le pipeline pour éviter un double chargement en mémoire. Le dataset porte sur 3 requêtes représentatives (Q01~: troubleshooting ABAP, Q03~: sécurité/autorisation, Q14~: monitoring BASIS), chacune accompagnée d'une réponse de référence rédigée manuellement. L'évaluation est contrainte par la mémoire disponible sur la machine locale~: le modèle d'embedding (1,5 Go) et le juge LLM (2 Go via Ollama) saturent la RAM disponible sur un corpus plus large. Les paramètres utilisés sont top\_k = 5 et un timeout de 600 secondes par appel.
+Contrairement au Niveau~1 où l'on évaluait 18 questions, l'évaluation RAGAS ne porte que sur \textbf{3 questions représentatives}~: une question de troubleshooting ABAP (Q01), une question de sécurité et autorisations (Q03), et une question de monitoring BASIS (Q14). Cette réduction s'explique par une contrainte matérielle concrète~: faire tourner simultanément le modèle d'embedding (1,5~Go en mémoire) et le modèle-juge (2~Go via Ollama) sature la RAM disponible sur la machine locale. Évaluer davantage de questions aurait nécessité une infrastructure plus puissante.
+
+Pour chacune de ces trois questions, une \textbf{réponse de référence} a été rédigée manuellement par un expert SAP. C'est cette réponse idéale qui sert de repère au modèle-juge pour noter la réponse générée par le système.
+
+Les autres paramètres utilisés sont les suivants~: le système récupère les 5 documents les plus pertinents (top\_k~=~5), et chaque appel au modèle-juge dispose d'un délai maximum de 600~secondes avant d'être interrompu, soit un timeout nécessaire car le modèle tourne entièrement sur CPU, sans carte graphique dédiée.
 
 \subsection{Résultats RAGAS}
 
@@ -200,54 +288,56 @@ L'évaluation utilise \texttt{llama3.2:3b} via Ollama comme juge LLM (local, CPU
 \begin{tabularx}{\textwidth}{@{}lccX@{}}
 \toprule
 \rowcolor{SAPLightBlue}
-\textbf{Métrique} & \textbf{Score moyen} & \textbf{Évaluable} & \textbf{Interprétation} \\
+\textbf{Métrique} & \textbf{Score moyen} & \textbf{Calculable} & \textbf{Ce que ça signifie concrètement} \\
 \midrule
 \rowcolor{SAPLightGreen!60}
 Answer Relevancy
   & \textcolor{SAPGreen}{\Large\bfseries 0.920}
   & \textcolor{SAPGreen}{\bfseries Oui}
-  & Réponses bien centrées sur les questions posées, sans dérive hors-sujet \\
+  & Le système répond bien à ce qui est demandé~: les réponses restent centrées sur la question, sans partir sur des informations hors-sujet. \\
 \rowcolor{SAPLightGreen!60}
 Context Recall
   & \textcolor{SAPGreen}{\Large\bfseries 0.889}
   & \textcolor{SAPGreen}{\bfseries Oui}
-  & Le contexte récupéré couvre bien les informations de la vérité terrain \\
+  & Les documents récupérés contiennent, dans la grande majorité des cas, les informations nécessaires pour construire une réponse correcte. \\
 \rowcolor{SAPLightGray}
 Faithfulness
   & \textcolor{SAPGray}{\bfseries N/A}
   & \textcolor{SAPRed}{\bfseries Non}
-  & \textcolor{SAPGray}{Non calculable~: \texttt{llama3.2:3b} ne produit pas la sortie JSON structurée requise par RAGAS (100\,\% d'échecs de parsing). Un juge LLM plus puissant est nécessaire (voir §~\ref{subsec:limites-ragas})} \\
+  & \textcolor{SAPGray}{Non calculé~: le modèle-juge \texttt{llama3.2:3b} est trop petit pour produire la réponse structurée requise par RAGAS. Tous les appels ont échoué (voir §~\ref{subsec:limites-ragas}).} \\
 \rowcolor{SAPLightGray}
 Context Precision
   & \textcolor{SAPGray}{\bfseries N/A}
   & \textcolor{SAPRed}{\bfseries Non}
-  & \textcolor{SAPGray}{Non calculable pour la même raison~: dépendance au format JSON strict du juge LLM (voir §~\ref{subsec:limites-ragas})} \\
+  & \textcolor{SAPGray}{Non calculé pour la même raison. Un modèle-juge plus puissant est nécessaire pour évaluer ces deux métriques (voir §~\ref{subsec:limites-ragas}).} \\
 \bottomrule
 \end{tabularx}
 \end{table}
+
+Le tableau suivant détaille les scores question par question, afin de voir si certaines questions ont posé plus de difficultés que d'autres au système.
 
 \begin{table}[H]
 \centering
 \renewcommand{\arraystretch}{1.45}
 \caption{Résultats RAGAS détaillés par requête}
 \label{tab:ragas-per-query}
-\begin{tabularx}{\textwidth}{@{}llccl@{}}
+\begin{tabularx}{\textwidth}{@{}llccX@{}}
 \toprule
 \rowcolor{SAPLightBlue}
-\textbf{ID} & \textbf{Question (abrégée)} & \textbf{Answer Relevancy} & \textbf{Context Recall} & \textbf{Domaine} \\
+\textbf{ID} & \textbf{Question posée} & \textbf{Answer Relevancy} & \textbf{Context Recall} & \textbf{Observation} \\
 \midrule
-Q01 & Analyze ABAP short dumps in ST22?
+Q01 & Comment analyser les erreurs ABAP avec ST22~?
   & \scoreNA
   & \scoreHigh{1.000}
-  & Troubleshooting ABAP \\
-Q03 & Authorization failed, check missing auth?
+  & La réponse n'a pas pu être notée~: le modèle-juge a dépassé le temps limite (CPU saturé). Les documents récupérés couvraient parfaitement la question. \\
+Q03 & Autorisation refusée~: comment identifier le droit manquant~?
   & \scoreMid{0.849}
   & \scoreHigh{1.000}
-  & Sécurité / Autorisations \\
-Q14 & Monitor performance with ST06 and SM50?
+  & La réponse est globalement centrée sur la question, avec une légère dérive vers des notions générales de sécurité. Les documents sources étaient complets. \\
+Q14 & Comment surveiller les performances avec ST06 et SM50~?
   & \scoreHigh{0.990}
   & \scoreLow{0.667}
-  & Monitoring BASIS \\
+  & La réponse est très bien ciblée. En revanche, les documents récupérés couvrent principalement SM50 et manquent d'informations sur les métriques système de ST06~: une question portant sur deux outils distincts est plus difficile à couvrir entièrement. \\
 \midrule
 \rowcolor{SAPLightBlue!50}
 \textbf{Moyenne} & & \textbf{0.920} & \textbf{0.889} & \\
@@ -255,10 +345,10 @@ Q14 & Monitor performance with ST06 and SM50?
 \end{tabularx}
 \vspace{3pt}
 {\footnotesize
-\textcolor{SAPGreen}{\rule{1em}{0.6em}}~Score $\geq 0.90$\quad
-\textcolor{SAPOrange}{\rule{1em}{0.6em}}~Score $\in [0.70,\,0.90)$\quad
-\textcolor{red!50}{\rule{1em}{0.6em}}~Score $< 0.70$\quad
-\textcolor{SAPGray}{\rule{1em}{0.6em}}~Non calculé (TimeoutError ou parsing JSON)
+\textcolor{SAPGreen}{\rule{1em}{0.6em}}~Score $\geq 0.90$ — bon résultat\quad
+\textcolor{SAPOrange}{\rule{1em}{0.6em}}~Score $\in [0.70,\,0.90)$ — résultat acceptable\quad
+\textcolor{red!50}{\rule{1em}{0.6em}}~Score $< 0.70$ — résultat insuffisant\quad
+\textcolor{SAPGray}{\rule{1em}{0.6em}}~Non calculé (modèle-juge trop lent ou trop petit)
 }
 \end{table}
 
@@ -269,7 +359,7 @@ couvrent principalement SM50 et ne contiennent qu'une couverture partielle des m
 
 \subsection{Analyse des résultats}
 
-Sur les deux métriques évaluables ($n = 3$ requêtes), les résultats sont encourageants mais insuffisants pour conclure de façon générale. L'Answer Relevancy de \textbf{0.92} suggère que les réponses adressent les questions posées sans dériver hors-sujet~; le Context Recall de \textbf{0.89} indique que le contexte récupéré couvre en grande partie les informations de référence --- cohérent avec le MRR = 1.0 et le nDCG@3 = 0.959 observés au Niveau 1. Ces chiffres doivent être lus comme des indicateurs préliminaires sur un sous-ensemble très réduit~: avec $n = 3$, un seul outlier modifie la moyenne de 0.33 point, et deux métriques sur quatre (Faithfulness, Context Precision) sont non calculables à cause des échecs de parsing JSON du juge.
+Sur les deux métriques évaluables ($n = 3$ requêtes), les résultats sont encourageants mais insuffisants pour conclure de façon générale. L'Answer Relevancy de \textbf{0.92} suggère que les réponses adressent les questions posées sans dériver hors-sujet~; le Context Recall de \textbf{0.89} indique que le contexte récupéré couvre en grande partie les informations de référence, ce qui est cohérent avec le MRR = 1.0 et le nDCG@3 = 0.959 observés au Niveau 1. Ces chiffres doivent être lus comme des indicateurs préliminaires sur un sous-ensemble très réduit~: avec $n = 3$, un seul outlier modifie la moyenne de 0.33 point, et deux métriques sur quatre (Faithfulness, Context Precision) sont non calculables à cause des échecs de parsing JSON du juge.
 
 Le Context Recall de Q14 (0.667) est inférieur aux deux autres requêtes (1.0)~: la requête portant sur ST06 et SM50 requiert des informations sur les métriques OS (ST06) et sur le moniteur de processus (SM50), mais les chunks récupérés couvrent principalement SM50. Ce résultat illustre la limite des requêtes multi-entités, qui nécessitent plusieurs chunks complémentaires pour une couverture complète.
 
@@ -283,15 +373,18 @@ La comparaison entre le système hybride complet (vectoriel + BM25 + RRF + cross
 \centering
 \caption{Gain apporté par le système hybride par rapport à la baseline}
 \label{tab:gain-hybride}
-\begin{tabular}{lccc}
-\toprule
+\begin{tabular}{|l|c|c|c|}
+\hline
 \textbf{Métrique} & \textbf{Baseline} & \textbf{Hybride} & \textbf{Gain} \\
-\midrule
+\hline
 MRR     & 0.972 & 1.000 & +2.9\% \\
+\hline
 nDCG@3  & 0.878 & 0.959 & +9.2\% \\
+\hline
 nDCG@5  & 0.891 & 0.959 & +7.6\% \\
+\hline
 nDCG@10 & 0.947 & 0.983 & +3.8\% \\
-\bottomrule
+\hline
 \end{tabular}
 \end{table}
 
@@ -358,6 +451,7 @@ Enfin, la circularité de l'auto-labellisation par signaux (détaillée au §~\r
 
 % ─────────────────────────────────────────────────────────────
 \section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
 % ─────────────────────────────────────────────────────────────
 
 La phase d'évaluation fournit des résultats préliminaires encourageants. Sur un jeu de 18 requêtes ($n = 18$), l'approche hybride (vectoriel + BM25 + RRF + cross-encoder) surpasse la baseline vectorielle pure sur toutes les métriques, avec un gain de +9,2\,\% sur le nDCG@3 et un MRR = 1.0. Ces scores doivent cependant être interprétés en tenant compte de la circularité du protocole d'auto-labellisation~: les signaux utilisés pour annoter les chunks sont les mêmes termes et T-codes exploités par le retrieval, ce qui produit des scores structurellement favorables. L'évaluation de génération (RAGAS, $n = 3$) donne une Answer Relevancy de 0,92 et un Context Recall de 0,89, mais repose sur un échantillon trop réduit et un juge LLM identique au générateur pour constituer une conclusion définitive. Des travaux futurs devront étendre le jeu de test, introduire des jugements humains indépendants et utiliser un juge LLM plus puissant pour valider ces résultats. La double approche retrieval / génération adoptée reste pertinente pour isoler les sources de défaillance dans le pipeline.

@@ -46,22 +46,22 @@ système :
 \renewcommand{\arraystretch}{1.45}
 \caption{Acteurs du système AutoMoni et leurs responsabilités}
 \label{tab:acteurs}
-\begin{tabularx}{\textwidth}{@{}>{\bfseries\color{primaryblue}}p{4.5cm} p{3.5cm} X@{}}
-\toprule
-\normalfont\textbf{\color{primaryblue}Acteur} & \textbf{Type} & \textbf{Responsabilités principales} \\
-\midrule
+\begin{tabularx}{\textwidth}{|p{4.5cm}|p{3.5cm}|X|}
+\hline
+\textbf{Acteur} & \textbf{Type} & \textbf{Responsabilités principales} \\
+\hline
 Administrateur système
   & Acteur principal
   & Gère la plateforme AutoMoni dans son ensemble~: configuration des alertes et des règles métier, gestion des comptes utilisateurs, accès à l'historique global des conversations, supervision des performances du pipeline RAG et administration des paramètres système. Il dispose des droits les plus étendus et cumule toutes les fonctionnalités de l'Administrateur SAP. \\
-\addlinespace
+\hline
 Administrateur SAP (consultant BASIS)
   & Acteur principal
   & Surveille les environnements SAP à travers les données de monitoring collectées en temps réel. Interagit avec l'assistant intelligent pour poser des questions techniques en langage naturel, consulter les alertes T-code, accéder aux journaux de transactions et visualiser les graphiques d'analyse. Peut également configurer les paramètres de surveillance propres à son périmètre client. Soumet des feedbacks sur les réponses du chatbot (notation et correction) afin d'améliorer la qualité du système RAG. \\
-\addlinespace
+\hline
 Système SAP (source externe)
   & Acteur secondaire
   & Fournit les données de surveillance opérationnelle via les appels RFC (PyRFC). Ne déclenche pas d'interactions directes avec l'interface, mais alimente en continu la base de données de monitoring qui est interrogée par les deux acteurs humains. \\
-\bottomrule
+\hline
 \end{tabularx}
 \end{table}
 
