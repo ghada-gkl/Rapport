@@ -5,13 +5,8 @@
 \chapter{Évaluation}
 \label{chap:evaluation}
 
-\section*{Objectifs du chapitre}
-\addcontentsline{toc}{section}{Objectifs du chapitre}
-
-La phase d'Évaluation de la méthodologie CRISP-DM vise à mesurer de manière rigoureuse et objective la qualité du système construit, avant tout déploiement en production. Dans ce projet, cette phase répond à deux questions fondamentales~: les documents SAP pertinents sont-ils bien retrouvés par le moteur de recherche hybride~? Les réponses générées par le LLM sont-elles fidèles, pertinentes et ancrées dans les sources récupérées~?
-
 % ─────────────────────────────────────────────────────────────
-\section{Introduction}
+\section*{Introduction}
 % ─────────────────────────────────────────────────────────────
 
 L'évaluation d'un système RAG ne peut se réduire à un seul score global. La chaîne de traitement implique deux composants distincts --- le retrieval et la génération --- chacun pouvant être la source d'une défaillance indépendante. Un retrieval parfait combiné à une génération médiocre produit une mauvaise réponse, et inversement. Il est donc indispensable d'évaluer les deux niveaux séparément.
@@ -362,7 +357,7 @@ Ces deux métriques restent donc volontairement déclarées \textit{N/A} plutôt
 Enfin, la circularité de l'auto-labellisation par signaux (détaillée au §~\ref{subsec:limites-validite}) constitue la limite de validité la plus structurelle~: elle favorise mécaniquement les requêtes contenant des T-codes explicites et produit des scores de retrieval optimistes sur ce type de corpus.
 
 % ─────────────────────────────────────────────────────────────
-\section{Conclusion}
+\section*{Conclusion}
 % ─────────────────────────────────────────────────────────────
 
 La phase d'évaluation fournit des résultats préliminaires encourageants. Sur un jeu de 18 requêtes ($n = 18$), l'approche hybride (vectoriel + BM25 + RRF + cross-encoder) surpasse la baseline vectorielle pure sur toutes les métriques, avec un gain de +9,2\,\% sur le nDCG@3 et un MRR = 1.0. Ces scores doivent cependant être interprétés en tenant compte de la circularité du protocole d'auto-labellisation~: les signaux utilisés pour annoter les chunks sont les mêmes termes et T-codes exploités par le retrieval, ce qui produit des scores structurellement favorables. L'évaluation de génération (RAGAS, $n = 3$) donne une Answer Relevancy de 0,92 et un Context Recall de 0,89, mais repose sur un échantillon trop réduit et un juge LLM identique au générateur pour constituer une conclusion définitive. Des travaux futurs devront étendre le jeu de test, introduire des jugements humains indépendants et utiliser un juge LLM plus puissant pour valider ces résultats. La double approche retrieval / génération adoptée reste pertinente pour isoler les sources de défaillance dans le pipeline.

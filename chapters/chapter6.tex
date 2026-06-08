@@ -2,10 +2,8 @@
 %  Chapitre 6 : Modeling — Système RAG pour la documentation SAP
 % ============================================================
 
-\chapter{Modeling}
-\section*{Objectifs du chapitre}
-L'étape de Modélisation (Modeling) dans la méthodologie CRISP-DM consiste à choisir et à mettre en œuvre des techniques adaptées aux objectifs du projet. Dans un projet d'apprentissage supervisé classique, cette étape implique l'entraînement et l'optimisation d'un modèle sur des données annotées. \textbf{Dans le présent projet, aucun modèle n'est entraîné~: la « modélisation » désigne la conception et l'assemblage du pipeline RAG à partir de modèles pré-entraînés} (\textit{bge-large-en-v1.5}, \textit{llama3.2:3b}, cross-encoder) et de règles expertes (filtres BM25, seuils de reranking, stratégie de chunking hiérarchique). Le résultat de cette phase est donc une \textit{architecture de système} et non un modèle appris.% ─────────────────────────────────────────────────────────────
-\section{Introduction}
+\chapter{Modélisation}
+\section*{Introduction}
 % ─────────────────────────────────────────────────────────────
 La phase de modélisation constitue l’étape clé de la méthodologie CRISP-DM, où les données préparées sont utilisées pour créer des solutions répondant aux objectifs commerciaux. Dans le contexte de ce projet, cette étape implique la mise en place d'un système de Retrieval-Augmented Generation (RAG) spécifiquement destiné au secteur SAP, afin d’offrir des réponses précises, fiables et contextualisées aux questions techniques.
 

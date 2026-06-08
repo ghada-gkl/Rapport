@@ -2,19 +2,19 @@
 \chapter{Compréhension des données}
 \label{chap:business_understanding}
 
-\section*{Objectifs du chapitre}
-Ce chapitre correspond à la phase de Compréhension des données de CRISP-DM. Il couvre la collecte des données, leur description structurelle et la vérification de leur qualité.
-\section{Introduction}
-Dans la méthodologie CRISP-DM, la phase d'analyse des données est essentielle pour garantir le succès d'un projet d'analyse de données ou de machine learning. Cette étape permet de se familiariser avec les ensembles de données à disposition, de repérer d'éventuels problèmes et de définir les actions nécessaires pour préparer les données en vue de leur utilisation dans les étapes ultérieures du projet. Dans le cadre de ce projet, l'exploration des données implique l'examen des différentes sources.
+\section*{Introduction}
+Dans la méthode CRISP-DM, la phase d'analyse des données est essentielle pour garantir le succès d'un projet d'analyse de données ou de machine learning. Cette étape permet de se familiariser avec les ensembles de données à disposition, de repérer d'éventuels problèmes et de définir les actions nécessaires pour préparer les données en vue de leur utilisation dans les étapes ultérieures du projet. Dans le cadre de ce projet, l'exploration des données implique l'examen des différentes sources.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Collecte des Données}
 % ─────────────────────────────────────────────────────────────────────────────
 
-\subsection{Données de Surveillance SAP — Extraction via PyRFC}
+\subsection{Données de Surveillance SAP : Extraction via PyRFC}
 Les données de surveillance opérationnelle sont collectées automatiquement à partir des systèmes SAP de production en utilisant PyRFC, le connecteur Python pour les appels de fonctions distantes SAP. Cette bibliothèque permet d’interagir directement avec les modules de fonction ABAP( le langage de programmation), exposés par le serveur d’application, sans avoir besoin de l’interface SAP GUI. Cette méthode facilite l’automatisation, la planification et la répétabilité du processus d’extraction des données.
 
-Chaque enregistrement extrait contient deux attributs essentiels pour garantir la traçabilité des informations collectées. Chaque tcode a une structure bien définie, mais il y a des champs existants comme  le champ \texttt{Extraction\_Timestamp} enregistre la date et l’heure de la collecte des données, ce qui permet de garder un historique des événements et des métriques observées. L’extraction comprend plusieurs transactions SAP pour la surveillance opérationnelle, notamment les journaux d’erreurs, les traitements en arrière-plan, les verrouillages, les processus actifs et la messagerie système.
+Chaque enregistrement extrait contient deux attributs essentiels pour garantir la traçabilité des informations collectées. 
+
+Chaque Tcode a une structure bien définie, mais il y a des champs existants comme  le champ \texttt{Extraction\_Timestamp} enregistre la date et l’heure de la collecte des données, ce qui permet de garder un historique des événements et des métriques observées. L’extraction comprend plusieurs transactions SAP pour la surveillance opérationnelle, notamment les journaux d’erreurs, les traitements en arrière-plan, les verrouillages, les processus actifs et la messagerie système.
 
 \begin{figure}[H]
     \centering
@@ -42,7 +42,7 @@ Chaque enregistrement extrait contient deux attributs essentiels pour garantir l
 
 Les données de notre projet se basent sur deux sources documentaires.
 
-La première source se compose de plus de 300 documents de formation en SAP sous format pdf. Ceux-ci traitent de divers sujets allant de l'administration Basis, à l'écriture de code en ABAP jusqu'à la formation fonctionnelle. Ils constituent une documentation complète concernant les concepts et architectures SAP.
+La première source se compose de plus de 300 documents de formation en SAP sous format pdf. Ceux-ci traitent de divers sujets allant de l'administration BASIS, à l'écriture de code en ABAP jusqu'à la formation fonctionnelle. Ils constituent une documentation complète concernant les concepts et architectures SAP.
  
 La deuxième source consiste dans le site Web d'aide SAP (help.sap.com). Certaines de ses parties ont été extraites via le processus de web scraping. Cette documentation contient des informations techniques relatives à la configuration système SAP, à l'interprétation des codes d'erreurs SAP, à la configuration des paramètres de SAP ainsi que des notes de corrections.
 \subsubsection{Extraction des livres PDF}
@@ -53,9 +53,9 @@ Ensuite, le système effectue l'extraction des différents fragments textuels, d
 En raison d'une telle approche à la résolution de la tâche d'information extraction, la durée globale de traitement de l'ensemble du corpus a été réduite à plusieurs dizaines de minutes par rapport à plusieurs heures.
 
 
-\subsubsection{Collecte des données depuis le portail SAP Help}
+\subsubsection{Extraction des données depuis le portail SAP Help}
 
-La récupération des données du portail \texttt{help.sap.com} a été réalisée à l’aide d’un processus de scraping permettant d’extraire automatiquement les pages de documentation SAP. Deux liens principaux ont été utilisés : le premier fournit la liste des pages disponibles sur le portail, tandis que le second permet d’accéder au contenu détaillé de chaque page.
+La récupération des données du portail \texttt{help.sap.com} sera réaliser à l’aide d’un processus de scraping permettant d’extraire automatiquement les pages de documentation SAP. Deux liens principaux ont été utilisés : le premier fournit la liste des pages disponibles sur le portail, tandis que le second permet d’accéder au contenu détaillé de chaque page.
 
 Lors des premières tentatives de collecte, certaines requêtes ont été bloquées par le portail SAP afin de limiter les accès automatisés. Pour résoudre ce problème, plusieurs ajustements ont été mis en place.
 
@@ -63,7 +63,8 @@ La première solution consiste à utiliser différents identifiants de navigateu
 
 La seconde solution repose sur une collecte parallèle modérée des pages du portail. Plusieurs requêtes sont exécutées simultanément afin d’accélérer l’extraction des données, tout en conservant un rythme raisonnable pour éviter les limitations imposées par le serveur SAP. Grâce à ces ajustements, l’accès aux ressources documentaires a pu être réalisé de manière stable et efficace.
 
-\paragraph{Cadre juridique et éthique de la collecte.}
+\paragraph{Cadre juridique et éthique de la collecte}
+
 La collecte automatisée du portail \texttt{help.sap.com} a été réalisée dans un cadre académique, à des fins de recherche et de développement d’un prototype non commercial. Avant le lancement du scraper, le fichier \texttt{robots.txt} du portail a été consulté afin d’identifier les répertoires explicitement exclus de toute indexation automatique ; ces sections ont été écartées du périmètre de collecte. Le débit des requêtes a été volontairement limité afin de ne pas surcharger les serveurs SAP. La collecte a porté exclusivement sur des pages de documentation publiquement accessibles, sans contournement d’aucune mesure d’authentification ou de contrôle d’accès. Les données collectées sont utilisées uniquement dans le cadre interne du projet, conformément aux conditions générales d’utilisation du portail SAP.
 
 \begin{figure}[H]
@@ -200,7 +201,7 @@ Les informations recueillies incluent :
     \item Des éléments qui structurent hiérarchiquement le contenu, comme les titres et les sections.
 \end{itemize}
 
-\subsubsection{Nature des données de livres PDF résultantes de l’extraction}
+\subsubsection{Nature des données de livres PDF }
 Les données utilisées dans cette étape proviennent de documents techniques SAP au format PDF. Ces documents sont considérés comme le guide principal pour la certification de système SAP. Ils incluent des supports de formation tels que BC100, BC400, ainsi que d'autres modules SAP comme ABAP et d'autres.
 
 Ces documents contiennent des données non structurées, qui comprennent du texte technique, des éléments graphiques, des tableaux et des fragments de code ABAP. L'objectif principal du processus d'extraction est de transformer ces documents en une représentation structurée. Cette représentation structurée doit être exploitable dans un système RAG géré par des vecteurs, également appelés embeddings. Le but est de permettre au modèle LLM de comprendre ces données de manière efficace.

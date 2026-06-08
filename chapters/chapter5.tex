@@ -5,8 +5,8 @@
 \chapter{Préparation des données}
 \label{chap:preparation_donnees}
 
-\section*{Objectif}
-\addcontentsline{toc}{section}{Objectif}
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
 
 Ce chapitre décrit les étapes de préparation des données pour le pipeline RAG. Les documents SAP collectés ont été nettoyés, structurés et transformés en embeddings pour alimenter le moteur de recherche sémantique.
 % ─────────────────────────────────────────────────────────────────────────────
@@ -313,6 +313,7 @@ Les livres SAP en format PDF sont soumis à une extraction structurée préalabl
 \end{tcolorbox}
 
 \paragraph{Traitement appliqué:}
+
 Le script reconstitue le contenu brut en concaténant le titre, le contenu principal, le fil d’Ariane (\textit{breadcrumb}) et les sections imbriquées de chaque entrée JSON. La fonction \texttt{remove\_duplicate\_content} détecte les répétitions en comparant la première et la seconde moitié du texte : si leur chevauchement lexical dépasse 80\,\%, seule la première moitié est conservée. Les entrées dont la longueur après nettoyage reste inférieure à 80 caractères sont éliminées. Chaque document retenu est enrichi des mêmes métadonnées que pour les données web (T-codes, modules, hiérarchie), puis sauvegardé dans \texttt{scraped\_content.cleaned.json}.
 
 % ── 2.3 ──────────────────────────────────────────────────────────────────────
@@ -908,3 +909,8 @@ comme contexte de génération.
          requête RAG}
 \label{fig:recherche-meta}
 \end{figure}
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+Ce chapitre a décrit l'ensemble du pipeline de préparation des données, depuis les sources brutes jusqu'à la base vectorielle opérationnelle. Les documents SAP ont été nettoyés, dédupliqués et normalisés à travers un processus rigoureux adapté à chaque source. Le découpage hiérarchique parent-enfant a permis de produire \textbf{76\,463 vecteurs} indexés, générés par le modèle \textbf{BAAI/bge-large-en-v1.5} et enrichis de métadonnées structurées. Stockés dans PostgreSQL avec pgvector, ces données sont indexées via les mécanismes HNSW et GIN, constituant ainsi le socle de la recherche hybride du système RAG. Le chapitre suivant présente la phase de modélisation, qui exploite cette base pour construire le pipeline de génération augmentée par récupération.
