@@ -1,34 +1,34 @@
 \babel@toc {french}{}\relax 
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {1.1}{\ignorespaces Exemples de T-codes utilisés pour la surveillance SAP}}{20}{table.caption.12}%
-\contentsline {table}{\numberline {1.2}{\ignorespaces Comparatif entre la supervision manuelle, SAP Leonardo ML et SAP Joule}}{24}{table.caption.16}%
-\contentsline {table}{\numberline {1.3}{\ignorespaces Comparaison des méthodologies CRISP-DM, TDSP, KDD et Scrum}}{30}{table.caption.20}%
+\contentsline {table}{\numberline {1.1}{\ignorespaces Exemples de T-codes utilisés pour la surveillance SAP}}{22}{table.caption.14}%
+\contentsline {table}{\numberline {1.2}{\ignorespaces Comparatif entre la supervision manuelle, SAP Leonardo ML et SAP Joule}}{26}{table.caption.18}%
+\contentsline {table}{\numberline {1.3}{\ignorespaces Comparaison des méthodologies CRISP-DM, TDSP, KDD et Scrum}}{32}{table.caption.22}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {2.1}{\ignorespaces Acteurs du système AutoMoni et leurs responsabilités}}{34}{table.caption.23}%
+\contentsline {table}{\numberline {2.1}{\ignorespaces Acteurs du système AutoMoni et leurs responsabilités}}{36}{table.caption.25}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {3.1}{\ignorespaces Comparaison entre Fine-Tuning, RAG et RAG+CAG}}{49}{table.caption.32}%
+\contentsline {table}{\numberline {3.1}{\ignorespaces Comparaison entre Fine-Tuning, RAG et RAG+CAG}}{51}{table.caption.34}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Volumétrie du corpus par source}}{59}{table.caption.40}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Volumétrie du corpus par source}}{61}{table.caption.42}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {5.1}{\ignorespaces Les opérations de normalisation appliquées à chaque document}}{66}{table.caption.43}%
-\contentsline {table}{\numberline {5.2}{\ignorespaces Filtres de qualité appliqués après fusion des sources}}{69}{table.caption.45}%
-\contentsline {table}{\numberline {5.3}{\ignorespaces Niveaux de découpage par ordre de priorité}}{71}{table.caption.46}%
-\contentsline {table}{\numberline {5.4}{\ignorespaces Statistiques de découpage du corpus SAP}}{72}{table.caption.47}%
-\contentsline {table}{\numberline {5.5}{\ignorespaces Comparaison des modèles d'embedding évalués}}{73}{table.caption.48}%
-\contentsline {table}{\numberline {5.6}{\ignorespaces Champs d'identification et de source}}{74}{table.caption.49}%
-\contentsline {table}{\numberline {5.7}{\ignorespaces Champs de structure hiérarchique et d'entités SAP}}{74}{table.caption.50}%
-\contentsline {table}{\numberline {5.8}{\ignorespaces Champs de liaison parent-enfant}}{75}{table.caption.51}%
+\contentsline {table}{\numberline {5.1}{\ignorespaces Les opérations de normalisation appliquées à chaque document}}{68}{table.caption.45}%
+\contentsline {table}{\numberline {5.2}{\ignorespaces Filtres de qualité appliqués après fusion des sources}}{71}{table.caption.47}%
+\contentsline {table}{\numberline {5.3}{\ignorespaces Niveaux de découpage par ordre de priorité}}{73}{table.caption.48}%
+\contentsline {table}{\numberline {5.4}{\ignorespaces Statistiques de découpage du corpus SAP}}{74}{table.caption.49}%
+\contentsline {table}{\numberline {5.5}{\ignorespaces Comparaison des modèles d'embedding évalués}}{75}{table.caption.50}%
+\contentsline {table}{\numberline {5.6}{\ignorespaces Champs d'identification et de source}}{76}{table.caption.51}%
+\contentsline {table}{\numberline {5.7}{\ignorespaces Champs de structure hiérarchique et d'entités SAP}}{76}{table.caption.52}%
+\contentsline {table}{\numberline {5.8}{\ignorespaces Champs de liaison parent-enfant}}{77}{table.caption.53}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {6.1}{\ignorespaces Colonnes de la table \texttt {sap\_chunks}}}{83}{table.caption.53}%
+\contentsline {table}{\numberline {6.1}{\ignorespaces Colonnes de la table \texttt {sap\_chunks}}}{85}{table.caption.55}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {7.1}{\ignorespaces Distribution du dataset de test par type d'intention et module SAP}}{95}{table.caption.56}%
-\contentsline {table}{\numberline {7.2}{\ignorespaces Résultats du retrieval — Système hybride vs baseline vectorielle pure}}{97}{table.caption.57}%
-\contentsline {table}{\numberline {7.3}{\ignorespaces Performance du retrieval décomposée par type d'intention}}{98}{table.caption.58}%
-\contentsline {table}{\numberline {7.4}{\ignorespaces Description des métriques RAGAS utilisées}}{100}{table.caption.59}%
-\contentsline {table}{\numberline {7.5}{\ignorespaces Résultats RAGAS — Évaluation LLM-as-Judge (\texttt {llama3.2:3b}) sur 3 requêtes SAP}}{101}{table.caption.60}%
-\contentsline {table}{\numberline {7.6}{\ignorespaces Résultats RAGAS détaillés par requête}}{101}{table.caption.61}%
-\contentsline {table}{\numberline {7.7}{\ignorespaces Gain apporté par le système hybride par rapport à la baseline}}{102}{table.caption.62}%
+\contentsline {table}{\numberline {7.1}{\ignorespaces Distribution du dataset de test par type d'intention et module SAP}}{97}{table.caption.58}%
+\contentsline {table}{\numberline {7.2}{\ignorespaces Résultats du retrieval — Système hybride vs baseline vectorielle pure}}{99}{table.caption.59}%
+\contentsline {table}{\numberline {7.3}{\ignorespaces Performance du retrieval décomposée par type d'intention}}{100}{table.caption.60}%
+\contentsline {table}{\numberline {7.4}{\ignorespaces Description des métriques RAGAS utilisées}}{102}{table.caption.61}%
+\contentsline {table}{\numberline {7.5}{\ignorespaces Résultats RAGAS — Évaluation LLM-as-Judge (\texttt {llama3.2:3b}) sur 3 requêtes SAP}}{103}{table.caption.62}%
+\contentsline {table}{\numberline {7.6}{\ignorespaces Résultats RAGAS détaillés par requête}}{103}{table.caption.63}%
+\contentsline {table}{\numberline {7.7}{\ignorespaces Gain apporté par le système hybride par rapport à la baseline}}{104}{table.caption.64}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {8.1}{\ignorespaces Pile technologique du système déployé}}{110}{table.caption.66}%
-\contentsline {table}{\numberline {8.2}{\ignorespaces Endpoints de l'API RAG (api.py)}}{113}{table.caption.68}%
-\contentsline {table}{\numberline {8.3}{\ignorespaces Paramètres de configuration du pipeline RAG (rag\_pipeline.py)}}{115}{table.caption.70}%
+\contentsline {table}{\numberline {8.1}{\ignorespaces Pile technologique du système déployé}}{112}{table.caption.68}%
+\contentsline {table}{\numberline {8.2}{\ignorespaces Endpoints de l'API RAG (api.py)}}{115}{table.caption.70}%
+\contentsline {table}{\numberline {8.3}{\ignorespaces Paramètres de configuration du pipeline RAG (rag\_pipeline.py)}}{117}{table.caption.72}%
