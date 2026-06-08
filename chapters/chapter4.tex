@@ -45,6 +45,7 @@ Les données de notre projet se basent sur deux sources documentaires.
 La première source se compose de plus de 300 documents de formation en SAP sous format pdf. Ceux-ci traitent de divers sujets allant de l'administration BASIS, à l'écriture de code en ABAP jusqu'à la formation fonctionnelle. Ils constituent une documentation complète concernant les concepts et architectures SAP.
  
 La deuxième source consiste dans le site Web d'aide SAP (help.sap.com). Certaines de ses parties ont été extraites via le processus de web scraping. Cette documentation contient des informations techniques relatives à la configuration système SAP, à l'interprétation des codes d'erreurs SAP, à la configuration des paramètres de SAP ainsi que des notes de corrections.
+\setcounter{secnumdepth}{3}
 \subsubsection{Extraction des livres PDF}
 La tâche d'extraction du contenu de + 300 livres SAP   est coordonnée par un script qui lance un agent d'extraction par livre, traitant donc tous ces processus simultanément. Un tel agent agit indépendamment : ouvre le PDF en utilisant la librairie \textbf{pdfplumber} et procède au recensement des propriétés typographiques du document (taille et style des polices), ce qui lui permet de générer automatiquement la structure du document (unité, leçon,  sections et contenu principal). 
 
@@ -63,9 +64,10 @@ La première solution consiste à utiliser différents identifiants de navigateu
 
 La seconde solution repose sur une collecte parallèle modérée des pages du portail. Plusieurs requêtes sont exécutées simultanément afin d’accélérer l’extraction des données, tout en conservant un rythme raisonnable pour éviter les limitations imposées par le serveur SAP. Grâce à ces ajustements, l’accès aux ressources documentaires a pu être réalisé de manière stable et efficace.
 
-\paragraph{Cadre juridique et éthique de la collecte}
+\subsubsection{Cadre juridique et éthique de la collecte}
 
 La collecte automatisée du portail \texttt{help.sap.com} a été réalisée dans un cadre académique, à des fins de recherche et de développement d’un prototype non commercial. Avant le lancement du scraper, le fichier \texttt{robots.txt} du portail a été consulté afin d’identifier les répertoires explicitement exclus de toute indexation automatique ; ces sections ont été écartées du périmètre de collecte. Le débit des requêtes a été volontairement limité afin de ne pas surcharger les serveurs SAP. La collecte a porté exclusivement sur des pages de documentation publiquement accessibles, sans contournement d’aucune mesure d’authentification ou de contrôle d’accès. Les données collectées sont utilisées uniquement dans le cadre interne du projet, conformément aux conditions générales d’utilisation du portail SAP.
+\setcounter{secnumdepth}{2}
 
 \begin{figure}[H]
     \centering
@@ -187,8 +189,15 @@ right=of clean, yshift=-1.5cm] (graph)
 Le corpus documentaire issu des livres de formation et du portail SAP Help est composé de segments textuels structurés. Chaque segment représente une unité d’information cohérente, généralement constituée de plusieurs paragraphes, centrés sur un thème précis lié aux différents domaines SAP.
 
 Ces segments permettent d’organiser le contenu de manière logique et exploitable, en regroupant les informations par sujet afin de faciliter leur traitement et leur utilisation dans des tâches d’analyse ou de recherche.
+\setcounter{secnumdepth}{3}
 \subsection{Nature des données résultantes de l’extraction}
 Les données varient selon les documents, qu'il s'agisse de pages Web (crawlé) ou de PDF (livres). Cependant, la plupart des données sont textuelles et fournissent des informations techniques sur SAP, notamment des descriptions de processus, des configurations système, des analyses de codes d'erreur et des notes de correction. Ces informations sont cruciales pour comprendre en profondeur les systèmes SAP et résoudre les problèmes qui peuvent survenir.
+
+
+\subsubsection{Nature des données de livres PDF résultantes de l’extraction }
+Les données utilisées dans cette étape proviennent de documents techniques SAP au format PDF. Ces documents sont considérés comme le guide principal pour la certification de système SAP. Ils incluent des supports de formation tels que BC100, BC400, ainsi que d'autres modules SAP comme ABAP et d'autres.
+
+Ces documents contiennent des données non structurées, qui comprennent du texte technique, des éléments graphiques, des tableaux et des fragments de code ABAP. L'objectif principal du processus d'extraction est de transformer ces documents en une représentation structurée. Cette représentation structurée doit être exploitable dans un système RAG géré par des vecteurs, également appelés embeddings. Le but est de permettre au modèle LLM de comprendre ces données de manière efficace.
 \subsubsection{Nature des données de SAP Help résultantes de l’extraction}
 Les données utilisées dans ce projet viennent d’un processus automatisé de collecte sur le portail SAP Help (\url{https://help.sap.com}). Elles sont non structurées et semi-structurées, et concernent la documentation technique de SAP NetWeaver 7.03 et autre comme NetWeaver 7.4.
 
@@ -200,11 +209,6 @@ Les informations recueillies incluent :
     \item Des renseignements sur les erreurs et les journaux SAP,
     \item Des éléments qui structurent hiérarchiquement le contenu, comme les titres et les sections.
 \end{itemize}
-
-\subsubsection{Nature des données de livres PDF }
-Les données utilisées dans cette étape proviennent de documents techniques SAP au format PDF. Ces documents sont considérés comme le guide principal pour la certification de système SAP. Ils incluent des supports de formation tels que BC100, BC400, ainsi que d'autres modules SAP comme ABAP et d'autres.
-
-Ces documents contiennent des données non structurées, qui comprennent du texte technique, des éléments graphiques, des tableaux et des fragments de code ABAP. L'objectif principal du processus d'extraction est de transformer ces documents en une représentation structurée. Cette représentation structurée doit être exploitable dans un système RAG géré par des vecteurs, également appelés embeddings. Le but est de permettre au modèle LLM de comprendre ces données de manière efficace.
 \subsubsection{Nature des données de surveillance SAP en temps réel}
 les données de surveillance SAP en temps réel sont collectées à partir des systèmes de production SAP des clients Quadient en utilisant PyRFC. Ces données sont structurées et comprennent des informations sur les transactions SAP, selon les codes de transaction (T-codes) utilisés, avec des structures bien définies qui varient en fonction des T-codes.
 
@@ -339,15 +343,6 @@ L’extraction automatique a introduit plusieurs catégories de bruit :
 \end{itemize}
 
 Un pipeline de nettoyage fondé sur des expressions régulières et des règles de filtrage a traité ces artefacts. Au total, \textasciitilde{}34\,\% des segments ont subi une correction et \textasciitilde{}4\,2\,\% ont été écartés pour bruit excessif.
-
-\subsection{Déséquilibre thématique du corpus}
-
-Une analyse de la distribution thématique révèle un déséquilibre notable : les sujets liés à l’administration BASIS et à ABAP concentrent la majorité des segments (\textasciitilde{}64\,\%), tandis que les modules fonctionnels (FI, SD, MM) sont sous-représentés. Ce déséquilibre peut biaiser les réponses du système RAG vers les thématiques techniques au détriment des thématiques fonctionnelles ; il sera pris en compte dans la stratégie de pondération et de \textit{chunking} lors de la phase de préparation des données.
-
-Pour les données de surveillance SAP, aucun déséquilibre critique n’a été identifié entre les différents T-codes~; les enregistrements sont distribués de façon homogène sur les périodes de collecte.
-
-\medskip
-Ces analyses confirment la nécessité d’une phase de préparation des données rigoureuse avant toute vectorisation, afin de garantir la cohérence et l’exploitabilité du corpus pour l’assistant RAG.
 
 \section*{Conclusion}
 Ce chapitre aborde la phase d'analyse des données dans la méthodologie CRISP-DM. Cette étape vise à identifier, évaluer et décrire les diverses sources de données utilisées dans le projet afin de préparer au mieux les étapes suivantes, notamment la préparation et la modélisation des données.

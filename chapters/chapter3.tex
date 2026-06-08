@@ -106,7 +106,7 @@ profondes.
 
 \subsubsection*{SM37 : Job Overview}
 
-SM37 surveille les \textit{jobs batch} — ce sont des tâches automatiques qui
+SM37 surveille les \textit{jobs batch}  ce sont des tâches automatiques qui
 tournent en arrière-plan (traitements de données, interfaces, rapports).
 L'administrateur vérifie qu'aucun job n'est en erreur ou bloqué.
 
@@ -126,7 +126,7 @@ rapidement avant que cela n'impacte les processus métier.
 
 \subsubsection*{DB02 : Space Overview}
 
-DB02 surveille la base de données — l'administrateur contrôle l'espace disque
+DB02 surveille la base de données  l'administrateur contrôle l'espace disque
 disponible pour éviter que la base de données sature, ce qui provoquerait un
 arrêt complet du système.
 
@@ -140,7 +140,7 @@ arrêt complet du système.
 La figure~\ref{fig:db02} illustre le T-code \texttt{DB02}, qui fournit une vue
 synthétique de l'état de la base de données Oracle. On y retrouve le taux de
 remplissage global, la taille totale et l'espace libre, ainsi que le détail par
-tablespace et par segment (tables, index, autres). Un taux d'utilisation élevé —
+tablespace et par segment (tables, index, autres). Un taux d'utilisation élevé 
 comme les 87\% visibles ici — constitue un signal d'alerte critique nécessitant
 une action immédiate d'extension ou de purge pour prévenir toute saturation du système.
 
@@ -379,18 +379,18 @@ Applications temps réel et systèmes à forte charge \\
 
 Dans le cadre de ce projet, l’architecture RAG avec le CAG a été retenue pour plusieurs raisons essentielles :
 
-\begin{description}[leftmargin=0pt, labelindent=0pt, style=nextline]
+\begin{itemize}[leftmargin=*, label=\textbullet]
 
-  \item[\textbf{Adaptation à un domaine évolutif}]
+  \item \textbf{Adaptation à un domaine évolutif :}
   Dans des environnements tels que les systèmes ERP et SAP, les informations évoluent fréquemment. Le RAG permet d’intégrer des données actualisées au moment de la génération des réponses.
 
-  \item[\textbf{Amélioration de la fiabilité}]
-  En s’appuyant sur des documents externes, le RAG réduit significativement les hallucinations et améliore la précision des réponses .
+  \item \textbf{Amélioration de la fiabilité :}
+  En s’appuyant sur des documents externes, le RAG réduit significativement les hallucinations et améliore la précision des réponses.
 
-  \item[\textbf{Optimisation des coûts}]
+  \item \textbf{Optimisation des coûts :}
   Contrairement à d’autres approches, le RAG et spécifiquement le CAG ne nécessite pas de réentraînement du modèle, ce qui permet de limiter les coûts tout en conservant ses capacités en utilisant le cache.
 
-\end{description}
+\end{itemize}
 
 En outre, en l’absence de jeux de données annotés par des experts et compte tenu de la complexité des \textit{SAP Notes}, l’utilisation d’approches telles que la distillation de connaissances n’est pas adaptée. Le RAG constitue ainsi un compromis efficace entre flexibilité, précision et scalabilité, particulièrement pertinent pour les applications en entreprise.
 

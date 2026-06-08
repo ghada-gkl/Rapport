@@ -108,8 +108,6 @@ une r\'{e}ponse structur\'{e}e \`{a} l'aide d'un LLM.
 
 \subsection{Flux de données}
 Le flux global d'une requête utilisateur peut être résumé comme suit : la question brute de l'utilisateur transite d'abord par une étape de compréhension sémantique (NLP), qui extrait l'intention, les entités SAP (T-codes, numéros de notes) et reformule la requête. La requête enrichie est ensuite vectorisée, puis soumise simultanément à une recherche vectorielle (similarité cosinus via pgvector) et à une recherche plein texte (BM25 via PostgreSQL \texttt{ts\_rank}). Les résultats des deux recherches sont fusionnés par \textbf{Reciprocal Rank Fusion (RRF)}, une technique qui combine les classements issus de sources hétérogènes en attribuant à chaque résultat un score inversement proportionnel à sa position dans chaque liste, favorisant ainsi les chunks bien classés dans plusieurs recherches simultanément. Ces résultats fusionnés sont ensuite reranqués par un \textbf{cross-encoder}, un modèle qui, contrairement aux embeddings calculés indépendamment, évalue la paire (requête, chunk) conjointement pour produire un score de pertinence plus fin et contextuellement précis. Les chunks retenus sont injectés dans un prompt structuré, puis transmis au LLM pour génération de la réponse finale. Un mécanisme de détection d'hallucinations valide la cohérence de la réponse avant son renvoi à l'utilisateur.
-\subsection{Diagramme d'architecture}
-
 
 % ─────────────────────────────────────────────────────────────
 \section{Pipeline RAG: Description détaillée}
@@ -476,7 +474,7 @@ Le prompt système (\texttt{SYSTEM\_PROMPT}) définit le rôle du LLM et ses con
 Des règles strictes (\textit{STRICT RULES}) interdisent explicitement l'invention de T-codes, de titres de livres, d'URLs SAP Help ou d'étapes non présentes dans l'evidence. Le LLM doit déclarer explicitement~: \texttt{"The available documentation does not cover this."} si le contexte est insuffisant. Cette combinaison de \textit{grounding} strict et de \textit{synthesis rules} constitue la principale défense contre les hallucinations tout en améliorant la cohérence des réponses multi-sources.
 
 
-\subsection{Construction dynamique du prompt — \texttt{build\_prompt()}}
+\subsection{Construction dynamique du prompt }
 
 Le prompt final soumis au LLM est assemblé dynamiquement par la fonction \texttt{build\_prompt()} à partir de trois composants~: le prompt système fixe, les blocs d’evidence récupérés, et l’historique conversationnel. Chaque chunk est présenté au LLM sous forme d’un bloc numéroté avec un en-tête structuré~:
 
@@ -526,13 +524,15 @@ Chaque message est tronqué à 150 caractères afin de contenir la taille totale
 
 Le contrôle anti-hallucination opère en deux étapes complémentaires après la génération~:
 
-\textbf{Étape 1 — Détection par \texttt{check\_hallucinations()}.} La fonction compare les T-codes et numéros de notes SAP présents dans la réponse générée avec ceux effectivement contenus dans les chunks récupérés. Tout T-code connu (\texttt{KNOWN\_TCODES}) mentionné dans la réponse sans apparaître dans le contexte est signalé comme hallucination potentielle~:
+\begin{itemize}
+  \item \textbf{Étape 1. Détection par \texttt{check\_hallucinations()}.} La fonction compare les T-codes et numéros de notes SAP présents dans la réponse générée avec ceux effectivement contenus dans les chunks récupérés. Tout T-code connu (\texttt{KNOWN\_TCODES}) mentionné dans la réponse sans apparaître dans le contexte est signalé comme hallucination potentielle~:
 
 \[
 \text{T-codes halluc.} = \bigl(\text{T-codes}(\text{réponse}) \setminus \text{T-codes}(\text{contexte})\bigr) \cap \texttt{KNOWN\_TCODES}
 \]
 
-\textbf{Étape 2 — Sanitisation par \texttt{sanitize\_answer()}.} Les phrases de la réponse dont \textit{tous} les T-codes mentionnés sont hallucinés (non présents dans le contexte) sont supprimées de la réponse finale avant renvoi à l’utilisateur. Les phrases mixtes (T-codes halluc. + T-codes légitimes) sont conservées et signalées en \texttt{warnings} dans la réponse API.
+  \item \textbf{Étape 2. Sanitisation par \texttt{sanitize\_answer()}.} Les phrases de la réponse dont \textit{tous} les T-codes mentionnés sont hallucinés (non présents dans le contexte) sont supprimées de la réponse finale avant renvoi à l’utilisateur. Les phrases mixtes (T-codes halluc. + T-codes légitimes) sont conservées et signalées en \texttt{warnings} dans la réponse API.
+\end{itemize}
 
 \begin{definitionbox}{Choix de conception — Contrôle déterministe vs RAGAS}
 La détection d’hallucinations par correspondance T-code est délibérément déterministe, contrairement aux métriques LLM-as-Judge (Faithfulness RAGAS). Ce choix garantit une vérification instantanée ($<$1 ms), sans appel LLM supplémentaire, avec un comportement prévisible et explicable. Les deux approches sont complémentaires~: le contrôle déterministe attrape les hallucinations d’entités SAP précises~; RAGAS évalue la fidélité sémantique globale.

@@ -239,17 +239,6 @@ Le système déployé repose sur une architecture à trois couches distinctes co
 \label{fig:deploy_arch}
 \end{figure}
 
-\section{Diagramme de cas d'utilisation général}
-
-Dans cette section, les exigences fonctionnelles du système déployé sont représentées à l'aide d'un diagramme de cas d'utilisation conforme au langage de modélisation UML. Ce diagramme (voir figure~\ref{fig:usecase_deploy}) met en évidence les différents acteurs du système ainsi que les interactions possibles entre ces acteurs et les fonctionnalités offertes par l'application. Il permet ainsi de fournir une vision globale du comportement du système et des services qu'il propose aux utilisateurs.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{images/casutilisation.png}
-    \caption[Diagramme de cas d'utilisation]{Diagramme de cas d'utilisation général du système déployé}
-    \label{fig:usecase_deploy}
-\end{figure}
-
 \subsection{Technologies utilisées}
 
 L'ensemble de la pile technologique mise en œuvre est résumé dans le tableau~\ref{tab:tech_stack}.
@@ -321,9 +310,29 @@ groupes fonctionnels, chacun correspondant à un rôle distinct dans l'architect
         (\texttt{cpu}, \texttt{memory}, \texttt{fsys}, \texttt{db02}, \texttt{mss\_db}).
 \end{itemize}
 
+
+
+\section{Diagramme de cas d'utilisation général}
+
+Dans cette section, les exigences fonctionnelles du système déployé sont représentées à l'aide d'un diagramme de cas d'utilisation conforme au langage de modélisation UML. Ce diagramme (voir figure~\ref{fig:usecase_deploy}) met en évidence les différents acteurs du système ainsi que les interactions possibles entre ces acteurs et les fonctionnalités offertes par l'application. Il permet ainsi de fournir une vision globale du comportement du système et des services qu'il propose aux utilisateurs.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/casutilisation.png}
+    \caption[Diagramme de cas d'utilisation]{Diagramme de cas d'utilisation général du système déployé}
+    \label{fig:usecase_deploy}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/sequence_chatbot_fr.png}
+\caption[Diagramme de séquence : interaction complète]{Diagramme de séquence : cycles complets d'interaction~: initialisation de session, surveillance SAP et chatbot RAG}
+\label{fig:sequence_requete}
+\end{figure} 
+
 La figure~\ref{fig:class_core} présente le diagramme de classes détaillé des quatre tables
 fondamentales avec l'ensemble de leurs attributs et les associations logiques entre elles.
-La figure~\ref{fig:class_monitoring} présente les 17~tables de monitoring et de métriques dans
+La figure 8.4 présente les 17~tables de monitoring et de métriques dans
 un format compact.
 
 \begin{figure}[H]
@@ -376,13 +385,6 @@ class QueryRequest(BaseModel):
     filter_module: Optional[str] = None
     filter_source: Optional[str] = None
 \end{lstlisting}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{images/sequence_chatbot_fr.png}
-\caption[Diagramme de séquence — interaction complète]{Diagramme de séquence  cycles complets d'interaction~: initialisation de session, surveillance SAP et chatbot RAG}
-\label{fig:sequence_requete}
-\end{figure}
 
 \subsection{Paramètres clés du pipeline}
 

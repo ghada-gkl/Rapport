@@ -267,7 +267,7 @@ La fonction \texttt{normalize\_text} assure ensuite la normalisation du contenu 
 \subsection{Nettoyage des données des livres techniques PDF}
 \label{subsec:nettoyage-pdf}
 
-Les livres SAP en format PDF sont soumis à une extraction structurée préalable (référez-vous au chapitre précédent), générant des fichiers \texttt{structured\_content.json} pour chaque livre. Le fichier \texttt{clean\_scraped\_content.py} gère ensuite ces documents sans tenir compte du portail SAP Help.
+Les livres SAP en format PDF sont soumis à une extraction structurée préalable , générant des fichiers \texttt{structured\_content.json} pour chaque livre. Le fichier \texttt{clean\_scraped\_content.py} gère ensuite ces documents sans tenir compte du portail SAP Help.
 % \ptag and tcolorbox style already defined from the previous block
 
 \begin{tcolorbox}[
@@ -389,7 +389,7 @@ La seconde phase s’appuie sur l'examen du contenu des documents. Une empreinte
 % \definecolor{SAPGreen}{RGB}{56,138,67}
 % \definecolor{SAPLightGreen}{RGB}{225,242,225}
 % \definecolor{SAPRed}{RGB}{187,40,52}
-% -------------------------------------------------------------------------
+La figure~\ref{fig:dedup} illustre l'algorithme de déduplication en deux passes appliqué après la normalisation du corpus.
 
 \begin{figure}[H]
 \centering
@@ -463,7 +463,7 @@ premiers caractères, indépendamment de la source du document.}
 
 \subsubsection{Filtrage du bruit sémantique}
 
-Certaines documents sont techniquement valides — sans doublons et avec un texte soigné — mais ne sont pas utiles pour un système RAG de support technique. C'est notamment le cas des pages de quiz et d'auto-évaluation sur le portail SAP Help, qui contiennent des questions à choix multiples telles que \textit{«~Déterminez si cette affirmation est vraie ou fausse~»}. Ces pages nuisent à la base de connaissances, car le moteur de recherche pourrait les afficher en réponse à des requêtes légitimes, fournissant ainsi des réponses de type examen plutôt que des réponses techniques. Un filtre basé sur des expressions régulières permet d'identifier et d'éliminer ces pages en repérant des motifs tels que \texttt{learning assessment}, \texttt{determine whether this statement} ou \texttt{choose the correct answer} dans le titre ou dans les 200 premiers caractères du contenu.
+Certaines documents sont techniquement valides  sans doublons et avec un texte soigné  mais ne sont pas utiles pour un système RAG de support technique. C'est notamment le cas des pages de quiz et d'auto-évaluation sur le portail SAP Help, qui contiennent des questions à choix multiples telles que \textit{«~Déterminez si cette affirmation est vraie ou fausse~»}. Ces pages nuisent à la base de connaissances, car le moteur de recherche pourrait les afficher en réponse à des requêtes légitimes, fournissant ainsi des réponses de type examen plutôt que des réponses techniques. Un filtre basé sur des expressions régulières permet d'identifier et d'éliminer ces pages en repérant des motifs tels que \texttt{learning assessment}, \texttt{determine whether this statement} ou \texttt{choose the correct answer} dans le titre ou dans les 200 premiers caractères du contenu.
 
 \begin{table}[H]
 \centering
@@ -500,53 +500,56 @@ D'un autre côté, une segmentation simpliste ou non régulée des textes pourra
 
 L'application de la base vectorielle s'appuie sur une méthode de découpage hiérarchique qui garantit la conservation de la structure des documents tout en améliorant l'efficacité de recherche et de récupération d'information. Cette approche a été spécifiquement élaborée pour gérer la complexité et l'imbrication de la documentation SAP.
 
-\subsubsection{Extraction sensible à la structure et au contenu}
+\begin{itemize}[leftmargin=*, label=\textbullet]
 
-Le système applique une méthode d'extraction basée sur la structure pour maintenir l'organisation logique et sémantique des documents SAP. Cette méthode permet de garder la hiérarchie des sections et les liens entre les divers composants du document, ce qui améliore la qualité de l'indexation et de la recherche d'informations.
-\paragraph{Extraction basée sur la mise en page}
+  \item \textbf{Extraction sensible à la structure et au contenu :}
+  Le système applique une méthode d’extraction basée sur la structure pour maintenir l’organisation logique et sémantique des documents SAP. Cette méthode permet de garder la hiérarchie des sections et les liens entre les divers composants du document, ce qui améliore la qualité de l’indexation et de la recherche d’informations.
 
-Le processus d’extraction prend en compte la structure visuelle et organisationnelle des documents à travers plusieurs mécanismes :
+  \begin{itemize}[leftmargin=2em, label=\textbullet]
 
-\begin{itemize}
-\item Conservation de la hiérarchie des titres (\texttt{H1}, \texttt{H2}, \texttt{H3}, etc.) ;
-\item Préservation des relations parent-enfant entre les sections et sous-sections ;
-\item Identification et traitement des tableaux sous une représentation structurée de type HTML ;
-\item Reconnaissance des listes et maintien de leur niveau d’imbrication.
-\end{itemize}
+    \item \textbf{Extraction basée sur la mise en page :}
+    Le processus d’extraction prend en compte la structure visuelle et organisationnelle des documents à travers plusieurs mécanismes :
+    \begin{itemize}[leftmargin=3em, label={--}]
+      \item Conservation de la hiérarchie des titres (\texttt{H1}, \texttt{H2}, \texttt{H3}, etc.) ;
+      \item Préservation des relations parent-enfant entre les sections et sous-sections ;
+      \item Identification et traitement des tableaux sous une représentation structurée de type HTML ;
+      \item Reconnaissance des listes et maintien de leur niveau d’imbrication.
+    \end{itemize}
 
-\paragraph{Traitement enrichi par les métadonnées}
+    \item \textbf{Traitement enrichi par les métadonnées :}
+    Le système extrait et conserve différentes catégories de métadonnées afin d’améliorer l’organisation documentaire et la précision de la récupération :
+    \begin{itemize}[leftmargin=3em, label={--}]
+      \item Métadonnées générales du document (titre, date de création, version) ;
+      \item Métadonnées structurelles liées à l’organisation du contenu ;
+      \item Métadonnées techniques telles que les associations aux modules SAP ou les références aux codes de transaction.
+    \end{itemize}
 
-Le système extrait et conserve différentes catégories de métadonnées afin d’améliorer l’organisation documentaire et la précision de la récupération :
+  \end{itemize}
 
-\begin{itemize}
-\item Métadonnées générales du document (titre, date de création, version) ;
-\item Métadonnées structurelles liées à l’organisation du contenu ;
-\item Métadonnées techniques telles que les associations aux modules SAP ou les références aux codes de transaction.
-\end{itemize}
+  \item \textbf{Traitement multi-niveaux du contenu :}
+  Le contenu documentaire est analysé à plusieurs niveaux afin de capturer à la fois la structure globale du document et les caractéristiques spécifiques de chaque élément.
 
-\subsubsection{Traitement multi-niveaux du contenu}
+  \begin{itemize}[leftmargin=2em, label=\textbullet]
 
-Le contenu documentaire est analysé à plusieurs niveaux afin de capturer à la fois la structure globale du document et les caractéristiques spécifiques de chaque élément.
+    \item \textbf{Analyse au niveau des blocs :}
+    Cette étape comprend :
+    \begin{itemize}[leftmargin=3em, label={--}]
+      \item La détection automatique des titres à partir de leur position, formatage et propriétés textuelles ;
+      \item La classification des types de contenu afin de distinguer les paragraphes, listes, tableaux et images ;
+      \item Une analyse spatiale exploitant les coordonnées des éléments pour reconstruire la disposition du document.
+    \end{itemize}
 
-\paragraph{Analyse au niveau des blocs}
+    \item \textbf{Traitement spécifique selon le type de contenu :}
+    Chaque type de contenu bénéficie d’un traitement adapté :
+    \begin{itemize}[leftmargin=3em, label={--}]
+      \item Les tableaux complexes sont convertis vers un format HTML structuré afin de préserver leur organisation ;
+      \item Les éléments de listes associés sont regroupés dans des fragments cohérents ;
+      \item Les images font l’objet d’un processus d’extraction sémantique basé sur le modèle \texttt{microsoft/Florence-2-large}. Ce choix a été retenu après une évaluation comparative avec \texttt{GLM-OCR} ainsi qu’une approche reposant uniquement sur \texttt{Tesseract OCR}. Contrairement à une simple reconnaissance optique de caractères, le modèle Florence-2-large permet de mieux préserver le contexte et la signification des informations visuelles présentes dans les schémas, captures d’écran et illustrations techniques de la documentation SAP ;
+      \item Les légendes et descriptions associées aux images sont reliées automatiquement au contenu visuel correspondant.
+    \end{itemize}
 
-Cette étape comprend :
+  \end{itemize}
 
-\begin{itemize}
-\item La détection automatique des titres à partir de leur position, formatage et propriétés textuelles ;
-\item La classification des types de contenu afin de distinguer les paragraphes, listes, tableaux et images ;
-\item Une analyse spatiale exploitant les coordonnées des éléments pour reconstruire la disposition du document.
-\end{itemize}
-
-\paragraph{Traitement spécifique selon le type de contenu}
-
-Chaque type de contenu bénéficie d’un traitement adapté :
-
-\begin{itemize}
-\item Les tableaux complexes sont convertis vers un format HTML structuré afin de préserver leur organisation ;
-\item Les éléments de listes associés sont regroupés dans des fragments cohérents ;
-\item Les images font l’objet d’un processus d’extraction sémantique basé sur le modèle \texttt{microsoft/Florence-2-large}. Ce choix a été retenu après une évaluation comparative avec \texttt{GLM-OCR} ainsi qu’une approche reposant uniquement sur \texttt{Tesseract OCR}. Contrairement à une simple reconnaissance optique de caractères, le modèle Florence-2-large permet de mieux préserver le contexte et la signification des informations visuelles présentes dans les schémas, captures d’écran et illustrations techniques de la documentation SAP ;
-\item Les légendes et descriptions associées aux images sont reliées automatiquement au contenu visuel correspondant.
 \end{itemize}
 
 

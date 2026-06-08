@@ -46,7 +46,7 @@ Chaque requête est annotée avec un ensemble de \textit{signaux} --- termes ou 
 La pertinence de chaque chunk récupéré est déterminée automatiquement par correspondance de signaux. Un chunk obtient un score 2 (très pertinent) si 3 signaux ou plus y sont présents, un score 1 (partiellement pertinent) si 1 ou 2 signaux y figurent, et un score 0 (non pertinent) si aucun signal n'est détecté. Cette approche est reconnue dans la littérature comme un substitut acceptable au jugement humain lorsque les signaux sont définis avec soin par des experts du domaine~\cite{thakur2021beir}.
 
 % ─────────────────────────────────────────────────────────────
-\section{Niveau 1 — Évaluation du Retrieval}
+\section{Niveau 1 : Évaluation du Retrieval}
 % ─────────────────────────────────────────────────────────────
 
 \subsection{Métriques implémentées}
@@ -82,7 +82,7 @@ L'évaluation du retrieval utilise les paramètres suivants~: top\_k = 10 (les 1
 
 \begin{table}[H]
 \centering
-\caption{Résultats du retrieval — Système hybride vs baseline vectorielle pure}
+\caption{Résultats du retrieval : Système hybride vs baseline vectorielle pure}
 \label{tab:retrieval-results}
 \begin{tabular}{lcc}
 \toprule
@@ -134,14 +134,14 @@ La couverture des signaux mesure combien de termes de référence ont été retr
 \subsection{Limites de validité du protocole d'évaluation}
 \label{subsec:limites-validite}
 
-\paragraph{Circularité de l'auto-labellisation.}
+\subsubsection{Circularité de l'auto-labellisation}
 La méthode d'évaluation présente un risque de circularité~: les labels de pertinence sont définis par la présence de signaux (T-codes, termes-clés), et le système de retrieval exploite précisément ces mêmes T-codes comme filtres de métadonnées et comme termes pondérés dans BM25. En conséquence, les scores élevés obtenus --- notamment le MRR = 1.0 --- mesurent en grande partie le \emph{recouvrement lexical} entre la requête et les documents, et non une pertinence sémantique plus profonde. Les requêtes de type \textit{troubleshooting}, qui contiennent des T-codes explicites, bénéficient particulièrement de cet alignement, ce qui explique leurs scores supérieurs. Pour lever cette circularité, un sous-ensemble de jugements humains sur des requêtes dépourvues de T-codes explicites serait nécessaire.
 
-\paragraph{Taille de l'échantillon.}
+\subsubsection{Taille de l'échantillon}
 L'évaluation du retrieval repose sur $n = 18$ requêtes, et l'évaluation de génération sur $n = 3$ requêtes seulement. Ces tailles sont insuffisantes pour tirer des conclusions statistiquement robustes. L'intervalle de confiance des métriques agrégées est large~; les résultats constituent une indication préliminaire à confirmer sur un jeu de test étendu (idéalement $n \geq 100$ pour le retrieval).
 
 % ─────────────────────────────────────────────────────────────
-\section{Niveau 2 — Évaluation LLM-as-Judge avec RAGAS}
+\section{Niveau 2 : Évaluation LLM-as-Judge avec RAGAS}
 % ─────────────────────────────────────────────────────────────
 
 \subsection{Présentation du framework RAGAS}
