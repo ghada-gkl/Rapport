@@ -209,22 +209,21 @@
 \input{chapters/dedicace}
 \input{chapters/remerciements}
 
-% ---- Liste des figures ----
+% ---- Table des matières ----
 \clearpage
-\phantomsection
-\addcontentsline{toc}{chapter}{Liste des figures}
+\tableofcontents
+\clearpage
+
+% ---- Liste des figures ----
 \listoffigures
 \clearpage
 
 % ---- Liste des tableaux ----
-\phantomsection
-\addcontentsline{toc}{chapter}{Liste des tableaux}
 \listoftables
 \clearpage
 
 % ---- Liste des abréviations ----
 \chapter*{Liste des abréviations}
-\addcontentsline{toc}{chapter}{Liste des abréviations}
 \markboth{Liste des abréviations}{Liste des abréviations}
 
 \renewcommand{\arraystretch}{1.45}
@@ -243,54 +242,54 @@
 \bottomrule
 \endlastfoot
 
-ABAP      & Advanced Business Application Programming — langage de programmation propriétaire de SAP \\
-API       & Application Programming Interface — Interface de Programmation d'Application \\
-AR        & Augmented Reality — Réalité Augmentée \\
+ABAP      & Advanced Business Application Programming : langage de programmation propriétaire de SAP \\
+API       & Application Programming Interface : Interface de Programmation d'Application \\
+AR        & Augmented Reality : Réalité Augmentée \\
 BAAI      & Beijing Academy of Artificial Intelligence \\
-BASIS     & Business Application Software Integrated Solution — couche technique d'administration SAP \\
-BGE       & BAAI General Embedding — famille de modèles d'embedding de BAAI \\
-BM25      & Best Matching 25 — algorithme de recherche plein texte (ranking lexical) \\
-BW        & Business Warehouse — module SAP dédié à l'entreposage et à l'analyse de données \\
-CAG       & Cache-Augmented Generation — Génération Augmentée par Cache \\
-CAP       & Cloud Application Programming — modèle de programmation d'applications SAP \\
-CRISP-DM  & Cross-Industry Standard Process for Data Mining — processus standard inter-industries pour la fouille de données \\
-ECC       & Enterprise Central Component — composant central de l'ERP SAP \\
-ERP       & Enterprise Resource Planning — Planification des Ressources d'Entreprise \\
-ETL       & Extract, Transform, Load — processus d'Extraction, Transformation et Chargement des données \\
-EWM       & Extended Warehouse Management — gestion avancée d'entrepôt (module SAP) \\
-GPT       & Generative Pre-trained Transformer — architecture de modèle de langage génératif \\
-GUI       & Graphical User Interface — Interface Graphique Utilisateur \\
-HANA      & High-performance ANAlytic Appliance — base de données en mémoire de SAP \\
-HNSW      & Hierarchical Navigable Small World — structure d'index pour la recherche approximative de voisins \\
+BASIS     & Business Application Software Integrated Solution : couche technique d'administration SAP \\
+BGE       & BAAI General Embedding :  famille de modèles d'embedding de BAAI \\
+BM25      & Best Matching 25 : algorithme de recherche plein texte (ranking lexical) \\
+BW        & Business Warehouse : module SAP dédié à l'entreposage et à l'analyse de données \\
+CAG       & Cache-Augmented Generation : Génération Augmentée par Cache \\
+CAP       & Cloud Application Programming : modèle de programmation d'applications SAP \\
+CRISP-DM  & Cross-Industry Standard Process for Data Mining : processus standard inter-industries pour la fouille de données \\
+ECC       & Enterprise Central Component : composant central de l'ERP SAP \\
+ERP       & Enterprise Resource Planning : Planification des Ressources d'Entreprise \\
+ETL       & Extract, Transform, Load : processus d'Extraction, Transformation et Chargement des données \\
+EWM       & Extended Warehouse Management : gestion avancée d'entrepôt (module SAP) \\
+GPT       & Generative Pre-trained Transformer : architecture de modèle de langage génératif \\
+GUI       & Graphical User Interface : Interface Graphique Utilisateur \\
+HANA      & High-performance ANAlytic Appliance : base de données en mémoire de SAP \\
+HNSW      & Hierarchical Navigable Small World : structure d'index pour la recherche approximative de voisins \\
 IA        & Intelligence Artificielle \\
-IT        & Information Technology — Technologies de l'Information \\
-JSON      & JavaScript Object Notation — format léger d'échange de données \\
-KDD       & Knowledge Discovery in Databases — Découverte de Connaissances dans les Bases de Données \\
-LLM       & Large Language Model — Grand Modèle de Langage \\
-LSTM      & Long Short-Term Memory — type de réseau de neurones récurrents à mémoire longue \\
-ML        & Machine Learning — Apprentissage Automatique \\
-MRR       & Mean Reciprocal Rank — Rang Réciproque Moyen (métrique d'évaluation du retrieval) \\
-nDCG      & normalized Discounted Cumulative Gain — Gain Cumulatif Actualisé Normalisé \\
-NLP       & Natural Language Processing — Traitement Automatique du Langage Naturel \\
-PDF       & Portable Document Format — format de fichier document portable \\
-PyRFC     & Python Remote Function Call — connecteur Python pour les appels de fonctions SAP distantes \\
-RAG       & Retrieval-Augmented Generation — Génération Augmentée par Récupération \\
-RAGAS     & RAG Assessment Score — framework d'évaluation automatique des systèmes RAG \\
-REST      & Representational State Transfer — style d'architecture pour les API web \\
-RFC       & Remote Function Call — Appel de Fonction Distante (mécanisme de communication SAP) \\
-RNN       & Recurrent Neural Network — Réseau de Neurones Récurrent \\
-RRF       & Reciprocal Rank Fusion — algorithme de fusion de listes de résultats par rang réciproque \\
+IT        & Information Technology : Technologies de l'Information \\
+JSON      & JavaScript Object Notation : format léger d'échange de données \\
+KDD       & Knowledge Discovery in Databases : Découverte de Connaissances dans les Bases de Données \\
+LLM       & Large Language Model : Grand Modèle de Langage \\
+LSTM      & Long Short-Term Memory : type de réseau de neurones récurrents à mémoire longue \\
+ML        & Machine Learning : Apprentissage Automatique \\
+MRR       & Mean Reciprocal Rank : Rang Réciproque Moyen (métrique d'évaluation du retrieval) \\
+nDCG      & normalized Discounted Cumulative Gain : Gain Cumulatif Actualisé Normalisé \\
+NLP       & Natural Language Processing : Traitement Automatique du Langage Naturel \\
+PDF       & Portable Document Format : format de fichier document portable \\
+PyRFC     & Python Remote Function Call : connecteur Python pour les appels de fonctions SAP distantes \\
+RAG       & Retrieval-Augmented Generation : Génération Augmentée par Récupération \\
+RAGAS     & RAG Assessment Score : framework d'évaluation automatique des systèmes RAG \\
+REST      & Representational State Transfer : style d'architecture pour les API web \\
+RFC       & Remote Function Call : Appel de Fonction Distante (mécanisme de communication SAP) \\
+RNN       & Recurrent Neural Network : Réseau de Neurones Récurrent \\
+RRF       & Reciprocal Rank Fusion : algorithme de fusion de listes de résultats par rang réciproque \\
 SAP       & Systems, Applications and Products in Data Processing \\
 SGI       & Système de Gestion Intégré \\
-SOLMAN    & Solution Manager — outil central de gestion et de surveillance SAP \\
-SQL       & Structured Query Language — langage de requête structuré pour les bases de données relationnelles \\
-T-code    & Transaction Code — code de transaction SAP permettant d'accéder rapidement à une fonction \\
-TDSP      & Team Data Science Process — processus Microsoft de science des données en équipe \\
-UI        & User Interface — Interface Utilisateur \\
-UI5       & SAP User Interface 5 — framework de développement d'interfaces web SAP \\
-UML       & Unified Modeling Language — Langage de Modélisation Unifié \\
-URL       & Uniform Resource Locator — adresse d'une ressource sur le web \\
-VR        & Virtual Reality — Réalité Virtuelle \\
+SOLMAN    & Solution Manager : outil central de gestion et de surveillance SAP \\
+SQL       & Structured Query Language : langage de requête structuré pour les bases de données relationnelles \\
+T-code    & Transaction Code : code de transaction SAP permettant d'accéder rapidement à une fonction \\
+TDSP      & Team Data Science Process : processus Microsoft de science des données en équipe \\
+UI        & User Interface : Interface Utilisateur \\
+UI5       & SAP User Interface 5 : framework de développement d'interfaces web SAP \\
+UML       & Unified Modeling Language : Langage de Modélisation Unifié \\
+URL       & Uniform Resource Locator : adresse d'une ressource sur le web \\
+VR        & Virtual Reality : Réalité Virtuelle \\
 \end{longtable}
 \clearpage
 

@@ -1,5 +1,5 @@
 % ============================================================
-%  Chapitre 6 : Modeling — Système RAG pour la documentation SAP
+%  Chapitre 6 : Modeling : Système RAG pour la documentation SAP
 % ============================================================
 
 \chapter{Modélisation}
@@ -195,17 +195,6 @@ Ce modèle a été sélectionné pour garantir la cohérence entre les embedding
 
 
 
-\subsection{Recherche hybride parallèle}
-
-La fonction \texttt{\_do\_search()} orchestre trois recherches simultanées via un \texttt{ThreadPoolExecutor} à trois workers~:
-
-\begin{enumerate}[leftmargin=2em]
-  \item \textbf{Recherche vectorielle}~: requête SQL utilisant l'opérateur de distance cosinus \texttt{<=>} de pgvector, avec filtrage par \texttt{min\_score}. Les 15 meilleurs candidats (\texttt{FETCH\_K=15}) sont récupérés.
-  \item \textbf{BM25 sur expanded\_query}~: recherche plein texte via \texttt{plainto\_tsquery('english', ...)} et \texttt{ts\_rank()} sur la colonne \texttt{text\_search} (tsvector précalculé).
-  \item \textbf{BM25 sur clean\_query}~: même recherche mais sur la requête nettoyée, pour capturer les documents correspondant exactement aux termes SAP.
-\end{enumerate}
-
-Les résultats BM25 des deux variantes sont fusionnés par score maximum (\texttt{max}) — et non par somme — pour éviter la surpondération artificielle d'un document présent dans les deux listes .
 
 \subsection{Fusion par Reciprocal Rank Fusion (RRF)}
 
@@ -599,20 +588,20 @@ Les chunks retenus sont synthétisés afin d’extraire les informations essenti
 \node[startstop] (start)   {Requête utilisateur};
 \node[process, below=of start]    (norm)    {1. normalize\_query()};
 \node[process, below=of norm]     (nlp)     {2. understand\_query() rule-based + enrich()};
-\node[process, below=of nlp]      (embed)   {3. embed(clean\_query) — BGE-large L2};
+\node[process, below=of nlp]      (embed)   {3. embed(clean\_query) : BGE-large L2};
 \node[cache,   below=of embed]    (clookup) {Cache sémantique lookup (seuil 0.92)};
 \node[decision, below=of clookup] (chit)    {Cache hit ?};
 \node[process, below=of chit]     (search)  {4. vector\_search() \textbar\textbar{} bm25\_search() $\times$2};
 \node[decision, below=of search]  (enought) {|résultats| < 3 ?};
 \node[process, right=1.5cm of enought] (fallback) {Fallback filtres};
-\node[process, below=of enought]  (rrf)     {5. rrf\_fuse() — $W_{v}$=0.4 / $W_{b}$=0.6};
+\node[process, below=of enought]  (rrf)     {5. rrf\_fuse() : $W_{v}$=0.4 / $W_{b}$=0.6};
 \node[cache,   below=of rrf]      (cag)     {6b. CAG inject (intent=lookup + T-code ?)};
-\node[process, below=of cag]      (rerank)  {7. cross\_encoder rerank() — seuil 2.0};
+\node[process, below=of cag]      (rerank)  {7. cross\_encoder rerank() : seuil 2.0};
 \node[decision, below=of rerank]  (empty)   {chunks vides ?};
 \node[process, right=1.5cm of empty] (safety) {Safety net RRF};
-\node[process, below=of empty]    (synth)   {8. synthesize\_chunks() — dédup + conflits};
-\node[process, below=of synth]    (prompt)  {9. build\_prompt() — synthesis\_text + hist.};
-\node[process, below=of prompt]   (gen)     {10. generate() — llama3.2:3b, T=0.1};
+\node[process, below=of empty]    (synth)   {8. synthesize\_chunks() : dédup + conflits};
+\node[process, below=of synth]    (prompt)  {9. build\_prompt() : synthesis\_text + hist.};
+\node[process, below=of prompt]   (gen)     {10. generate() : llama3.2:3b, T=0.1};
 \node[process, below=of gen]      (halluc)  {11. check\_hallucinations()};
 \node[process, below=of halluc]   (save)    {12. session.add\_turn() async};
 \node[cache,   below=of save]     (cstore)  {13. SemanticCache.store()};
@@ -648,11 +637,7 @@ Les chunks retenus sont synthétisés afin d’extraire les informations essenti
 
 \subsection{Limites identifiées}
 
-Malgré ses nombreux atouts, le système comporte certaines limitations. La génération locale avec \texttt{llama3.2:3b} reste plus lente et moins performante qu’un grand modèle hébergé dans le cloud, tel que GPT-4o ou Claude Sonnet. De plus, la fenêtre de contexte limitée à 8192 tokens, bien qu’adaptée à l’utilisation de cinq chunks, peut devenir insuffisante pour des requêtes nécessitant un volume documentaire important.
-
-La détection des hallucinations repose essentiellement sur des heuristiques basées sur des expressions régulières identifiant des T-codes et des numéros de notes. Cette approche ne permet pas de détecter toutes les formes d’hallucination, notamment les affirmations factuellement erronées ne contenant aucun identifiant explicite. Par ailleurs, le \textbf{cache sémantique fonctionne uniquement en mémoire} : son contenu est perdu à chaque redémarrage de l’application et il ne peut pas être mutualisé entre plusieurs instances, ce qui réduit son intérêt dans une architecture distribuée ou multi-processus.
-
-L’analyse \textbf{NLP fondée sur des règles}, bien qu’efficace en termes de rapidité et de déterminisme, montre également ses limites face aux requêtes ambiguës, complexes ou multilingues. Les formulations en français ou les tournures inhabituelles peuvent ainsi conduire à une mauvaise classification des intentions utilisateur. Enfin, les performances du mécanisme de retrieval dépendent fortement de la qualité du découpage initial des documents ainsi que de la pertinence des métadonnées associées, rendant indispensable un important travail de préparation et de structuration des données en amont.
+Le système présente plusieurs limites à prendre en compte. Le modèle de génération utilisé localement est moins rapide et moins précis qu’un modèle cloud comme GPT-4o. La détection des hallucinations ne couvre pas tous les cas : seules les erreurs contenant des identifiants SAP explicites sont détectées. Le cache sémantique, stocké uniquement en mémoire, est perdu à chaque redémarrage. Enfin, l’analyse des intentions utilisateur peut échouer sur des formulations ambiguës ou en français, et la qualité des résultats dépend directement de la bonne préparation des documents en amont.
 % ─────────────────────────────────────────────────────────────
 \section*{Conclusion }
 % ─────────────────────────────────────────────────────────────

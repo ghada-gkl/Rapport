@@ -82,33 +82,35 @@ qu'un utilisateur standard.
 
 \subsubsection*{Administrateur SAP}
 
-L'administrateur occupe un rôle central de supervision et de gouvernance du système.
-En tant qu'acteur disposant des droits les plus étendus, il cumule les fonctionnalités
-d'administration et celles de l'utilisateur SAP. Ses responsabilités spécifiques
-sont les suivantes :
+L'administrateur occupe un rôle central de supervision et de gouvernance de la plateforme AutoMoni.
+En tant qu'acteur disposant des droits les plus étendus, il cumule l'ensemble des fonctionnalités
+de l'utilisateur SAP, auxquelles s'ajoutent ses responsabilités d'administration.
+Ses responsabilités spécifiques sont les suivantes~:
 
 \begin{itemize}
-  \item S'authentifier à l'application de manière sécurisée.
-  \item Consulter et analyser les journaux d'activité du système SAP.
-  \item Configurer les paramètres du système ainsi que les règles d'alertes.
-  \item Consulter l'historique global des conversations effectuées avec le chatbot.
-  \item Interagir avec l'assistant intelligent \textit{(RAG)} et formuler des requêtes
-        en langage naturel portant sur les données SAP, au même titre qu'un utilisateur.
-  \item Accéder aux graphiques et aux analyses générés par l'assistant intelligent.
+  \item Interagir avec l'assistant intelligent RAG via la page chatbot dédiée ou le tiroir
+        latéral accessible depuis toutes les pages.
+  \item Formuler des requêtes en langage naturel sur les données SAP et recevoir des réponses
+        vérifiées accompagnées de leurs sources documentaires.
+  \item Naviguer automatiquement vers une page de monitoring en mentionnant un T-code dans le chatbot.
+  \item Soumettre un retour (\textit{feedback}) sur les réponses générées afin d'améliorer
+        la qualité du pipeline RAG.
 \end{itemize}
 
 \subsubsection*{Utilisateur SAP}
 
-L'utilisateur SAP constitue l'acteur principal de l'application. Il peut exploiter les fonctionnalités suivantes :
+L'utilisateur SAP constitue l'acteur principal de l'application AutoMoni.
+Il peut exploiter les fonctionnalités suivantes~:
 
 \begin{itemize}
-\item S'authentifier à l'application.
-\item Interagir avec l'assistant intelligent à travers une interface conversationnelle.
-\item Poser des questions en langage naturel concernant les données issues du système SAP.
-\item Consulter les alertes associées aux transactions SAP (T-Code).
-\item Accéder aux journaux des transactions SAP.
-\item Visualiser les graphiques et analyses générés par le système.
-\item Consulter l'historique des interactions avec le chatbot.
+  \item S'authentifier à l'application.
+  \item Consulter les pages de monitoring SAP correspondant aux T-codes de surveillance.
+  \item Interagir avec l'assistant intelligent via la page chatbot dédiée ou via le panneau
+        latéral coulissant disponible sur toutes les pages.
+  \item Poser des questions en langage naturel sur les données issues du système SAP.
+  \item Naviguer vers une page de monitoring en mentionnant un T-code dans le chatbot.
+  \item Consulter les sources documentaires et les avertissements associés à chaque réponse.
+  \item Consulter l'historique de ses propres interactions avec le chatbot.
 \end{itemize}
 \subsection{Besoins Non Fonctionnels}
 Les besoins non fonctionnels définissent les critères de qualité et les contraintes que le système doit respecter afin de garantir son bon fonctionnement. Contrairement aux besoins fonctionnels, ils ne décrivent pas les services offerts aux utilisateurs, mais les caractéristiques attendues en matière de performance, de fiabilité, de sécurité et d’évolutivité.
@@ -152,8 +154,7 @@ Dans le cadre de ce projet, les six phases se déclinent comme suit~:
 
 \begin{itemize}[leftmargin=2em]
 \item \textbf{Business Understanding :} identification du contexte du projet, analyse des besoins de l’entreprise, définition des objectifs à atteindre ainsi que des exigences fonctionnelles et non fonctionnelles du système.
-
-```
+ 
 \item \textbf{Data Understanding :} étude et analyse des différentes sources d’information exploitées pour la constitution de la base de connaissances SAP.
 
 \item \textbf{Data Preparation :} préparation et structuration des données afin de les rendre exploitables par le système de recherche et de génération de réponses.
@@ -163,7 +164,7 @@ Dans le cadre de ce projet, les six phases se déclinent comme suit~:
 \item \textbf{Evaluation :} évaluation des performances de la solution développée afin de vérifier sa capacité à fournir des réponses pertinentes et fiables.
 
 \item \textbf{Deployment :} intégration de l’assistant intelligent au sein de la plateforme AutoMoni et mise à disposition de la solution dans son environnement d’utilisation.
-```
+ 
 
 \end{itemize}
 

@@ -1,5 +1,5 @@
 % ============================================================
-%  Chapitre 8 : Déploiement — Intégration du système RAG dans AutoMoni
+%  Chapitre 8 : Déploiement : Intégration du système RAG dans AutoMoni
 % ============================================================
 
 % Définition du langage JavaScript pour le package listings
@@ -77,7 +77,7 @@ Le système déployé repose sur une architecture à trois couches distinctes co
 ]
 
 %% ════════════════════════════════════════════════════════════
-%% LAYER 1 BOXES — Frontend  (y = 8.0)
+%% LAYER 1 BOXES : Frontend  (y = 8.0)
 %% ════════════════════════════════════════════════════════════
 \node[box=SAPBlue] (shell)    at (-5.5, 8.0)
   {{\color{SAPBlue}\textbf{ShellBar}}\\[2pt]\scriptsize Bouton IA};
@@ -89,7 +89,7 @@ Le système déployé repose sur une architecture à trois couches distinctes co
   {{\color{SAPBlue}\textbf{25+ Pages}}\\[2pt]\scriptsize Monitoring};
 
 %% ════════════════════════════════════════════════════════════
-%% LAYER 2 BOXES — CAP / Métier  (y = 4.5)
+%% LAYER 2 BOXES : CAP / Métier  (y = 4.5)
 %% ════════════════════════════════════════════════════════════
 \node[box=SAPGreen] (chatSrv) at (-3.5, 4.5)
   {{\color{SAPGreen}\textbf{chat-service}}\\[2pt]\scriptsize OData Action};
@@ -99,7 +99,7 @@ Le système déployé repose sur une architecture à trois couches distinctes co
   {{\color{SAPGreen}\textbf{MongoDB Atlas}}\\[2pt]\scriptsize Données monitoring};
 
 %% ════════════════════════════════════════════════════════════
-%% LAYER 3 BOXES — RAG / Python  (y = 1.0)
+%% LAYER 3 BOXES : RAG / Python  (y = 1.0)
 %% ════════════════════════════════════════════════════════════
 \node[box=SAPOrange] (api)    at (-5.5, 1.0)
   {{\color{SAPOrange}\textbf{api.py}}\\[2pt]\scriptsize FastAPI};
@@ -126,25 +126,25 @@ Le système déployé repose sur une architecture à trois couches distinctes co
 \end{scope}
 
 %% ════════════════════════════════════════════════════════════
-%% LAYER TITLE BANNERS — placed ABOVE each band (no overlap)
+%% LAYER TITLE BANNERS : placed ABOVE each band (no overlap)
 %% ════════════════════════════════════════════════════════════
 \node[layertitle=SAPBlue, anchor=south west]
   at ([xshift=6pt, yshift=3pt]layer1.north west)
-  {Couche Présentation — Frontend React / SAP UI5};
+  {Couche Présentation : Frontend React / SAP UI5};
 \node[portbadge=SAPBlue, anchor=south east]
   at ([xshift=-6pt, yshift=3pt]layer1.north east)
   {:3000};
 
 \node[layertitle=SAPGreen, anchor=south west]
   at ([xshift=6pt, yshift=3pt]layer2.north west)
-  {Couche Métier — SAP CAP / Express};
+  {Couche Métier : SAP CAP / Express};
 \node[portbadge=SAPGreen, anchor=south east]
   at ([xshift=-6pt, yshift=3pt]layer2.north east)
   {:4004};
 
 \node[layertitle=SAPOrange, anchor=south west]
   at ([xshift=6pt, yshift=3pt]layer3.north west)
-  {Couche RAG — Python / FastAPI};
+  {Couche RAG : Python / FastAPI};
 \node[portbadge=SAPOrange, anchor=south east]
   at ([xshift=-6pt, yshift=3pt]layer3.north east)
   {:8000};
@@ -174,7 +174,7 @@ Le système déployé repose sur une architecture à trois couches distinctes co
   -| (api.north);
 
 %% ════════════════════════════════════════════════════════════
-%% INTRA-LAYER ARROWS — RAG layer
+%% INTRA-LAYER ARROWS : RAG layer
 %% (labels placed BELOW the connecting line to avoid box overlap)
 %% ════════════════════════════════════════════════════════════
 \draw[arrbi=SAPOrange]
@@ -191,7 +191,7 @@ Le système déployé repose sur une architecture à trois couches distinctes co
   -- (pg.south);
 
 %% ════════════════════════════════════════════════════════════
-%% INTRA-LAYER ARROWS — CAP layer
+%% INTRA-LAYER ARROWS : CAP layer
 %% ════════════════════════════════════════════════════════════
 \draw[arrbi=SAPGreen]
   (monSrv.east) -- node[ilbl, above=2pt]{CRUD} (mongo.west);
@@ -462,101 +462,17 @@ Le chatbot est implémenté côté frontend sous deux formes complémentaires~:
 \begin{itemize}[leftmargin=2em]
   \item \textbf{Page dédiée} (\texttt{/chatbot})~: le composant \texttt{Chatbot.jsx} (515 lignes) offre une interface complète avec historique de conversations organisées en sessions, liste des conversations précédentes, zone de réponse avec rendu Markdown via \texttt{react-markdown}, et boutons d'action (nouvelle conversation, effacement).
 
-  \item \textbf{ChatPanel — Tiroir latéral}~: exporté depuis \texttt{Chatbot.jsx}, ce panneau coulissant est intégré dans le composant \texttt{AppShell.jsx} et rendu accessible depuis toutes les pages de l'application via le bouton IA dans la \texttt{ShellBar}. Il est monté paresseusement (\textit{lazy mount}) à la première ouverture afin d'éviter un flash CSS indésirable~:
-
-\begin{lstlisting}[language=JavaScript, caption={Montage paresseux du ChatPanel dans AppShell.jsx}]
-const [isChatOpen,    setIsChatOpen]    = useState(false)
-const [chatHasOpened, setChatHasOpened] = useState(false)
-
-const onChatbotClick = () => {
-  if (!chatHasOpened) setChatHasOpened(true)
-  setIsChatOpen(prev => !prev)
-}
-
-{chatHasOpened && (
-  <ChatPanel open={isChatOpen} onClose={() => setIsChatOpen(false)} />
-)}
-\end{lstlisting}
+  \item \textbf{ChatPanel : Tiroir latéral}~: exporté depuis \texttt{Chatbot.jsx}, ce panneau coulissant est intégré dans le composant \texttt{AppShell.jsx} et rendu accessible depuis toutes les pages de l'application via le bouton IA dans la \texttt{ShellBar}.
 \end{itemize}
 
-\subsection{Chatbot et évaluation intégrée en temps réel}
-\label{subsec:chatbot-eval}
 
-L'intégration du pipeline d'évaluation directement dans la boucle de traitement du chatbot constitue un apport majeur par rapport à une évaluation \textit{offline} classique. Plutôt que d'utiliser un juge LLM coûteux à chaque appel (comme G-Eval), le système repose sur deux mécanismes complémentaires déclenchés automatiquement à chaque réponse~:
+\subsection{Intelligence de navigation : T-codes vers pages monitoring}
 
-\begin{enumerate}[leftmargin=2em]
-  \item \textbf{Détection déterministe des hallucinations}~: la fonction \texttt{check\_hallucinations()} analyse la réponse générée à la recherche de T-codes SAP et de numéros de notes SAP qui ne figurent pas dans les chunks récupérés. Toute mention identifiée comme non ancrée dans les sources est supprimée par \texttt{sanitize\_answer()} avant renvoi à l'utilisateur. Ce mécanisme s'exécute en moins d'une milliseconde sans appel LLM supplémentaire.
-
-  \item \textbf{Attribution des sources}~: les chunks utilisés pour construire la réponse sont retournés dans le champ \texttt{sources} de la réponse JSON, sous forme de références structurées (\textit{«~titre du livre $>$ section~»}).
-\end{enumerate}
-
-Ces deux informations sont remontées dans l'interface utilisateur via le contrat d'API défini dans \texttt{chat-service.cds}~:
-
-\begin{lstlisting}[language=SQL, caption={Champs d'évaluation retournés par le service RAG}]
-returns {
-  answer:   String;          -- reponse nettoyee
-  sources:  array of String; -- references des chunks utilises
-  warnings: array of String; -- hallucinations detectees et supprimees
-  session_id: String;
-}
-\end{lstlisting}
-
-Le composant React \texttt{BotMessageContent} interprète ces champs et affiche, sous chaque réponse du bot, un indicateur de qualité et la liste des sources consultées~:
-
-\begin{itemize}[leftmargin=2em]
-  \item \textbf{Badge vert «~\checkmark~Réponse vérifiée~»}~: aucun avertissement détecté, la réponse est intégralement ancrée dans les sources récupérées.
-  \item \textbf{Badge orange «~$\triangle$~N avertissement(s)~»}~: au moins une affirmation a été filtrée pour risque d'hallucination, l'utilisateur est averti.
-  \item \textbf{Section «~Sources~» dépliable}~: liste des références documentaires utilisées, permettant à l'utilisateur de vérifier l'origine de chaque information.
-\end{itemize}
-
-\begin{lstlisting}[language=JavaScript, caption={Rendu du badge qualité et des sources dans BotMessageContent (Chatbot.jsx)}]
-const BotMessageContent = ({ message }) => (
-  <>
-    <Markdown>{message.text}</Markdown>
-    {(message.sources?.length > 0 || message.warnings?.length > 0) && (
-      <div className="ag-eval-footer">
-        <span className={`ag-quality-badge ${
-          message.warnings?.length > 0
-            ? 'ag-quality-badge--warn'
-            : 'ag-quality-badge--ok'
-        }`}>
-          {message.warnings?.length > 0
-            ? `Warning: ${message.warnings.length} hallucination(s) filtered`
-            : 'Response verified'}
-        </span>
-        <details className="ag-sources">
-          <summary>{message.sources.length} source(s)</summary>
-          <ul>{message.sources.map((src, i) => <li key={i}>{src}</li>)}</ul>
-        </details>
-      </div>
-    )}
-  </>
-)
-\end{lstlisting}
-
-Cette approche est délibérément \textbf{déterministe et légère}~: contrairement à RAGAS ou G-Eval qui nécessitent un second appel LLM pour scorer la réponse, la détection par règles (T-codes, numéros de notes) est instantanée et 100\,\% reproductible. Elle constitue un mécanisme de premier niveau suffisant pour alerter l'utilisateur sur les cas les plus risqués, RAGAS étant réservé à l'évaluation \textit{offline} en batch du pipeline.
-
-\subsection{Intelligence de navigation — T-codes vers pages monitoring}
-
-Une fonctionnalité avancée du chatbot est sa capacité à détecter dans le message de l'utilisateur une \textbf{intention de navigation} vers une page de monitoring, et à y rediriger automatiquement. Le composant \texttt{Chatbot.jsx} embarque un dictionnaire de 18 T-codes SAP mappés à leurs routes React~:
-
-\begin{lstlisting}[language=JavaScript, caption={Mapping T-codes vers routes de navigation (Chatbot.jsx)}]
-const TCODE_ROUTES = {
-  st22:  { path: '/st22',  label: 'Runtime Errors (ST22)'    },
-  sm37:  { path: '/sm37',  label: 'Background Jobs (SM37)'   },
-  sm13:  { path: '/sm13',  label: 'Update Records (SM13)'    },
-  sm66:  { path: '/sm66',  label: 'Work Processes (SM66)'    },
-  db02:  { path: '/db02',  label: 'Database Space (DB02)'    },
-  sm58:  { path: '/sm58',  label: 'RFC Monitoring (SM58)'    },
-  smq1:  { path: '/smq1',  label: 'Outbound Queue (SMQ1)'   },
-  // ... 11 autres T-codes
-}
-\end{lstlisting}
-
+Une fonctionnalité avancée du chatbot est sa capacité à détecter dans le message de l'utilisateur une \textbf{intention de navigation} vers une page de monitoring, et à y rediriger automatiquement. 
 Lorsque l'utilisateur formule un message contenant à la fois un T-code reconnu et un mot-clé d'intention de navigation (\texttt{open}, \texttt{go to}, \texttt{ouvre}, \texttt{affiche}, etc.), le chatbot effectue une redirection directe vers la page correspondante, sans interroger l'API RAG. Cette détection supporte également l'extraction du \textbf{SID} (System ID, ex. \texttt{PRD}, \texttt{P01}) et d'un \textbf{filtre de date} depuis le message naturel.
 
 % ─────────────────────────────────────────────────────────────
-\section{Interface utilisateur — Présentation}
+\section{Interface utilisateur : Présentation}
 % ─────────────────────────────────────────────────────────────
 
 \subsection{Page chatbot dédiée}
@@ -618,22 +534,22 @@ La figure~\ref{fig:benchmark} présente les résultats visuels du benchmark comp
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{images/bench.png}
-\caption[Benchmark RAG — LLaMA 3.2:3b vs Qwen 2.5:7b]{Résultats du benchmark RAG — LLaMA 3.2:3b vs Qwen 2.5:7b (12 mai 2026, 76~463 vecteurs)}
+\caption[Benchmark RAG : LLaMA 3.2:3b vs Qwen 2.5:7b]{Résultats du benchmark RAG : LLaMA 3.2:3b vs Qwen 2.5:7b (12 mai 2026, 76~463 vecteurs)}
 \label{fig:benchmark}
 \end{figure}
 
 \subsection{Analyse des résultats}
 
-Les résultats du benchmark mettent en évidence plusieurs constats~:
+Les résultats du benchmark permettent de tirer quatre conclusions~:
 
 \begin{itemize}[leftmargin=2em]
-  \item \textbf{Recall@K croissant}~: le rappel augmente logiquement avec K pour les deux modèles, atteignant des valeurs élevées à K=10 et K=12, confirmant que la base documentaire contient les informations nécessaires pour répondre aux questions posées.
+  \item Plus le système consulte de documents, meilleures sont ses réponses. Les deux modèles donnent de bons résultats lorsqu'on leur fournit suffisamment de sources.
 
-  \item \textbf{Qualité de classement}~: le nDCG reflète la capacité du pipeline à placer les chunks les plus pertinents en tête de liste. La fusion RRF avec pondération asymétrique (BM25~: 0.6, vectoriel~: 0.4) favorise la précision lexicale, essentielle pour les T-codes SAP.
+  \item Les réponses les plus pertinentes apparaissent toujours en premier, ce qui facilite la lecture et l'exploitation des résultats.
 
-  \item \textbf{Impact des paramètres}~: Qwen~2.5:7b utilise un seuil de reranking (\texttt{MIN\_RERANK\_SCORE~=~2.0}) et un \texttt{FETCH\_K~=~40} plus élevés que LLaMA~3.2:3b (\texttt{MIN\_RERANK\_SCORE~=~1.0}, \texttt{FETCH\_K~=~30}), ce qui explique une sélectivité différente dans les résultats.
+  \item Les deux modèles se comportent différemment selon leur configuration, ce qui influence la précision des réponses produites.
 
-  \item \textbf{Compromis vitesse/qualité}~: LLaMA~3.2:3b offre des temps de réponse significativement plus courts, tandis que Qwen~2.5:7b produit des réponses de meilleure qualité rédactionnelle. Le choix du modèle peut être configuré dynamiquement via la variable \texttt{model} de la requête API.
+  \item LLaMA 3.2:3b est plus rapide, tandis que Qwen 2.5:7b fournit des réponses plus complètes. Il est possible de choisir l'un ou l'autre selon les besoins de l'utilisateur.
 \end{itemize}
 
 % ─────────────────────────────────────────────────────────────
@@ -645,12 +561,7 @@ Les résultats du benchmark mettent en évidence plusieurs constats~:
 Malgré les performances satisfaisantes observées lors du benchmark, plusieurs limitations du déploiement actuel méritent d'être soulignées~:
 
 \begin{itemize}[leftmargin=2em]
-  \item \textbf{CORS ouvert en développement}~: La politique CORS de l'API FastAPI est actuellement configurée en mode permissif (\texttt{allow\_origins=["*"]}), adapté à un environnement de développement. Une configuration restrictive sera nécessaire pour un déploiement en production.
-
-  \item \textbf{Cache sémantique en mémoire}~: Le cache sémantique du pipeline RAG est stocké uniquement en mémoire vive du processus. Son contenu est perdu à chaque redémarrage et ne peut pas être partagé entre plusieurs instances, ce qui limite son efficacité dans une architecture distribuée.
-
-  \item \textbf{LLM local limité}~: Le modèle \texttt{llama3.2:3b} déployé localement via Ollama, bien qu'adapté à un contexte \textit{on-premise}, reste moins performant que les grands modèles hébergés dans le cloud (GPT-4o, Claude Sonnet) sur des questions complexes nécessitant un raisonnement approfondi.
-
+ 
   \item \textbf{Gestion des sessions en mémoire}~: Les sessions de conversation de l'API FastAPI sont stockées dans un dictionnaire Python en mémoire. En cas de redémarrage du service, toutes les sessions actives sont perdues. La persistance des sessions dans la base de données PostgreSQL est déjà implémentée mais dépend d'un mécanisme asynchrone de sauvegarde.
 
   \item \textbf{Détection d'hallucinations par heuristiques}~: La validation anti-hallucination repose sur des expressions régulières pour les T-codes et les numéros de notes SAP. Les affirmations factuellement erronées ne contenant pas d'identifiants SAP explicites ne sont pas détectées.
@@ -661,11 +572,7 @@ Malgré les performances satisfaisantes observées lors du benchmark, plusieurs 
 Plusieurs axes d'amélioration peuvent être envisagés pour renforcer le système à court et moyen terme~:
 
 \begin{itemize}[leftmargin=2em]
-  \item \textbf{Déploiement Cloud Foundry}~: Les fichiers \texttt{mta.yaml} et \texttt{manifest.yml} sont déjà configurés pour un déploiement sur SAP BTP (\textit{Business Technology Platform}) via Cloud Foundry. Cette étape permettrait de bénéficier d'une haute disponibilité, d'un équilibrage de charge et d'une authentification XSUAA intégrée.
-
-  \item \textbf{Cache sémantique distribué}~: L'intégration d'un cache Redis permettrait de partager le cache sémantique entre plusieurs instances de l'API RAG et de le persister entre les redémarrages.
-
-  \item \textbf{Modèle LLM plus performant}~: L'intégration d'un modèle de grande taille (qwen2.5:7b déjà supporté, ou un modèle cloud via API) améliorerait la qualité des réponses sur les requêtes complexes.
+   \item \textbf{Modèle LLM plus performant}~: L'intégration d'un modèle de grande taille (qwen2.5:7b déjà supporté, ou un modèle cloud via API) améliorerait la qualité des réponses sur les requêtes complexes.
 
   \item \textbf{Mise à jour incrémentale de la base de connaissances}~: Un pipeline de synchronisation incrémentale (déjà prototypé dans \texttt{conv\_databaseMONGODB/}) permettrait d'enrichir automatiquement la base documentaire à mesure que de nouvelles notes SAP ou documentations sont publiées.
 

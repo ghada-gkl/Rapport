@@ -117,7 +117,7 @@ La durée de surveillance varie selon l'état du système et le nombre d'alertes
 Cependant, cette approche a ses limites. La multiplicité des systèmes et la répétition des tâches rendent le processus lourd et chronophage. Le consultant doit constamment naviguer entre plusieurs systèmes et transactions, ce qui augmente le risque d'oubli, de confusion ou de perte de temps dans le traitement des anomalies.
 
 
-\subsubsection*{Description de la surveillance des systèmes SAP}
+\subsection{Description de la surveillance des systèmes SAP}
 
 La surveillance quotidienne des systèmes SAP s’appuie sur l’utilisation de nombreux codes de transaction (T-codes), chacun offrant une visibilité sur un aspect spécifique du système. À titre illustratif, les T-codes suivants figurent parmi les plus couramment utilisés :
 
@@ -158,7 +158,8 @@ Ces transactions sont utilisées par les consultants BASIS\footnotemark[1] pour 
 SAP, en plus des outils de supervision classiques tels que les tableaux de bord et les alertes techniques, propose désormais des solutions qui utilisent le Machine Learning et l'intelligence artificielle. Ces solutions permettent de surveiller les systèmes SAP en temps réel et d'analyser les données passées pour détecter des anomalies, prévoir des incidents et améliorer les décisions.
 Parmi ces solutions, on peut citer SAP Leonardo ML et SAP Joule.Elles offrent des fonctionnalités avancées pour une meilleure gestion des systèmes SAP.
 
-\subsubsection*{SAP Leonardo ML}
+\setcounter{secnumdepth}{3}
+\subsubsection{SAP Leonardo ML}
 SAP Leonardo ML est une solution de Machine Learning développée par SAP qui permet d'utiliser les données provenant des systèmes SAP. Elle détecte les comportements inhabituels et identifie des modèles récurrents. Puisqu'elle fait partie intégrante des systèmes ERP SAP, SAP Leonardo ML peut accéder directement aux données issues de divers départements de l'entreprise, comme la finance, les ressources humaines ou la logistique.
 
 Cela signifie que les données peuvent être exploitées de manière continue et centralisée. De plus, les analyses sont plus cohérentes. SAP Leonardo ML propose également des fonctionnalités qui permettent de prédire certaines choses en analysant les données du passé. Cela aide à prévoir les incidents, à améliorer les processus de travail et à mieux surveiller les systèmes dans leur ensemble.
@@ -168,7 +169,7 @@ Cela signifie que les données peuvent être exploitées de manière continue et
     \caption{SAP Leonardo ML}
     \label{fig:sap_leonardo}
 \end{figure}
-\subsubsection*{SAP JOULE}
+\subsubsection{SAP JOULE}
 SAP Joule est un copilote génératif intégré à l'écosystème SAP. Il permet d'interroger les applications en langage naturel, sans connaître les commandes techniques, et s'appuie sur les données métier et techniques pour fournir des réponses, automatiser des tâches simples et faciliter l'analyse. Cette interaction conversationnelle réduit le temps de recherche et améliore la productivité des utilisateurs.
 % ============================================================
 \begin{figure}[H]
@@ -177,20 +178,6 @@ SAP Joule est un copilote génératif intégré à l'écosystème SAP. Il permet
     \caption{SAP Joule au sein de l'écosystème SAP}
     \label{fig:SAP Joule au sein de l'écosystème SAP}
 \end{figure}
-
-\subsection{Critique de l'existant}
-L’étude de l’existant a montré que le processus de surveillance des environnements SAP demande beaucoup d’efforts de la part des consultants SAP BASIS. La surveillance repose surtout sur des tâches manuelles répétées plusieurs fois par jour via différents T-codes et plusieurs systèmes SAP.
-
-Chez Quadient, les consultants doivent superviser environ dix systèmes répartis sur différents serveurs comme P01, PWD et PW1. Cette diversité des environnements rend le monitoring long et difficile à gérer, surtout lorsque plusieurs incidents surviennent en même temps. Le consultant passe alors beaucoup de temps à naviguer entre les systèmes pour vérifier les informations et analyser les résultats.
-
-Le principal problème de cette approche est le temps nécessaire pour réaliser les contrôles quotidiens. Comme les mêmes opérations se répètent chaque shift, le travail devient rapidement lourd et fatigant. Cette répétition peut entraîner des oublis, des erreurs de vérification ou des retards dans la détection d’anomalies importantes.
-
-De plus, les informations étant dispersées entre plusieurs T-codes et plusieurs systèmes, il devient difficile d’avoir une vue globale et rapide de l’état des environnements SAP. Lorsqu’un problème est détecté, le consultant doit souvent effectuer plusieurs vérifications avant d’identifier l’origine de l’incident et de contacter les équipes concernées, comme les développeurs ABAP ou les consultants fonctionnels.
-
-L’étude a également révélé une autre difficulté liée au niveau d’expérience des consultants SAP BASIS. Un consultant débutant peut avoir besoin de beaucoup plus de temps pour analyser les résultats des T-codes, comprendre certaines anomalies ou identifier les actions à prendre. L'interprétation des informations dépend souvent de l’expérience acquise sur les différents systèmes SAP et des connaissances métier du client. Cela peut ralentir le traitement des incidents et rendre la surveillance moins efficace.
-
-Enfin, les consultants passent une grande partie de leur temps sur des tâches répétitives de contrôle au lieu de se concentrer sur l’analyse et l’anticipation des problèmes. Ces limites montrent donc la nécessité d’une solution intelligente et centralisée pour aider les consultants dans leurs activités de surveillance, réduire les tâches manuelles et faciliter la détection rapide des anomalies.
-
 \subsubsection{Comparaison des approches de supervision et d’assistance dans les environnements SAP}
 
 Dans le cadre de l’évolution des outils de supervision SAP vers des solutions plus intelligentes et automatisées, il est important d’analyser les approches existantes.
@@ -254,6 +241,23 @@ Aide les utilisateurs à travailler plus rapidement et efficacement. \\
 \end{tabular}%
 }
 \end{table}
+
+\setcounter{secnumdepth}{2}
+
+\subsection{Critique de l'existant}
+L’étude de l’existant a montré que le processus de surveillance des environnements SAP demande beaucoup d’efforts de la part des consultants SAP BASIS. La surveillance repose surtout sur des tâches manuelles répétées plusieurs fois par jour via différents T-codes et plusieurs systèmes SAP.
+
+Chez Quadient, les consultants doivent superviser environ dix systèmes répartis sur différents serveurs comme P01, PWD et PW1. Cette diversité des environnements rend le monitoring long et difficile à gérer, surtout lorsque plusieurs incidents surviennent en même temps. Le consultant passe alors beaucoup de temps à naviguer entre les systèmes pour vérifier les informations et analyser les résultats.
+
+Le principal problème de cette approche est le temps nécessaire pour réaliser les contrôles quotidiens. Comme les mêmes opérations se répètent chaque shift, le travail devient rapidement lourd et fatigant. Cette répétition peut entraîner des oublis, des erreurs de vérification ou des retards dans la détection d’anomalies importantes.
+
+De plus, les informations étant dispersées entre plusieurs T-codes et plusieurs systèmes, il devient difficile d’avoir une vue globale et rapide de l’état des environnements SAP. Lorsqu’un problème est détecté, le consultant doit souvent effectuer plusieurs vérifications avant d’identifier l’origine de l’incident et de contacter les équipes concernées, comme les développeurs ABAP ou les consultants fonctionnels.
+
+L’étude a également révélé une autre difficulté liée au niveau d’expérience des consultants SAP BASIS. Un consultant débutant peut avoir besoin de beaucoup plus de temps pour analyser les résultats des T-codes, comprendre certaines anomalies ou identifier les actions à prendre. L'interprétation des informations dépend souvent de l’expérience acquise sur les différents systèmes SAP et des connaissances métier du client. Cela peut ralentir le traitement des incidents et rendre la surveillance moins efficace.
+
+Enfin, les consultants passent une grande partie de leur temps sur des tâches répétitives de contrôle au lieu de se concentrer sur l’analyse et l’anticipation des problèmes. Ces limites montrent donc la nécessité d’une solution intelligente et centralisée pour aider les consultants dans leurs activités de surveillance, réduire les tâches manuelles et faciliter la détection rapide des anomalies.
+
+
 %============================================================
 % Tableau comparatif stylisé avec les couleurs du main.tex
 %============================================================

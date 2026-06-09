@@ -1,5 +1,5 @@
 % ============================================================
-%  Chapitre 7 : Évaluation — Système RAG SAP
+%  Chapitre 7 : Évaluation : Système RAG SAP
 % ============================================================
 
 \chapter{Évaluation}
@@ -131,10 +131,10 @@ Avant de présenter les résultats, il est nécessaire de préciser dans quelles
 \paragraph{Nombre de résultats récupérés (top\_k = 10).}
 Pour chaque question du dataset, le système récupère les \textbf{10 documents les plus pertinents} du corpus. Ce paramètre, noté \texttt{top\_k = 10}, définit la fenêtre d'évaluation~: seuls ces 10 documents sont analysés et notés. Augmenter ce nombre améliorerait mécaniquement le Recall, mais au prix d'un contexte plus bruité transmis au modèle de langage.
 
-\paragraph{Activation du reranker.}
+\paragraph{Activation du reranker}
 Le reranker est un second modèle (\texttt{cross-encoder/ms-marco-MiniLM-L-6-v2}) qui intervient \emph{après} la recherche hybride pour réordonner les 10 résultats récupérés. Contrairement au moteur de recherche initial qui compare chaque document à la question de manière indépendante, le reranker analyse la paire (question, document) conjointement, ce qui lui permet d'affiner le classement avec une meilleure compréhension du contexte. C'est son impact sur les métriques de classement (MRR, nDCG) qui est mesuré ici.
 
-\paragraph{Comparaison avec une baseline.}
+\paragraph{Comparaison avec une baseline}
 Pour mesurer l'apport réel du système hybride, les résultats sont comparés à une \textbf{baseline}~: une recherche vectorielle pure, sans BM25 ni fusion de scores RRF, appliquée sur le même corpus de 76\,463 vecteurs indexés dans PostgreSQL. Cette baseline représente ce que le système produirait si l'on retirait toutes les améliorations hybrides~; tout gain observé dans le tableau de résultats est donc directement attribuable à ces améliorations.
 
 \subsection{Résultats globaux}
@@ -212,7 +212,7 @@ Le Recall@5 = 0.574 s'explique par la structure du corpus~: le dénominateur de 
 
 \subsection{Couverture des signaux}
 
-La couverture des signaux mesure combien de termes de référence ont été retrouvés dans les chunks récupérés, indépendamment du classement. Sur les 18 requêtes, 16 atteignent une couverture de 100\,\%, et 2 manquent d'un signal sur 5 (Q02 et Q04 — à distinguer des anomalies de classement Q04 et Q10 discutées à la section~\ref{sec:analyse-visuelle}).
+La couverture des signaux mesure combien de termes de référence ont été retrouvés dans les chunks récupérés, indépendamment du classement. Sur les 18 requêtes, 16 atteignent une couverture de 100\,\%, et 2 manquent d'un signal sur 5 (Q02 et Q04 : à distinguer des anomalies de classement Q04 et Q10 discutées à la section~\ref{sec:analyse-visuelle}).
 
 \subsection{Limites de validité du protocole d'évaluation}
 \label{subsec:limites-validite}
@@ -273,82 +273,55 @@ Les autres paramètres utilisés sont les suivants~: le système récupère les 
 
 \subsection{Résultats RAGAS}
 
-% ── colour legend macros (local to this section) ──────────────────────────
-\newcommand{\scoreHigh}[1]{\cellcolor{SAPLightGreen}\textbf{#1}}
-\newcommand{\scoreMid}[1]{\cellcolor{SAPLightOrange}\textbf{#1}}
-\newcommand{\scoreLow}[1]{\cellcolor{red!10}\textbf{#1}}
-\newcommand{\scoreNA}{\cellcolor{SAPLightGray}\textcolor{SAPGray}{---}}
-% ──────────────────────────────────────────────────────────────────────────
-
 \begin{table}[H]
 \centering
-\renewcommand{\arraystretch}{1.55}
-\caption{Résultats RAGAS — Évaluation LLM-as-Judge (\texttt{llama3.2:3b}) sur 3 requêtes SAP}
+\caption{Résultats RAGAS : Évaluation LLM-as-Judge (\texttt{llama3.2:3b}) sur 3 requêtes SAP}
 \label{tab:ragas-results}
-\begin{tabularx}{\textwidth}{@{}lccX@{}}
-\toprule
-\rowcolor{SAPLightBlue}
+\begin{tabular}{|l|c|c|p{6.5cm}|}
+\hline
 \textbf{Métrique} & \textbf{Score moyen} & \textbf{Calculable} & \textbf{Ce que ça signifie concrètement} \\
-\midrule
-\rowcolor{SAPLightGreen!60}
-Answer Relevancy
-  & \textcolor{SAPGreen}{\Large\bfseries 0.920}
-  & \textcolor{SAPGreen}{\bfseries Oui}
-  & Le système répond bien à ce qui est demandé~: les réponses restent centrées sur la question, sans partir sur des informations hors-sujet. \\
-\rowcolor{SAPLightGreen!60}
-Context Recall
-  & \textcolor{SAPGreen}{\Large\bfseries 0.889}
-  & \textcolor{SAPGreen}{\bfseries Oui}
+\hline
+Answer Relevancy & \textbf{0.920} & Oui
+  & Le système répond bien à ce qui est demandé : les réponses restent centrées sur la question, sans partir sur des informations hors-sujet. \\
+\hline
+Context Recall & \textbf{0.889} & Oui
   & Les documents récupérés contiennent, dans la grande majorité des cas, les informations nécessaires pour construire une réponse correcte. \\
-\rowcolor{SAPLightGray}
-Faithfulness
-  & \textcolor{SAPGray}{\bfseries N/A}
-  & \textcolor{SAPRed}{\bfseries Non}
-  & \textcolor{SAPGray}{Non calculé~: le modèle-juge \texttt{llama3.2:3b} est trop petit pour produire la réponse structurée requise par RAGAS. Tous les appels ont échoué (voir §~\ref{subsec:limites-ragas}).} \\
-\rowcolor{SAPLightGray}
-Context Precision
-  & \textcolor{SAPGray}{\bfseries N/A}
-  & \textcolor{SAPRed}{\bfseries Non}
-  & \textcolor{SAPGray}{Non calculé pour la même raison. Un modèle-juge plus puissant est nécessaire pour évaluer ces deux métriques (voir §~\ref{subsec:limites-ragas}).} \\
-\bottomrule
-\end{tabularx}
+\hline
+Faithfulness & \textbf{N/A} & Non
+  & Non calculé : le modèle-juge \texttt{llama3.2:3b} est trop petit pour produire la réponse structurée requise par RAGAS (voir §~\ref{subsec:limites-ragas}). \\
+\hline
+Context Precision & \textbf{N/A} & Non
+  & Non calculé pour la même raison. Un modèle-juge plus puissant est nécessaire (voir §~\ref{subsec:limites-ragas}). \\
+\hline
+\end{tabular}
 \end{table}
 
 Le tableau suivant détaille les scores question par question, afin de voir si certaines questions ont posé plus de difficultés que d'autres au système.
 
 \begin{table}[H]
 \centering
-\renewcommand{\arraystretch}{1.45}
 \caption{Résultats RAGAS détaillés par requête}
 \label{tab:ragas-per-query}
-\begin{tabularx}{\textwidth}{@{}llccX@{}}
-\toprule
-\rowcolor{SAPLightBlue}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|p{1cm}|p{3.8cm}|p{2.8cm}|p{2.5cm}|p{4.5cm}|}
+\hline
 \textbf{ID} & \textbf{Question posée} & \textbf{Answer Relevancy} & \textbf{Context Recall} & \textbf{Observation} \\
-\midrule
+\hline
 Q01 & Comment analyser les erreurs ABAP avec ST22~?
-  & \scoreNA
-  & \scoreHigh{1.000}
-  & La réponse n'a pas pu être notée~: le modèle-juge a dépassé le temps limite (CPU saturé). Les documents récupérés couvraient parfaitement la question. \\
-Q03 & Autorisation refusée~: comment identifier le droit manquant~?
-  & \scoreMid{0.849}
-  & \scoreHigh{1.000}
-  & La réponse est globalement centrée sur la question, avec une légère dérive vers des notions générales de sécurité. Les documents sources étaient complets. \\
+  & N/A & \textbf{1.000}
+  & Réponse non notée : délai dépassé (CPU saturé). Documents récupérés complets. \\
+\hline
+Q03 & Autorisation refusée : comment identifier le droit manquant~?
+  & \textbf{0.849} & \textbf{1.000}
+  & Réponse globalement ciblée, légère dérive vers des notions générales de sécurité. Documents sources complets. \\
+\hline
 Q14 & Comment surveiller les performances avec ST06 et SM50~?
-  & \scoreHigh{0.990}
-  & \scoreLow{0.667}
-  & La réponse est très bien ciblée. En revanche, les documents récupérés couvrent principalement SM50 et manquent d'informations sur les métriques système de ST06~: une question portant sur deux outils distincts est plus difficile à couvrir entièrement. \\
-\midrule
-\rowcolor{SAPLightBlue!50}
+  & \textbf{0.990} & \textbf{0.667}
+  & Réponse bien ciblée. Documents couvrent principalement SM50 ; couverture partielle des métriques ST06. \\
+\hline
 \textbf{Moyenne} & & \textbf{0.920} & \textbf{0.889} & \\
-\bottomrule
-\end{tabularx}
-\vspace{3pt}
-{\footnotesize
-\textcolor{SAPGreen}{\rule{1em}{0.6em}}~Score $\geq 0.90$ — bon résultat\quad
-\textcolor{SAPOrange}{\rule{1em}{0.6em}}~Score $\in [0.70,\,0.90)$ — résultat acceptable\quad
-\textcolor{red!50}{\rule{1em}{0.6em}}~Score $< 0.70$ — résultat insuffisant\quad
-\textcolor{SAPGray}{\rule{1em}{0.6em}}~Non calculé (modèle-juge trop lent ou trop petit)
+\hline
+\end{tabular}%
 }
 \end{table}
 
@@ -441,7 +414,7 @@ Le Recall@1 de 0.122 indique que le premier résultat brut n'est pas toujours le
 Le modèle-juge \texttt{llama3.2:3b} présente deux limites majeures qui rendent les métriques Faithfulness et Context Precision entièrement non calculables dans ce contexte.
 
 \begin{itemize}[leftmargin=2em]
-  \item \textbf{Défaut de format de sortie.} RAGAS requiert que le juge LLM produise une réponse au format JSON strict (\texttt{\{"score": 0.x, "statements": [...]\}}). Le modèle \texttt{llama3.2:3b} — un modèle à 3 milliards de paramètres — échoue systématiquement à respecter ce format~: 100\,\% des appels concernant ces deux métriques se terminent par une \texttt{JSONDecodeError}. Ce comportement est documenté dans la littérature pour les modèles de petite taille~\cite{es2023ragas}.
+  \item \textbf{Défaut de format de sortie.} RAGAS requiert que le juge LLM produise une réponse au format JSON strict (\texttt{\{"score": 0.x, "statements": [...]\}}). Le modèle \texttt{llama3.2:3b} : un modèle à 3 milliards de paramètres : échoue systématiquement à respecter ce format~: 100\,\% des appels concernant ces deux métriques se terminent par une \texttt{JSONDecodeError}. Ce comportement est documenté dans la littérature pour les modèles de petite taille~\cite{es2023ragas}.
   \item \textbf{Biais d'auto-évaluation.} Le modèle \texttt{llama3.2:3b} est à la fois le générateur des réponses évaluées et le juge. Cette identité introduit un biais systématique~: un modèle tend à juger favorablement des formulations proches des siennes, gonflant artificiellement les scores de fidélité.
 \end{itemize}
 
@@ -454,4 +427,4 @@ Enfin, la circularité de l'auto-labellisation par signaux (détaillée au §~\r
 \addcontentsline{toc}{section}{Conclusion}
 % ─────────────────────────────────────────────────────────────
 
-La phase d'évaluation fournit des résultats préliminaires encourageants. Sur un jeu de 18 requêtes ($n = 18$), l'approche hybride (vectoriel + BM25 + RRF + cross-encoder) surpasse la baseline vectorielle pure sur toutes les métriques, avec un gain de +9,2\,\% sur le nDCG@3 et un MRR = 1.0. Ces scores doivent cependant être interprétés en tenant compte de la circularité du protocole d'auto-labellisation~: les signaux utilisés pour annoter les chunks sont les mêmes termes et T-codes exploités par le retrieval, ce qui produit des scores structurellement favorables. L'évaluation de génération (RAGAS, $n = 3$) donne une Answer Relevancy de 0,92 et un Context Recall de 0,89, mais repose sur un échantillon trop réduit et un juge LLM identique au générateur pour constituer une conclusion définitive. Des travaux futurs devront étendre le jeu de test, introduire des jugements humains indépendants et utiliser un juge LLM plus puissant pour valider ces résultats. La double approche retrieval / génération adoptée reste pertinente pour isoler les sources de défaillance dans le pipeline.
+Ce chapitre a permis d'évaluer la qualité du système développé selon deux axes complémentaires : la pertinence des documents retrouvés et la qualité des réponses générées. Les résultats obtenus sont encourageants et confirment que le système répond efficacement aux questions posées en langage naturel sur les données SAP. Ces résultats restent toutefois préliminaires et devront être consolidés sur un jeu de test plus large afin de valider pleinement les performances de la solution.

@@ -1,5 +1,5 @@
 % ============================================================
-%  Chapitre 5 — Préparation des données
+%  Chapitre 5 : Préparation des données
 % ============================================================
 
 \chapter{Préparation des données}
@@ -263,7 +263,7 @@ Pour chaque fichier JSON issu du scraping, le script identifie les doublons en u
 
 La fonction \texttt{normalize\_text} assure ensuite la normalisation du contenu textuel : elle supprime les balises HTML, les caractères invisibles, les sections non informatives de type \textit{«~for more information~»}, ainsi que les éléments de navigation bruités.
 
-À l'issue du nettoyage, des métadonnées sont extraites automatiquement — T-codes, SAP Notes, module SAP et fil d'Ariane — et associées à chaque document. Le résultat est sauvegardé dans un fichier \texttt{.cleaned.json} propre à la source.% ── 2.2 ──────────────────────────────────────────────────────────────────────
+À l'issue du nettoyage, des métadonnées sont extraites automatiquement : T-codes, SAP Notes, module SAP et fil d'Ariane : et associées à chaque document. Le résultat est sauvegardé dans un fichier \texttt{.cleaned.json} propre à la source.% ── 2.2 ──────────────────────────────────────────────────────────────────────
 \subsection{Nettoyage des données des livres techniques PDF}
 \label{subsec:nettoyage-pdf}
 
@@ -320,7 +320,7 @@ Le script reconstitue le contenu brut en concaténant le titre, le contenu princ
 \subsection{Normalisation commune des deux sources}
 \label{subsec:normalisation-commune}
 
-Une fois nettoyées \emph{séparément}, les données des deux sources sont \textbf{fusionnées} dans un corpus unique, puis soumises à un pipeline de normalisation textuelle unifié implémenté dans \texttt{text\_utils.py}. Contrairement au nettoyage source-spécifique des sections précédentes — qui traitait les anomalies propres à chaque format (balises HTML pour le web, caractères CID pour les PDF) — cette étape applique des transformations \emph{identiques} à tous les documents, indépendamment de leur origine, afin de garantir un schéma de sortie homogène.
+Une fois nettoyées \emph{séparément}, les données des deux sources sont \textbf{fusionnées} dans un corpus unique, puis soumises à un pipeline de normalisation textuelle unifié implémenté dans \texttt{text\_utils.py}. Contrairement au nettoyage source-spécifique des sections précédentes : qui traitait les anomalies propres à chaque format (balises HTML pour le web, caractères CID pour les PDF) : cette étape applique des transformations \emph{identiques} à tous les documents, indépendamment de leur origine, afin de garantir un schéma de sortie homogène.
 
 \begin{table}[H]
 \centering
@@ -602,7 +602,7 @@ Enfants  & 32\,194 & Fragments de documents longs, \textbf{vectorisés} et index
 \end{tabular}
 \end{table}
 
-Les 8\,795 enregistrements de type \textit{Parent} sont conservés en base pour l'enrichissement de contexte lors de la récupération, mais ne portent pas de vecteur propre. Après application des filtres finaux de longueur et de qualité lors de l'ingestion dans PostgreSQL, \textbf{76\,463 vecteurs} sont effectivement indexés — ce chiffre constitue la taille opérationnelle de la base vectorielle utilisée dans toutes les évaluations ultérieures du rapport.
+Les 8\,795 enregistrements de type \textit{Parent} sont conservés en base pour l'enrichissement de contexte lors de la récupération, mais ne portent pas de vecteur propre. Après application des filtres finaux de longueur et de qualité lors de l'ingestion dans PostgreSQL, \textbf{76\,463 vecteurs} sont effectivement indexés : ce chiffre constitue la taille opérationnelle de la base vectorielle utilisée dans toutes les évaluations ultérieures du rapport.
 
 
 
@@ -623,45 +623,23 @@ correspond à la langue principale de la documentation SAP technique.
 \centering
 \caption{Comparaison des modèles d'embedding évalués}
 \label{tab:modeles-embedding}
-\renewcommand{\arraystretch}{1.4}
-\setlength{\tabcolsep}{10pt}
-\begin{tabularx}{\textwidth}{@{} l c c X X @{}}
-
-\toprule
-\rowcolor{gray!20}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|c|c|p{4.5cm}|p{4.5cm}|}
+\hline
 \textbf{Modèle} & \textbf{Dim.} & \textbf{Langue} & \textbf{Points forts} & \textbf{Limitation} \\
-\midrule
-
-\rowcolor{blue!5}
-\textbf{bge-large-en-v1.5}
-  & 1\,024
-  & Anglais
-  & Très performant sur benchmarks BEIR
-  & Monolingue \\
-
-bge-m3
-  & 1\,024
-  & Multilingue
-  & Supporte 100+ langues
-  & Légèrement moins précis en anglais \\
-
-\rowcolor{blue!5}
-all-MiniLM-L6-v2
-  & 384
-  & Anglais
-  & Rapide et léger
-  & Moins précis \\
-
-text-embedding-ada-002
-  & 1\,536
-  & Multilingue
-  & API OpenAI, très utilisé
-  & Payant, dépendance externe \\
-
-\bottomrule
-\end{tabularx}
-
+\hline
+\textbf{bge-large-en-v1.5} & 1\,024 & Anglais & Très performant sur benchmarks BEIR & Monolingue \\
+\hline
+bge-m3 & 1\,024 & Multilingue & Supporte 100+ langues & Légèrement moins précis en anglais \\
+\hline
+all-MiniLM-L6-v2 & 384 & Anglais & Rapide et léger & Moins précis \\
+\hline
+text-embedding-ada-002 & 1\,536 & Multilingue & API OpenAI, très utilisé & Payant, dépendance externe \\
+\hline
+\end{tabular}%
+}
 \smallskip
+
 \footnotesize\textit{Dim. = Dimensionnalité du vecteur d'embedding produit par le modèle.}
 \end{table}
 
@@ -861,7 +839,7 @@ comme contexte de génération.
     \textbf{\textsc{Requête utilisateur}}%
 };
 
-% ===== STEP 1 — GIN metadata filter ======================================
+% ===== STEP 1 : GIN metadata filter ======================================
 \node[filtnode, below=0.65cm of query] (gin) {%
     \begin{tabular}{@{\hspace{1.4cm}}l}
     \textbf{Filtrage par métadonnées} \\[3pt]
@@ -872,7 +850,7 @@ comme contexte de génération.
 \node[bwtag, anchor=north east, xshift=-0.3cm, yshift=-0.3cm]
     at (gin.north east) {INDEX GIN};
 
-% ===== STEP 2 — HNSW approximate vector search ===========================
+% ===== STEP 2 : HNSW approximate vector search ===========================
 \node[vectnode, below=0.65cm of gin] (hnsw) {%
     \begin{tabular}{@{\hspace{1.4cm}}l}
     \textbf{Recherche vectorielle approchée} \\[3pt]
@@ -883,7 +861,7 @@ comme contexte de génération.
 \node[bwtag, anchor=north east, xshift=-0.3cm, yshift=-0.3cm]
     at (hnsw.north east) {INDEX HNSW};
 
-% ===== STEP 3 — Parent chunk retrieval ===================================
+% ===== STEP 3 : Parent chunk retrieval ===================================
 \node[retrnode, below=0.65cm of hnsw] (parent) {%
     \begin{tabular}{@{\hspace{1.4cm}}l}
     \textbf{Récupération du chunk parent} \\[3pt]
