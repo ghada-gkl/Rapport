@@ -1,6 +1,6 @@
 
 \chapter{Compréhension des données}
-\label{chap:business_understanding}
+\label{chap:data_understanding}
 
 \section*{Introduction}
 Dans la méthode CRISP-DM, la phase d'analyse des données est essentielle pour garantir le succès d'un projet d'analyse de données ou de machine learning. Cette étape permet de se familiariser avec les ensembles de données à disposition, de repérer d'éventuels problèmes et de définir les actions nécessaires pour préparer les données en vue de leur utilisation dans les étapes ultérieures du projet. Dans le cadre de ce projet, l'exploration des données implique l'examen des différentes sources.
@@ -56,7 +56,7 @@ En raison d'une telle approche à la résolution de la tâche d'information extr
 
 \subsubsection{Extraction des données depuis le portail SAP Help}
 
-La récupération des données du portail \texttt{help.sap.com} sera réaliser à l’aide d’un processus de scraping permettant d’extraire automatiquement les pages de documentation SAP. Deux liens principaux ont été utilisés : le premier fournit la liste des pages disponibles sur le portail, tandis que le second permet d’accéder au contenu détaillé de chaque page.
+La récupération des données du portail \texttt{help.sap.com} est réalisée à l’aide d’un processus de scraping permettant d’extraire automatiquement les pages de documentation SAP. Deux liens principaux ont été utilisés : le premier fournit la liste des pages disponibles sur le portail, tandis que le second permet d’accéder au contenu détaillé de chaque page.
 
 Lors des premières tentatives de collecte, certaines requêtes ont été bloquées par le portail SAP afin de limiter les accès automatisés. Pour résoudre ce problème, plusieurs ajustements ont été mis en place.
 
@@ -289,7 +289,7 @@ Ces données sont essentielles pour analyser les performances du système et ide
 \section{Qualité des données}
 \label{sec:qualite_donnees}
 
-L’évaluation de la qualité des données est une étape centrale de la phase \textit{Data Understanding} dans la méthodologie CRISP-DM. Elle conditionne directement la pertinence des réponses produites par le système RAG et la fiabilité de la détection d’anomalies. Cette section présente une analyse structurée selon quatre axes : volumétrie, valeurs manquantes, doublons et bruit textuel, ainsi qu’une observation du déséquilibre thématique du corpus.
+L’évaluation de la qualité des données est une étape centrale de la phase \textit{Data Understanding} dans la méthodologie CRISP-DM. Elle conditionne directement la pertinence des réponses produites par le système RAG et la fiabilité des sources documentaires fournies à l’utilisateur. Cette section présente une analyse structurée selon quatre axes : volumétrie, valeurs manquantes, doublons et bruit textuel, ainsi qu’une observation du déséquilibre thématique du corpus.
 
 \subsection{Volumétrie du corpus}
 
@@ -330,7 +330,7 @@ Deux catégories de doublons ont été identifiées :
     \item \textbf{Doublons partiels} : sections d’introduction reproduites à l’identique dans plusieurs livres PDF (chapitres d’entrée en matière communs à plusieurs certifications). Ces redondances représentent \textasciitilde{}7\,\% du corpus PDF~; elles ont été détectées par similarité cosinus sur les embeddings et dédupliquées avant ingestion.
 \end{itemize}
 
-Au total, \textasciitilde{}15\,800 segments ont été supprimés pour cause de duplication, soit \textasciitilde{}11\,8\,\% du corpus brut.
+Au total, \textasciitilde{}15\,800 segments ont été supprimés pour cause de duplication, soit \textasciitilde{}11,8\,\% du corpus brut.
 
 \subsection{Bruit textuel}
 
@@ -342,7 +342,7 @@ L’extraction automatique a introduit plusieurs catégories de bruit :
     \item \textbf{Fragments de code hors contexte} : extraits ABAP isolés, sans le texte explicatif environnant, générant des segments peu utiles à la recherche sémantique.
 \end{itemize}
 
-Un pipeline de nettoyage fondé sur des expressions régulières et des règles de filtrage a traité ces artefacts. Au total, \textasciitilde{}34\,\% des segments ont subi une correction et \textasciitilde{}4\,2\,\% ont été écartés pour bruit excessif.
+Un pipeline de nettoyage fondé sur des expressions régulières et des règles de filtrage a traité ces artefacts. Au total, \textasciitilde{}34\,\% des segments ont subi une correction et \textasciitilde{}4,2\,\% ont été écartés pour bruit excessif.
 
 \section*{Conclusion}
-Ce chapitre aborde la phase d'analyse des données dans la méthodologie CRISP-DM. Cette étape vise à identifier, évaluer et décrire les diverses sources de données utilisées dans le projet afin de préparer au mieux les étapes suivantes, notamment la préparation et la modélisation des données.
+Ce chapitre a présenté la phase de compréhension des données selon la méthodologie CRISP-DM. Les quatre sources documentaires du projet ont été identifiées, collectées et évaluées~: le portail SAP Help, les livres techniques PDF, les données de surveillance PyRFC et les SAP Notes. L'analyse de leur structure et de leur qualité a permis de définir les actions de nettoyage et de préparation nécessaires. Le chapitre suivant décrit ces traitements, de la normalisation des textes jusqu'à la vectorisation finale du corpus.

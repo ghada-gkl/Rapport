@@ -9,35 +9,36 @@
 \contentsline {figure}{\numberline {1.7}{\ignorespaces Cycle de vie de la méthodologie Microsoft TDSP}}{30}{figure.caption.17}%
 \contentsline {figure}{\numberline {1.8}{\ignorespaces Le processus utilisé le plus fréquemment dans les projets de data science \cite {datasciencepm2021crisp}}}{32}{figure.caption.19}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces Diagramme de Gantt }}{38}{figure.caption.22}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Logo SAP}}{34}{figure.caption.21}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces SM37 : Vue d'ensemble des jobs batch}}{36}{figure.caption.22}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces DB02 : Vue d'ensemble de l'espace base de données}}{37}{figure.caption.23}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces ST22 : Liste des erreurs d'exécution ABAP}}{38}{figure.caption.24}%
+\contentsline {figure}{\numberline {2.5}{\ignorespaces Diagramme de cas d'utilisation}}{43}{figure.caption.27}%
+\contentsline {figure}{\numberline {2.6}{\ignorespaces Les LLMs à l'intersection du \textit {Deep Learning} et du \textit {NLP}}}{45}{figure.caption.28}%
+\contentsline {figure}{\numberline {2.7}{\ignorespaces Architecture du système RAG }}{46}{figure.caption.29}%
+\contentsline {figure}{\numberline {2.8}{\ignorespaces Diagramme de Gantt }}{50}{figure.caption.31}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces Logo SAP}}{41}{figure.caption.24}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces SM37 : Vue d'ensemble des jobs batch}}{43}{figure.caption.25}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces DB02 : Vue d'ensemble de l'espace base de données}}{44}{figure.caption.26}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces ST22 : Liste des erreurs d'exécution ABAP}}{45}{figure.caption.27}%
-\contentsline {figure}{\numberline {3.5}{\ignorespaces Les LLMs à l'intersection du \textit {Deep Learning} et du \textit {NLP}}}{47}{figure.caption.28}%
-\contentsline {figure}{\numberline {3.6}{\ignorespaces Architecture du système RAG }}{48}{figure.caption.29}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Structure des données extraites depuis la transaction ST22}}{52}{figure.caption.32}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Structure des données extraites depuis la transaction SM37}}{52}{figure.caption.33}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces les sites de SAP Help}}{54}{figure.caption.34}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Pipeline d’ingestion et de traitement des données SAP}}{55}{figure.caption.35}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Données des livres PDF SAP}}{57}{figure.caption.36}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Données de SAP Help}}{58}{figure.caption.37}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Données de surveillance SAP}}{58}{figure.caption.38}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Structure des données extraites depuis la transaction ST22}}{53}{figure.caption.31}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Structure des données extraites depuis la transaction SM37}}{53}{figure.caption.32}%
-\contentsline {figure}{\numberline {4.3}{\ignorespaces les sites de SAP Help}}{55}{figure.caption.33}%
-\contentsline {figure}{\numberline {4.4}{\ignorespaces Pipeline d’ingestion et de traitement des données SAP}}{56}{figure.caption.34}%
-\contentsline {figure}{\numberline {4.5}{\ignorespaces Données des livres PDF SAP}}{58}{figure.caption.35}%
-\contentsline {figure}{\numberline {4.6}{\ignorespaces Données de SAP Help}}{59}{figure.caption.36}%
-\contentsline {figure}{\numberline {4.7}{\ignorespaces Données de surveillance SAP}}{59}{figure.caption.37}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Pipeline complet de préparation des données}}{62}{figure.caption.41}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Algorithme de déduplication en deux passes}}{67}{figure.caption.43}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Pipeline de recherche hybride exploitant les index GIN et HNSW lors d'une requête RAG}}{75}{figure.caption.51}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {5.1}{\ignorespaces Pipeline complet de préparation des données}}{63}{figure.caption.40}%
-\contentsline {figure}{\numberline {5.2}{\ignorespaces Algorithme de déduplication en deux passes}}{68}{figure.caption.42}%
-\contentsline {figure}{\numberline {5.3}{\ignorespaces Pipeline de recherche hybride exploitant les index GIN et HNSW lors d'une requête RAG}}{76}{figure.caption.50}%
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Pipeline RAG SAP V2}}{93}{figure.caption.53}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {6.1}{\ignorespaces Pipeline RAG SAP V2}}{94}{figure.caption.52}%
+\contentsline {figure}{\numberline {6.1}{\ignorespaces Analyse des performances du système RAG SAP}}{108}{figure.caption.62}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {7.1}{\ignorespaces Analyse des performances du système RAG SAP}}{109}{figure.caption.61}%
-\addvspace {10\p@ }
-\contentsline {figure}{\numberline {8.1}{\ignorespaces Architecture de déploiement AutoMoni}}{113}{figure.caption.62}%
-\contentsline {figure}{\numberline {8.2}{\ignorespaces Diagramme de cas d'utilisation}}{116}{figure.caption.64}%
-\contentsline {figure}{\numberline {8.3}{\ignorespaces Diagramme de séquence : interaction complète}}{117}{figure.caption.65}%
-\contentsline {figure}{\numberline {8.4}{\ignorespaces Diagramme de classes (PostgreSQL)}}{118}{figure.caption.66}%
-\contentsline {figure}{\numberline {8.5}{\ignorespaces Interface chatbot avec historique}}{123}{figure.caption.69}%
-\contentsline {figure}{\numberline {8.6}{\ignorespaces ChatPanel en tiroir latéral}}{123}{figure.caption.70}%
-\contentsline {figure}{\numberline {8.7}{\ignorespaces Benchmark RAG : LLaMA 3.2:3b vs Qwen 2.5:7b}}{124}{figure.caption.71}%
+\contentsline {figure}{\numberline {7.1}{\ignorespaces Architecture de déploiement AutoMoni}}{112}{figure.caption.63}%
+\contentsline {figure}{\numberline {7.2}{\ignorespaces Diagramme de séquence : interaction complète}}{117}{figure.caption.67}%
+\contentsline {figure}{\numberline {7.3}{\ignorespaces Diagramme de classes (PostgreSQL)}}{118}{figure.caption.68}%
+\contentsline {figure}{\numberline {7.4}{\ignorespaces Interface chatbot avec historique}}{121}{figure.caption.69}%
+\contentsline {figure}{\numberline {7.5}{\ignorespaces ChatPanel en tiroir latéral}}{121}{figure.caption.70}%
+\contentsline {figure}{\numberline {7.6}{\ignorespaces Chatbot SAP : réponse avec sources}}{122}{figure.caption.71}%
+\contentsline {figure}{\numberline {7.7}{\ignorespaces Chatbot SAP : mécanisme de correction}}{122}{figure.caption.72}%
+\contentsline {figure}{\numberline {7.8}{\ignorespaces Benchmark RAG : LLaMA 3.2:3b vs Qwen 2.5:7b}}{123}{figure.caption.73}%

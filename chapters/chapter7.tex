@@ -132,7 +132,7 @@ Avant de présenter les résultats, il est nécessaire de préciser dans quelles
 Pour chaque question du dataset, le système récupère les \textbf{10 documents les plus pertinents} du corpus. Ce paramètre, noté \texttt{top\_k = 10}, définit la fenêtre d'évaluation~: seuls ces 10 documents sont analysés et notés. Augmenter ce nombre améliorerait mécaniquement le Recall, mais au prix d'un contexte plus bruité transmis au modèle de langage.
 
 \paragraph{Activation du reranker}
-Le reranker est un second modèle (\texttt{cross-encoder/ms-marco-MiniLM-L-6-v2}) qui intervient \emph{après} la recherche hybride pour réordonner les 10 résultats récupérés. Contrairement au moteur de recherche initial qui compare chaque document à la question de manière indépendante, le reranker analyse la paire (question, document) conjointement, ce qui lui permet d'affiner le classement avec une meilleure compréhension du contexte. C'est son impact sur les métriques de classement (MRR, nDCG) qui est mesuré ici.
+Le reranker est un second modèle (\texttt{cross-encoder/\allowbreak ms-marco-MiniLM-L-6-v2}) qui intervient \emph{après} la recherche hybride pour réordonner les 10 résultats récupérés. Contrairement au moteur de recherche initial qui compare chaque document à la question de manière indépendante, le reranker analyse la paire (question, document) conjointement, ce qui lui permet d'affiner le classement avec une meilleure compréhension du contexte. C'est son impact sur les métriques de classement (MRR, nDCG) qui est mesuré ici.
 
 \paragraph{Comparaison avec une baseline}
 Pour mesurer l'apport réel du système hybride, les résultats sont comparés à une \textbf{baseline}~: une recherche vectorielle pure, sans BM25 ni fusion de scores RRF, appliquée sur le même corpus de 76\,463 vecteurs indexés dans PostgreSQL. Cette baseline représente ce que le système produirait si l'on retirait toutes les améliorations hybrides~; tout gain observé dans le tableau de résultats est donc directement attribuable à ces améliorations.
@@ -319,7 +319,7 @@ Q14 & Comment surveiller les performances avec ST06 et SM50~?
   & \textbf{0.990} & \textbf{0.667}
   & Réponse bien ciblée. Documents couvrent principalement SM50 ; couverture partielle des métriques ST06. \\
 \hline
-\textbf{Moyenne} & & \textbf{0.920} & \textbf{0.889} & \\
+\textbf{Moy} & & \textbf{0.920} & \textbf{0.889} & \\
 \hline
 \end{tabular}%
 }
@@ -368,7 +368,7 @@ Le reranking par cross-encoder garantit qu'un chunk pertinent apparaît systéma
 \label{sec:analyse-visuelle}
 % ─────────────────────────────────────────────────────────────
 
-La figure~\ref{fig:eval_performance} synthétise l'ensemble des résultats d'évaluation sous quatre angles complémentaires. Le premier graphique confirme l'apport mesurable du reranker~: le système avec reranker dépasse systématiquement la baseline sur les quatre métriques clés, avec la différence la plus marquée sur le nDCG@3 (+9,2\%). Le deuxième graphique présente la distribution des scores sur les 18 requêtes sous forme de boîtes à moustaches~: le nDCG@10 est très concentré près de 1.0, tandis que le Recall@1 montre une dispersion plus importante, confirmant que la première position brute est moins fiable que les positions agrégées. Le troisième graphique trace l'évolution du nDCG@10 requête par requête, coloré par type d'intention~; les deux anomalies de \emph{classement} (Q04 et Q10) y sont clairement identifiables (à distinguer des requêtes Q02 et Q04 présentant des lacunes de \emph{couverture de signaux}, cf.\ §~7.3.5)~: Q10 correspond à une requête de configuration STMS dont les chunks pertinents étaient mal positionnés avant reranking, et Q04 à une requête HANA backup pour laquelle le corpus contient peu de documentation spécialisée. Enfin, la matrice de corrélation révèle deux clusters distincts~: les métriques de Recall (R@1, R@3, R@5) sont fortement corrélées entre elles mais quasi indépendantes des métriques nDCG, illustrant que la couverture brute et la qualité du classement mesurent deux propriétés orthogonales du retrieval.
+La figure~\ref{fig:eval_performance} synthétise l'ensemble des résultats d'évaluation sous quatre angles complémentaires. Le premier graphique confirme l'apport mesurable du reranker~: le système avec reranker dépasse systématiquement la baseline sur les quatre métriques clés, avec la différence la plus marquée sur le nDCG@3 (+9,2\%). Le deuxième graphique présente la distribution des scores sur les 18 requêtes sous forme de boîtes à moustaches~: le nDCG@10 est très concentré près de 1.0, tandis que le Recall@1 montre une dispersion plus importante, confirmant que la première position brute est moins fiable que les positions agrégées. Le troisième graphique trace l'évolution du nDCG@10 requête par requête, coloré par type d'intention~; les deux anomalies de \emph{classement} (Q04 et Q10) y sont clairement identifiables (à distinguer des requêtes Q02 et Q04 présentant des lacunes de \emph{couverture de signaux}, cf.\ §~6.2.5)~: Q10 correspond à une requête de configuration STMS dont les chunks pertinents étaient mal positionnés avant reranking, et Q04 à une requête HANA backup pour laquelle le corpus contient peu de documentation spécialisée. Enfin, la matrice de corrélation révèle deux clusters distincts~: les métriques de Recall (R@1, R@3, R@5) sont fortement corrélées entre elles mais quasi indépendantes des métriques nDCG, illustrant que la couverture brute et la qualité du classement mesurent deux propriétés orthogonales du retrieval.
 
 \begin{figure}[H]
   \centering
@@ -408,19 +408,7 @@ Sur le jeu de test disponible ($n = 18$ pour le retrieval, $n = 3$ pour la gén�
 \subsection{Limites identifiées}
 \label{subsec:limites-ragas}
 
-Le Recall@1 de 0.122 indique que le premier résultat brut n'est pas toujours le plus pertinent~; ce comportement est attendu sur une base de 76\,463 vecteurs et est corrigé par le reranking (MRR = 1.0 sur $n = 18$). L'évaluation porte uniquement sur des requêtes en anglais, le modèle d'embedding \texttt{BAAI/bge-large-en-v1.5} n'étant pas optimisé pour le français.
-
-\paragraph{Non-calculabilité de Faithfulness et Context Precision.}
-Le modèle-juge \texttt{llama3.2:3b} présente deux limites majeures qui rendent les métriques Faithfulness et Context Precision entièrement non calculables dans ce contexte.
-
-\begin{itemize}[leftmargin=2em]
-  \item \textbf{Défaut de format de sortie.} RAGAS requiert que le juge LLM produise une réponse au format JSON strict (\texttt{\{"score": 0.x, "statements": [...]\}}). Le modèle \texttt{llama3.2:3b} : un modèle à 3 milliards de paramètres : échoue systématiquement à respecter ce format~: 100\,\% des appels concernant ces deux métriques se terminent par une \texttt{JSONDecodeError}. Ce comportement est documenté dans la littérature pour les modèles de petite taille~\cite{es2023ragas}.
-  \item \textbf{Biais d'auto-évaluation.} Le modèle \texttt{llama3.2:3b} est à la fois le générateur des réponses évaluées et le juge. Cette identité introduit un biais systématique~: un modèle tend à juger favorablement des formulations proches des siennes, gonflant artificiellement les scores de fidélité.
-\end{itemize}
-
-Ces deux métriques restent donc volontairement déclarées \textit{N/A} plutôt que de présenter des scores non fiables. Pour une évaluation RAGAS complète, l'utilisation d'un modèle-juge indépendant et de taille suffisante (par exemple \texttt{llama3.1:70b} ou un service API externe tel que GPT-4) est indispensable~; cette amélioration est identifiée comme une priorité dans les perspectives du projet.
-
-Enfin, la circularité de l'auto-labellisation par signaux (détaillée au §~\ref{subsec:limites-validite}) constitue la limite de validité la plus structurelle~: elle favorise mécaniquement les requêtes contenant des T-codes explicites et produit des scores de retrieval optimistes sur ce type de corpus.
+Le Recall@1 de 0.122 est compensé par le reranking (MRR = 1.0), et l'évaluation reste limitée à l'anglais, \texttt{BAAI/bge-large-en-v1.5} n'étant pas optimisé pour le français. Les métriques Faithfulness et Context Precision sont déclarées \textit{N/A}~: \texttt{llama3.2:3b} échoue à produire le JSON strict requis par RAGAS (\texttt{JSONDecodeError} dans 100\,\% des appels), et son rôle simultané de générateur et de juge introduit un biais d'auto-évaluation~\cite{es2023ragas}. L'utilisation d'un modèle-juge externe (\texttt{llama3.1:70b} ou GPT-4) est identifiée comme priorité pour les perspectives du projet. Enfin, la circularité de l'auto-labellisation par signaux (§~\ref{subsec:limites-validite}) produit des scores de retrieval optimistes sur les requêtes contenant des T-codes explicites.
 
 % ─────────────────────────────────────────────────────────────
 \section*{Conclusion}

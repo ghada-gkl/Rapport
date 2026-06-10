@@ -277,7 +277,7 @@ En ce qui concerne les solutions existantes proposées par SAP, telles que SAP L
 Ainsi, ces éléments mettent en évidence certaines limites des approches existantes, tant au niveau des méthodes traditionnelles que des solutions avancées, notamment en termes de temps, de coût et d’adaptation aux besoins spécifiques
 \label{sec:solution}
 \subsection{Solution proposée}
-La solution proposée repose sur l'utilisation de l'intelligence artificielle pour analyser les événements et les messages générés par les environnements SAP. Grâce à cette approche, le système peut identifier les anomalies, fournir des explications contextualisées et suggérer des pistes de résolution adaptées aux incidents rencontrés.
+La solution proposée repose sur l'utilisation de l'intelligence artificielle pour analyser les événements et les messages générés par les environnements SAP. Grâce à cette approche, le système fournit rapidement des explications contextualisées et des pistes de résolution issues de la documentation SAP pour les incidents soumis par l'utilisateur.
 
 Pour améliorer la pertinence des réponses proposées, la solution utilise une approche hybride basée sur le modèle RAG (Retrieval-Augmented Generation) et un mécanisme de cache (CAG). Cela permet au système de rechercher des informations utiles à partir de documents fiables et d'utiliser ces connaissances pour générer des réponses plus précises et mieux adaptées au contexte de l'incident détecté.
 
@@ -311,8 +311,7 @@ et non sur des informations incorrectes.
 
   \item \textbf{Interface et déploiement :} La solution est accessible via une interface web
 intuitive comprenant un chatbot de support, un tableau de bord de surveillance en temps
-réel et un panneau d’administration. Elle est également connectée à Microsoft Teams afin
-de notifier automatiquement les équipes lors de la survenue d’incidents critiques.
+réel et un panneau d’administration.
 
 \end{itemize}
 
@@ -451,7 +450,7 @@ similaires à celles de CRISP-DM (voir Figure~\ref{fig:tdsp}).
 
 \begin{figure}[htbp]
   \centering
-   \includegraphics[width=0.65\textwidth]{tdsp (1).png}
+   \includegraphics[width=0.65\textwidth]{TDSP.png}
 
   \caption{Cycle de vie de la méthodologie Microsoft TDSP}
   \label{fig:tdsp}
@@ -489,6 +488,8 @@ similaires à celles de CRISP-DM (voir Figure~\ref{fig:tdsp}).
 
 
 \subsection{Comparaison des méthodologies}
+
+Le tableau suivant synthétise les principales caractéristiques de chaque méthodologie afin d'en faciliter la comparaison et de justifier le choix adopté dans le cadre de ce projet.
 
 \begin{table}[htbp]
   \centering

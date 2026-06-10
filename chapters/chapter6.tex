@@ -214,7 +214,7 @@ La fonction \texttt{rrf\_fuse()} implémente cet algorithme selon la formule sui
 où $W_{\text{vec}} = 0.4$, $W_{\text{BM25}} = 0.6$, $k = 60$, et $r(d)$ désigne le rang du document $d$ dans chaque liste. Le choix de favoriser BM25 ($W_{\text{BM25}} > W_{\text{vec}}$) est motivé par la nature terminologique du corpus SAP~: les codes de transaction, les noms de modules et les numéros de notes sont des correspondances exactes que BM25 capture mieux que la sémantique vectorielle. Les 10 meilleurs candidats fusionnés (\texttt{RERANK\_K=10}) sont transmis au cross-encoder.
 
 
-\subsection{Injection CAG (Context-Augmented Generation)}
+\subsection{Injection CAG (Cache-Augmented Generation)}
 
 Pour certaines questions très ciblées, la recherche dynamique n'est pas toujours nécessaire. Lorsqu'un utilisateur demande directement des informations sur un T-code connu (par exemple \texttt{SM37} ou \texttt{ST22}), les documents les plus pertinents sont prévisibles et peuvent être pré-chargés depuis la base de données, plutôt que recalculés à chaque fois.
 
@@ -416,7 +416,6 @@ La recherche vectorielle représente le premier axe du retrieval hybride. Elle r
 \section{Mécanisme de Reranking par Cross-Encoder}
 % ─────────────────────────────────────────────────────────────
 
-\clearpage
 \subsection{Modèle cross-encoder ms-marco-MiniLM-L-6-v2}
 
 Le reranking constitue la troisième couche de filtrage du pipeline. Contrairement au bi-encodeur BGE qui encode requête et document séparément, le cross-encoder \texttt{cross-encoder/ms-marco-MiniLM-L-6-v2} analyse conjointement la paire (requête, chunk) pour produire un score de pertinence fine. Ce modèle, entraîné sur le dataset MS-MARCO de recherche de passages, produit des scores sur une échelle approximative de $-10$ à $+10$.
@@ -450,7 +449,7 @@ def rerank(query, chunks, top_k=TOP_K):
 
 \subsection{Seuillage et déduplication}
 
-Le paramètre \texttt{MIN\_RERANK\_SCORE = 2.0} [F2] filtre les chunks dont le score du cross-encoder est inférieur à ce seuil, éliminant les passages hors-sujet. Ce seuil, relevé de 0.5 à 2.0 par rapport à la version précédente, permet un filtrage efficace tout en conservant les chunks borderline potentiellement utiles. Un mécanisme de déduplication limite à \texttt{MAX\_CHUNKS\_PER\_SOURCE = 3} le nombre de chunks provenant d'une même source, évitant qu'un seul ouvrage ne domine le contexte injecté au LLM.
+Le paramètre \texttt{MIN\_RERANK\_SCORE = 2.0} filtre les chunks dont le score du cross-encoder est inférieur à ce seuil, éliminant les passages hors-sujet tout en conservant les chunks borderline potentiellement utiles. Un mécanisme de déduplication limite à \texttt{MAX\_CHUNKS\_PER\_SOURCE = 3} le nombre de chunks provenant d'une même source, évitant qu'un seul ouvrage ne domine le contexte injecté au LLM.
 
 Un filet de sécurité (\textit{safety net}) est implémenté : si le reranker filtre tous les candidats, les meilleurs candidats RRF bruts sont utilisés à la place, garantissant qu'une réponse est toujours générée.
 
@@ -642,4 +641,4 @@ Le système présente plusieurs limites à prendre en compte. Le modèle de gén
 \section*{Conclusion }
 % ─────────────────────────────────────────────────────────────
 
-Ce chapitre a présenté la phase de modélisation du système RAG hybride développé pour la documentation SAP . L’architecture combine plusieurs composants complémentaires, notamment le NLP rule-based, le cache sémantique, le retrieval hybride BM25 + vecteurs, le reranking par cross-encoder et la génération via Llama3.2 avec Ollama. Les améliorations intégrées.
+Ce chapitre a présenté la phase de modélisation du système RAG hybride développé pour la documentation SAP. L’architecture combine plusieurs composants complémentaires, notamment le NLP rule-based, le cache sémantique, le retrieval hybride BM25 + vecteurs, le reranking par cross-encoder et la génération via Llama3.2 avec Ollama. Ces composants forment ensemble un pipeline industriel, robuste aux ambiguïtés linguistiques et aux variations terminologiques du domaine SAP. Le chapitre suivant évalue la qualité du retrieval et de la génération produites par cette modélisation.

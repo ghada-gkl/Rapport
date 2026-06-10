@@ -28,7 +28,7 @@ Ce chapitre présente l’architecture générale de déploiement, les différen
 
 \subsection{Vue d'ensemble}
 
-Le système déployé repose sur une architecture à trois couches distinctes communiquant via des interfaces bien définies. La figure 8.2  illustre l'ensemble des composants et leurs interconnexions.
+Le système déployé repose sur une architecture à trois couches distinctes communiquant via des interfaces bien définies. La figure~\ref{fig:deploy_arch} illustre l'ensemble des composants et leurs interconnexions.
 
 % Required in preamble:
 % \usetikzlibrary{arrows.meta, fit, backgrounds, shadows.blur, calc}
@@ -312,37 +312,6 @@ groupes fonctionnels, chacun correspondant à un rôle distinct dans l'architect
 
 
 
-\section{Diagramme de cas d'utilisation général}
-
-Dans cette section, les exigences fonctionnelles du système déployé sont représentées à l'aide d'un diagramme de cas d'utilisation conforme au langage de modélisation UML. Ce diagramme (voir figure~\ref{fig:usecase_deploy}) met en évidence les différents acteurs du système ainsi que les interactions possibles entre ces acteurs et les fonctionnalités offertes par l'application. Il permet ainsi de fournir une vision globale du comportement du système et des services qu'il propose aux utilisateurs.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{images/casutilisation.png}
-    \caption[Diagramme de cas d'utilisation]{Diagramme de cas d'utilisation général du système déployé}
-    \label{fig:usecase_deploy}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{images/sequence_chatbot_fr.png}
-\caption[Diagramme de séquence : interaction complète]{Diagramme de séquence : cycles complets d'interaction~: initialisation de session, surveillance SAP et chatbot RAG}
-\label{fig:sequence_requete}
-\end{figure} 
-
-La figure~\ref{fig:class_core} présente le diagramme de classes détaillé des quatre tables
-fondamentales avec l'ensemble de leurs attributs et les associations logiques entre elles.
-La figure 8.4 présente les 17~tables de monitoring et de métriques dans
-un format compact.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.90\textwidth]{images/Blank diagram.png}
-\caption[Diagramme de classes (PostgreSQL)]{Diagramme de classes : Tables fondamentales du système RAG (PostgreSQL)}
-\label{fig:class_core}
-\end{figure}
-
-
 \subsection{Démarrage de l'API FastAPI}
 
 Le serveur FastAPI est lancé via \textbf{Uvicorn}, le serveur ASGI de référence pour les applications Python asynchrones~:
@@ -420,6 +389,26 @@ $W_{\text{vec}}$ / $W_{\text{BM25}}$ & 0.4 / 0.6 & Poids de fusion RRF (BM25 pri
 \hline
 \end{tabularx}
 \end{table}
+
+% ─────────────────────────────────────────────────────────────
+\section{Diagrammes UML}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/sequence_chatbot_fr.png}
+\caption[Diagramme de séquence : interaction complète]{Diagramme de séquence : cycles complets d'interaction~: initialisation de session, surveillance SAP et chatbot RAG}
+\label{fig:sequence_requete}
+\end{figure} 
+
+La figure~\ref{fig:class_core} présente le diagramme de classes détaillé des quatre tables
+fondamentales avec l'ensemble de leurs attributs et les associations logiques entre elles.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.90\textwidth]{images/Blank diagram.png}
+\caption[Diagramme de classes (PostgreSQL)]{Diagramme de classes : Tables fondamentales du système RAG (PostgreSQL)}
+\label{fig:class_core}
+\end{figure}
 
 % ─────────────────────────────────────────────────────────────
 \section{Intégration du chatbot dans l'application web}
@@ -504,8 +493,26 @@ Le composant \texttt{ChatPanel} est directement intégré au sein du shell appli
 \label{fig:chatpanel}
 \end{figure}
 
+\subsection{Interface du chatbot pour Admin}
+
+Les figures suivantes présentent l'interface du chatbot  illustrant la réponse générée avec ses sources ainsi que le mécanisme de retour administrateur.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{\detokenize{images/Screenshot 2026-05-29 164204.png}}
+\caption[Chatbot SAP : réponse avec sources]{Réponse du chatbot assistant SAP avec liste des sources documentaires et widget de feedback}
+\label{fig:chat_response}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{\detokenize{images/Screenshot 2026-05-29 164230.png}}
+\caption[Chatbot SAP : mécanisme de correction]{Mécanisme de correction activé après sélection de «~À améliorer~» par l'utilisateur}
+\label{fig:chat_feedback}
+\end{figure}
+
 % ─────────────────────────────────────────────────────────────
-\section{Sélection du modèle LLM et benchmarking}
+\section{Benchmark des configurations de pipeline}
 % ─────────────────────────────────────────────────────────────
 
 \subsection{Protocole d'évaluation}
@@ -574,7 +581,7 @@ Plusieurs axes d'amélioration peuvent être envisagés pour renforcer le systè
 \begin{itemize}[leftmargin=2em]
    \item \textbf{Modèle LLM plus performant}~: L'intégration d'un modèle de grande taille (qwen2.5:7b déjà supporté, ou un modèle cloud via API) améliorerait la qualité des réponses sur les requêtes complexes.
 
-  \item \textbf{Mise à jour incrémentale de la base de connaissances}~: Un pipeline de synchronisation incrémentale (déjà prototypé dans \texttt{conv\_databaseMONGODB/}) permettrait d'enrichir automatiquement la base documentaire à mesure que de nouvelles notes SAP ou documentations sont publiées.
+  \item \textbf{Mise à jour incrémentale de la base de connaissances}~: Un pipeline de synchronisation incrémentale (déjà prototypé en interne) permettrait d'enrichir automatiquement la base documentaire à mesure que de nouvelles notes SAP ou documentations sont publiées.
 
   \item \textbf{Collecte de feedback utilisateur}~: L'ajout d'un mécanisme de notation des réponses (pouce haut/pouce bas) permettrait de constituer un jeu de données d'évaluation continue et d'identifier les points faibles du système en production réelle.
 \end{itemize}

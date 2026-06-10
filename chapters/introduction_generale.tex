@@ -19,7 +19,7 @@ Cette obligation est accentuée par la richesse de la documentation technique SA
 
 \item \textbf{Mise en valeur de l'expertise métier :} une grande partie des connaissances accumulées par les consultants expérimentés reste difficile à accéder pour les nouveaux employés, ce qui entrave la diffusion et la capitalisation du savoir au sein des équipes.
 
-\item \textbf{Diminution du temps de réponse face aux incidents :} toute baisse de performances ou indisponibilité d'un système SAP en production peut entraîner des impacts significatifs sur les activités de l'entreprise. Par conséquent, il est crucial de disposer de mécanismes permettant d'identifier rapidement les anomalies et d'assister efficacement les équipes dans leur résolution.
+\item \textbf{Diminution du temps de réponse face aux incidents :} toute baisse de performances ou indisponibilité d'un système SAP en production peut entraîner des impacts significatifs sur les activités de l'entreprise. Par conséquent, il est crucial de disposer de mécanismes permettant aux équipes de retrouver rapidement les informations techniques et les procédures de résolution applicables.
 \end{itemize}
 
   
@@ -38,7 +38,7 @@ Afin d’atteindre cet objectif, les travaux réalisés portent sur la constitut
 
 
 
-Ce rapport est organisé en huit chapitres structurés selon les phases de la méthodologie
+Ce rapport est organisé en sept chapitres structurés selon les phases de la méthodologie
 CRISP-DM, encadrés par une introduction et une conclusion générales.
 
 \vspace{0.3cm}
@@ -48,38 +48,33 @@ Présente l'organisme d'accueil, l'analyse de l'existant, la problématique et l
 
 \vspace{0.2cm}
 
-\noindent\textbf{\color{primaryblue}Chapitre 2 : Planification et spécification des besoins}\\
-Définit les besoins fonctionnels et non fonctionnels, les acteurs et les cas d'utilisation du système.
+\noindent\textbf{\color{primaryblue}Chapitre 2 : Compréhension métier et spécification des besoins}\\
+Aligne les objectifs techniques sur les enjeux SAP BASIS, formalise les acteurs, les besoins fonctionnels et non fonctionnels du système, et introduit les architectures candidates (RAG, CAG, Fine-Tuning) avant de justifier le choix retenu.
 
 \vspace{0.2cm}
 
-\noindent\textbf{\color{primaryblue}Chapitre 3 : Compréhension métier}\\
-Aligne les objectifs techniques sur les enjeux métier des équipes SAP BASIS et fixe les critères de succès.
+\noindent\textbf{\color{primaryblue}Chapitre 3 : Compréhension des données}\\
+Décrit les sources documentaires SAP, leur structure et leur qualité.
 
 \vspace{0.2cm}
 
-\noindent\textbf{\color{primaryblue}Chapitre 4 : Compréhension des données}\\
-Décrit les sources de données, leur structure et leur qualité en vue de la modélisation.
+\noindent\textbf{\color{primaryblue}Chapitre 4 : Préparation des données}\\
+Nettoyage, déduplication, chunking hiérarchique et vectorisation pour le moteur de recherche.
 
 \vspace{0.2cm}
 
-\noindent\textbf{\color{primaryblue}Chapitre 5 : Préparation des données}\\
-Couvre le nettoyage et la transformation des documents SAP en embeddings pour le moteur de recherche.
+\noindent\textbf{\color{primaryblue}Chapitre 5 : Modélisation}\\
+Architecture du pipeline RAG hybride et stratégies anti-hallucination.
 
 \vspace{0.2cm}
 
-\noindent\textbf{\color{primaryblue}Chapitre 6 : Modélisation}\\
-Détaille la mise en place du pipeline RAG hybride et l'architecture du système intelligent.
+\noindent\textbf{\color{primaryblue}Chapitre 6 : Évaluation}\\
+Mesure de la qualité du retrieval et de la génération sur le jeu de test SAP.
 
 \vspace{0.2cm}
 
-\noindent\textbf{\color{primaryblue}Chapitre 7 : Évaluation}\\
-Mesure la qualité du système en évaluant la pertinence de la recherche et la fidélité des réponses.
-
-\vspace{0.2cm}
-
-\noindent\textbf{\color{primaryblue}Chapitre 8 : Déploiement}\\
-Présente l'intégration de la solution dans la plateforme AutoMoni et son exposition aux utilisateurs.
+\noindent\textbf{\color{primaryblue}Chapitre 7 : Déploiement}\\
+Intégration de la solution dans la plateforme AutoMoni et exposition aux utilisateurs.
 
 \vspace{0.3cm}
 
